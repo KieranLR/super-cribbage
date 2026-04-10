@@ -59,6 +59,10 @@ export class MainMenu extends Scene {
             console.log('Settings');
         }), {expand: true});
 
+        menu.add(createMenuButton(this, 'Test Visuals', () => {
+            this.scene.start('TestListScene');
+        }), {expand: true});
+
         menu.layout();
     }
 }

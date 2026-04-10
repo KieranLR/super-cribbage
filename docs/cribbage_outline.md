@@ -1,18 +1,19 @@
 # Super Cribbage - Game Logic Architecture Outline
 
-This document outlines the proposed structure for the core logic of the Cribbage game. These classes will handle the state and rules of the game, independent of the Phaser frontend.
+This document outlines the current structure for the core logic of the Cribbage game. These classes handle the state and rules of the game, independent of the Phaser frontend.
 
-## Proposed Directory Structure
+## Directory Structure
 ```text
 game/
-├── Card.js        (Existing)
-├── Deck.js        (Existing)
-├── Player.js      - Represents a player (AI or Human).
+├── Card.js        - Represents a single playing card.
+├── Deck.js        - Manages a standard 52-card deck.
+├── Player.js      - Base class for participants (Human or Bot).
+├── BotPlayer.js   - Automated player with decision-making logic.
 ├── Hand.js        - Manages a collection of cards for a player.
-├── Crib.js        - Specialized hand for the crib.
+├── Crib.js        - Specialized hand for the crib belonging to the dealer.
 ├── Scoring.js     - Utility class for calculating Cribbage points.
 ├── Pegging.js     - Manages the "play" phase (pegging to 31).
-├── GameState.js   - Main orchestrator for a single game instance.
+├── GameState.js   - Main orchestrator for a single game instance (event-driven).
 └── Constants.js   - Game-specific constants (scoring values, phase names).
 ```
 
@@ -21,64 +22,83 @@ game/
 ### 1. `Player.js`
 - **Purpose:** Represents an individual participant in the game.
 - **Properties:**
-    - `id`: Unique identifier (Discord User ID).
+    - `id`: Unique identifier (e.g. Discord User ID).
     - `name`: Display name.
     - `score`: Total points accumulated.
     - `isDealer`: Boolean indicating if they are the dealer for the current round.
+    - `hand`: An instance of `Hand`.
 - **Methods:**
     - `addPoints(amount)`: Updates the player's total score.
+    - `clearHand()`: Clears the cards in the player's hand.
 
-### 2. `Hand.js`
-- **Purpose:** Extends a generic collection of cards with Cribbage-specific logic.
+### 2. `BotPlayer.js` (Extends `Player`)
+- **Purpose:** An automated participant that makes random decisions for game phases.
+- **Properties:**
+    - `isBot`: Set to `true`.
+- **Methods:**
+    - `makeDiscardDecision()`: Selects 2 cards to discard to the crib.
+    - `makePeggingDecision(currentTotal)`: Selects a valid card to play or returns `null` for "Go".
+
+### 3. `Hand.js`
+- **Purpose:** Manages a collection of cards for a player.
 - **Properties:**
     - `cards`: Array of `Card` objects.
 - **Methods:**
     - `addCard(card)`: Adds a card to the hand.
-    - `removeCard(card)`: Removes a card (for discarding to the crib or playing during pegging).
-    - `clear()`: Empties the hand for the next round.
+    - `removeCard(card)`: Removes a specific card (for discarding or pegging).
+    - `clear()`: Empties the hand.
 
-### 3. `Crib.js`
-- **Purpose:** A specialized version of `Hand` belonging to the dealer.
+### 4. `Crib.js` (Extends `Hand`)
+- **Purpose:** A specialized version of `Hand` belonging to the dealer for the round.
 - **Properties:**
     - `owner`: Reference to the `Player` who is currently dealing.
-- **Methods:**
-    - Inherits from `Hand`.
 
-### 4. `Scoring.js`
+### 5. `Scoring.js`
 - **Purpose:** Contains static methods to calculate scores based on Cribbage rules.
 - **Methods:**
-    - `countHand(hand, starterCard)`: Calculates total points for 15s, pairs, runs, flushes, and "nobs".
-    - `countPegging(currentPlayCards)`: Checks for points earned during the play phase (pairs, 15s, 31, runs).
-    - `checkFifteens(cards)`: Helper for finding combinations totaling 15.
-    - `checkRuns(cards)`: Helper for finding sequences.
-    - `checkPairs(cards)`: Helper for finding matching values.
+    - `countHand(cards, starterCard, isCrib)`: Calculates points for 15s, pairs, runs, flushes, and "nobs".
+    - `countPegging(playedCards, currentTotal)`: Calculates immediate points earned during the play phase.
+    - `getCardValue(card)`: Returns the numeric value (1-10) for scoring 15s.
 
-### 5. `Pegging.js`
-- **Purpose:** Manages the state of the "Play" (Pegging) phase.
+### 6. `Pegging.js`
+- **Purpose:** Manages the state and turns of the "Play" (Pegging) phase.
 - **Properties:**
     - `currentTotal`: Current running total (up to 31).
-    - `playedCards`: Sequence of cards played in the current "Go" cycle.
-    - `turn`: Which player's turn it is to peg.
+    - `playedCards`: Cards in the current "Go" cycle.
+    - `turnIndex`: Index of the player whose turn it is.
 - **Methods:**
-    - `playCard(player, card)`: Validates if a card can be played (total <= 31) and calculates immediate points.
-    - `resetCycle()`: Resets the total to 0 when 31 is reached or no one can play.
+    - `playCard(player, card)`: Validates and processes a card play, updating score and turn.
+    - `sayGo(player)`: Processes a player's "Go" action.
+    - `resetCycle()`: Resets for a new "Go" cycle.
 
-### 6. `GameState.js`
-- **Purpose:** The main engine that manages the game loop and transitions between phases.
+### 7. `GameState.js`
+- **Purpose:** The main engine that manages the game loop, transitions between phases, and emits state updates via callbacks.
 - **Phases:**
-    - `DEALING`: Shuffling and distributing cards.
-    - `DISCARDING`: Players choosing 2 cards for the crib.
-    - `CUTTING`: Revealing the starter card.
+    - `DEALING`: Cards are shuffled and dealt (6 cards each).
+    - `DISCARDING`: Players choose 2 cards for the crib.
+    - `CUTTING`: The deck is cut to reveal the starter card.
     - `PEGGING`: The play phase where players reach 31.
     - `COUNTING`: Scoring the hands and the crib.
-    - `GAME_OVER`: Checking for a winner (121 points).
-- **Methods:**
-    - `nextPhase()`: Handles the transition logic.
-    - `processMove(action)`: Accepts input from the UI and updates the game state.
+    - `GAME_OVER`: Final state when a player reaches 121 points.
+- **Event Callbacks:**
+    - `phaseChanged`, `cardsDealt`, `cardDiscarded`, `cardPlayed`, `pointsEarned`, `starterCardCut`.
+- **Key Methods:**
+    - `nextPhase()`: Handles phase transition logic.
+    - `checkBotTurns()`: Automatically triggers `BotPlayer` decisions when applicable.
+    - `discardToCrib(player, cards)` / `playPeggingCard(player, card)`: User interaction entry points.
 
-### 7. `Constants.js`
-- **Purpose:** Centralized configuration.
+### 8. `Constants.js`
 - **Values:**
     - `WINNING_SCORE`: 121.
     - `MAX_PEGGING_TOTAL`: 31.
     - `PHASES`: Object mapping phase names to strings.
+
+---
+
+## Frontend Component Overview
+Visual components located in `client/components/GameVisuals/` are used to render the game state in Phaser:
+- `CardVisual.js`: Represents an individual card with selection states.
+- `HandVisual.js`: Displays a player's hand and handles card selection.
+- `CribVisual.js`: Displays the crib area.
+- `PeggingAreaVisual.js`: Renders cards played during the pegging phase and the running total.
+- `StarterCardVisual.js`: Renders the cut starter card.

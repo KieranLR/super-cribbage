@@ -4,6 +4,12 @@ import { Boot } from './scenes/Boot';
 import { Game } from './scenes/Game';
 import { GameOver } from './scenes/GameOver';
 import { MainMenu } from './scenes/MainMenu';
+import { TestListScene } from './scenes/TestListScene';
+import { TestCardScene } from './scenes/TestCardScene';
+import { TestHandScene } from './scenes/TestHandScene';
+import { TestCribScene } from './scenes/TestCribScene';
+import { TestPeggingScene } from './scenes/TestPeggingScene';
+import { TestStarterScene } from './scenes/TestStarterScene';
 import { Preloader } from './scenes/Preloader';
 import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
 
@@ -35,7 +41,13 @@ import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
         Preloader,
         MainMenu,
         Game,
-        GameOver
+        GameOver,
+        TestListScene,
+        TestCardScene,
+        TestHandScene,
+        TestCribScene,
+        TestPeggingScene,
+        TestStarterScene
       ]
   };
 

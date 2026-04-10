@@ -1,0 +1,295 @@
+import { Deck } from './Deck.js';
+import { Player } from './Player.js';
+import { Crib } from './Crib.js';
+import { Pegging } from './Pegging.js';
+import { Scoring } from './Scoring.js';
+import { PHASES, WINNING_SCORE } from './Constants.js';
+
+export class GameState {
+    /**
+     * @param {Player[]} players - The players participating in the game.
+     * @param {Object} [options] - Configuration options for the game.
+     */
+    constructor(players, options = {}) {
+        this.players = players;
+        this.deck = new Deck();
+        this.phase = PHASES.DEALING;
+        this.dealerIndex = 0; // The first player in the list starts as the dealer
+        this.starterCard = null;
+        this.crib = null;
+        this.pegging = null;
+        this.winner = null;
+        this.callbacks = options.callbacks || {};
+
+        // Keep track of which players have discarded to the crib
+        this.discardedToCrib = players.map(() => false);
+        
+        // Ensure initial dealer is set
+        this.updateDealer();
+    }
+
+    /**
+     * Emits an event by calling a registered callback.
+     * @param {string} event 
+     * @param {any} data 
+     */
+    emit(event, data) {
+        if (this.callbacks[event]) {
+            this.callbacks[event](data);
+        }
+    }
+
+    /**
+     * Sets the isDealer flag on each player correctly.
+     */
+    updateDealer() {
+        this.players.forEach((player, index) => {
+            player.isDealer = (index === this.dealerIndex);
+        });
+        // Create a new Crib for the current dealer
+        this.crib = new Crib(this.players[this.dealerIndex]);
+    }
+
+    /**
+     * Moves to the next phase in the Cribbage game.
+     */
+    nextPhase() {
+        const oldPhase = this.phase;
+        switch (this.phase) {
+            case PHASES.DEALING:
+                this.phase = PHASES.DISCARDING;
+                break;
+            case PHASES.DISCARDING:
+                this.phase = PHASES.CUTTING;
+                this.cutStarterCard();
+                break;
+            case PHASES.CUTTING:
+                this.phase = PHASES.PEGGING;
+                this.startPegging();
+                break;
+            case PHASES.PEGGING:
+                this.phase = PHASES.COUNTING;
+                this.countHands();
+                break;
+            case PHASES.COUNTING:
+                if (this.checkWin()) {
+                    this.phase = PHASES.GAME_OVER;
+                } else {
+                    this.startNewRound();
+                    return; // startNewRound handles its own phase transitions/emits
+                }
+                break;
+            case PHASES.GAME_OVER:
+                // No more phases after game over
+                break;
+        }
+        
+        this.emit('phaseChanged', { phase: this.phase, oldPhase });
+        this.checkBotTurns();
+    }
+
+    /**
+     * Starts a new round of Cribbage.
+     */
+    startNewRound() {
+        // Rotate dealer
+        this.dealerIndex = (this.dealerIndex + 1) % this.players.length;
+        this.updateDealer();
+
+        // Reset game elements
+        this.deck.reset();
+        this.deck.shuffle();
+        this.starterCard = null;
+        this.pegging = null;
+        this.discardedToCrib = this.players.map(() => false);
+
+        // Clear player hands
+        this.players.forEach(p => p.clearHand());
+
+        const oldPhase = this.phase;
+        this.phase = PHASES.DEALING;
+        this.emit('phaseChanged', { phase: this.phase, oldPhase });
+        
+        this.dealCards();
+    }
+
+    /**
+     * Deals 6 cards to each player (standard 2-player Cribbage).
+     */
+    dealCards() {
+        if (this.phase !== PHASES.DEALING) return;
+
+        // Assuming 2 players for now as per common Cribbage rules.
+        // Each player gets 6 cards.
+        this.players.forEach(player => {
+            for (let i = 0; i < 6; i++) {
+                const card = this.deck.deal();
+                player.hand.addCard(card);
+            }
+        });
+
+        this.emit('cardsDealt', { players: this.players });
+        this.nextPhase(); // Move to DISCARDING
+    }
+
+    /**
+     * Allows a player to discard cards to the crib.
+     * @param {Player} player 
+     * @param {import('./Card.js').Card[]} cards - Cards to discard.
+     */
+    discardToCrib(player, cards) {
+        if (this.phase !== PHASES.DISCARDING) return;
+
+        const playerIndex = this.players.indexOf(player);
+        if (playerIndex === -1 || this.discardedToCrib[playerIndex]) return;
+
+        if (cards.length !== 2) {
+            throw new Error("Each player must discard 2 cards to the crib.");
+        }
+
+        cards.forEach(card => {
+            const removed = player.hand.removeCard(card);
+            if (removed) {
+                this.crib.addCard(removed);
+            }
+        });
+
+        this.discardedToCrib[playerIndex] = true;
+        this.emit('cardDiscarded', { player, cards });
+
+        // If everyone has discarded, move to next phase
+        if (this.discardedToCrib.every(d => d)) {
+            this.nextPhase();
+        } else {
+            this.checkBotTurns();
+        }
+    }
+
+    /**
+     * Cuts the deck to reveal the starter card.
+     */
+    cutStarterCard() {
+        this.starterCard = this.deck.deal();
+        this.emit('starterCardCut', { card: this.starterCard });
+
+        // If starter card is a Jack, dealer gets 2 points ("His Heels")
+        if (this.starterCard.value === 'Jack') {
+            const dealer = this.players[this.dealerIndex];
+            dealer.addPoints(2);
+            this.emit('pointsEarned', { player: dealer, points: 2, reason: 'His Heels' });
+            this.checkWin();
+        }
+    }
+
+    /**
+     * Initializes the pegging phase.
+     */
+    startPegging() {
+        // Player to the left of dealer starts pegging
+        const startingPlayerIndex = (this.dealerIndex + 1) % this.players.length;
+        this.pegging = new Pegging(this.players, startingPlayerIndex);
+    }
+
+    /**
+     * Processes a pegging move.
+     * @param {Player} player 
+     * @param {import('./Card.js').Card|null} card - Card to play, or null for "Go".
+     */
+    playPeggingCard(player, card) {
+        if (this.phase !== PHASES.PEGGING || !this.pegging) return;
+
+        let result;
+        if (card === null) {
+            this.pegging.sayGo(player);
+            result = { isGo: true, player };
+        } else {
+            result = this.pegging.playCard(player, card);
+            result.player = player;
+            result.card = card;
+            if (result.points > 0) {
+                this.emit('pointsEarned', { player, points: result.points, reason: 'Pegging' });
+            }
+        }
+
+        this.emit('cardPlayed', result);
+        this.checkWin();
+
+        if (this.pegging.isPhaseComplete()) {
+            this.nextPhase(); // Move to COUNTING
+        } else {
+            this.checkBotTurns();
+        }
+    }
+
+    /**
+     * Scores the hands and the crib at the end of the round.
+     */
+    countHands() {
+        // 1. Non-dealer(s) count their hands first
+        const nonDealerIndices = this.players
+            .map((_, index) => index)
+            .filter(index => index !== this.dealerIndex);
+
+        // In 2-player game, there's only one non-dealer.
+        // If we want to support more, we'd iterate.
+        nonDealerIndices.forEach(index => {
+            const player = this.players[index];
+            const score = Scoring.countHand(player.hand.cards, this.starterCard, false);
+            player.addPoints(score.total);
+            this.emit('pointsEarned', { player, points: score.total, reason: 'Hand Count', breakdown: score });
+            if (this.checkWin()) return;
+        });
+
+        if (this.winner) return;
+
+        // 2. Dealer counts their hand
+        const dealer = this.players[this.dealerIndex];
+        const handScore = Scoring.countHand(dealer.hand.cards, this.starterCard, false);
+        dealer.addPoints(handScore.total);
+        this.emit('pointsEarned', { player: dealer, points: handScore.total, reason: 'Hand Count', breakdown: handScore });
+        if (this.checkWin()) return;
+
+        // 3. Dealer counts the crib
+        const cribScore = Scoring.countHand(this.crib.cards, this.starterCard, true);
+        dealer.addPoints(cribScore.total);
+        this.emit('pointsEarned', { player: dealer, points: cribScore.total, reason: 'Crib Count', breakdown: cribScore });
+        this.checkWin();
+    }
+
+    /**
+     * Checks if it's a Bot's turn and triggers their move if so.
+     */
+    checkBotTurns() {
+        if (this.winner) return;
+
+        if (this.phase === PHASES.DISCARDING) {
+            this.players.forEach((player, index) => {
+                if (player.isBot && !this.discardedToCrib[index]) {
+                    const discards = player.makeDiscardDecision();
+                    this.discardToCrib(player, discards);
+                }
+            });
+        } else if (this.phase === PHASES.PEGGING && this.pegging) {
+            const currentPlayer = this.pegging.getCurrentPlayer();
+            if (currentPlayer.isBot) {
+                const card = currentPlayer.makePeggingDecision(this.pegging.currentTotal);
+                this.playPeggingCard(currentPlayer, card);
+            }
+        }
+    }
+
+    /**
+     * Checks if any player has reached the winning score.
+     * @returns {boolean}
+     */
+    checkWin() {
+        for (const player of this.players) {
+            if (player.score >= WINNING_SCORE) {
+                this.winner = player;
+                this.phase = PHASES.GAME_OVER;
+                return true;
+            }
+        }
+        return false;
+    }
+}
