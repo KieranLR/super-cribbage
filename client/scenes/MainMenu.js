@@ -52,7 +52,7 @@ export class MainMenu extends Scene {
         }));
 
         menu.add(createMenuButton(this, 'How to Play', () => {
-            console.log('How to Play');
+            this.scene.start('HowToPlay');
         }));
 
         menu.add(createMenuButton(this, 'Settings', () => {

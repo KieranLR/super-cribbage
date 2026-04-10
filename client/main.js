@@ -4,6 +4,7 @@ import { Boot } from './scenes/Boot';
 import { Game } from './scenes/Game';
 import { GameOver } from './scenes/GameOver';
 import { MainMenu } from './scenes/MainMenu';
+import { HowToPlay } from './scenes/HowToPlay';
 import { TestListScene } from './scenes/TestScenes/TestListScene';
 import { TestCardScene } from './scenes/TestScenes/TestCardScene';
 import { TestHandScene } from './scenes/TestScenes/TestHandScene';
@@ -43,6 +44,7 @@ import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
         Boot,
         Preloader,
         MainMenu,
+        HowToPlay,
         Game,
         GameOver,
         TestListScene,
