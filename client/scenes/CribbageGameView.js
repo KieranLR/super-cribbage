@@ -24,12 +24,20 @@ export class CribbageGameView {
     setupVisuals(width, height) {
         const showBotHand = settingsManager.get('showBotHand');
         // Hands
-        this.humanHandVisual = new HandVisual(this.scene, width / 2, height - 120, [], false, (v) => this.onCardClicked(v));
+        this.humanHandVisual = new HandVisual(
+            this.scene, 
+            width / 2, 
+            height - 120, 
+            [], 
+            false, 
+            (v) => this.onCardClicked(v),
+            (v, x, y) => this.onCardDropped(v, x, y)
+        );
         this.botHandVisual = new HandVisual(this.scene, width / 2, 100, [], !showBotHand);
 
         // Areas
         this.peggingAreaVisual = new PeggingAreaVisual(this.scene, width / 2, height / 2 - 40);
-        this.cribVisual = new CribVisual(this.scene, width - 100, height / 2);
+        this.cribVisual = new CribVisual(this.scene, width / 2, height / 2 + 100);
         this.starterCardVisual = new StarterCardVisual(this.scene, 100, height / 2);
 
         // HUD
@@ -43,6 +51,7 @@ export class CribbageGameView {
 
         // Callbacks
         this.cardClickedCallback = null;
+        this.cardDroppedCallback = null;
     }
 
     initializeScoreboard(players) {
@@ -55,8 +64,19 @@ export class CribbageGameView {
         }
     }
 
+    onCardDropped(cardVisual, x, y) {
+        if (this.cardDroppedCallback) {
+            return this.cardDroppedCallback(cardVisual, x, y);
+        }
+        return false;
+    }
+
     setCardClickedCallback(callback) {
         this.cardClickedCallback = callback;
+    }
+
+    setCardDroppedCallback(callback) {
+        this.cardDroppedCallback = callback;
     }
 
     updatePhase(phase, instruction) {
@@ -120,14 +140,9 @@ export class CribbageGameView {
             const posY = height / 2;
             
             // We'll create a special CardVisual that is face down
-            const cardVisual = new CardVisual(this.scene, posX, posY, { suit: 'Hidden', value: '?' });
+            const cardVisual = new CardVisual(this.scene, posX, posY, { suit: 'Hidden', value: '?' }, true);
             cardVisual.isStartingCutCard = true;
             cardVisual.cutIndex = i;
-            
-            // Override the look to be face down
-            cardVisual.suitText.setVisible(false);
-            cardVisual.valueText.setVisible(false);
-            cardVisual.bg.setFillStyle(0x2222aa); // Blue back
             
             cardVisual.on('pointerdown', () => {
                 this.onCardClicked(cardVisual);
@@ -142,16 +157,11 @@ export class CribbageGameView {
         if (visual) {
             // Update the visual with real card data
             visual.cardData = card;
-            visual.suitText.setText(visual.getSuitSymbol(card.suit)).setVisible(true);
-            visual.valueText.setText(visual.getShortValue(card.value)).setVisible(true);
-            visual.bg.setFillStyle(0xffffff);
+            visual.setFaceDown(false);
             
-            const color = (card.suit === 'Hearts' || card.suit === 'Diamonds') ? '#ff0000' : '#000000';
-            visual.suitText.setColor(color);
-            visual.valueText.setColor(color);
-
             // Move it towards the player who cut it
             const targetY = player.id === 'human' ? this.scene.scale.height - 300 : 300;
+            visual.baseY = targetY;
             this.scene.tweens.add({
                 targets: visual,
                 y: targetY,

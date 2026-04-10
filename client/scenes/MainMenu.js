@@ -20,8 +20,6 @@ export class MainMenu extends Scene {
         // Title
         const titleY = height * 0.22;
 
-        this.add.image(width * 0.5, titleY, 'logo').setScale(0.8);
-
         this.add.text(width * 0.5, titleY + 100, 'Super Cribbage', {
             fontFamily: 'Arial Black',
             fontSize: '64px',
@@ -43,13 +41,13 @@ export class MainMenu extends Scene {
             }
         });
 
-        menu.add(createMenuButton(this, 'Start Game', () => {
+        menu.add(createMenuButton(this, 'Start Easy Bot Game', () => {
             this.scene.start('Game');
         }));
 
-        menu.add(createMenuButton(this, 'Join Game', () => {
-            console.log('Join Game');
-        }));
+        // menu.add(createMenuButton(this, 'Join Game', () => {
+        //     console.log('Join Game');
+        // }));
 
         menu.add(createMenuButton(this, 'How to Play', () => {
             this.scene.start('HowToPlay');

@@ -8,6 +8,8 @@ export class DealingPhase extends Phase {
             this.view.startingCutCards.forEach(c => c.destroy());
             this.view.startingCutCards = [];
         }
+        // Clear crib visuals from previous round
+        this.view.cribVisual.setCards([]);
         this.view.updateScores(); // Ensure dealer mark is updated at start of round
         this.view.updatePhase(PHASES.DEALING, 'Dealing cards...');
     }

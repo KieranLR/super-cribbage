@@ -27,6 +27,7 @@ export class HumanVsBotController {
 
         this.subscribeToEvents();
         this.view.setCardClickedCallback((v) => this.onCardClicked(v));
+        this.view.setCardDroppedCallback((v, x, y) => this.onCardDropped(v, x, y));
     }
 
     subscribeToEvents() {
@@ -58,6 +59,16 @@ export class HumanVsBotController {
         if (currentPhase && currentPhase.onCardClicked) {
             currentPhase.onCardClicked(cardVisual);
         }
+    }
+
+    onCardDropped(cardVisual, x, y) {
+        if (this.isProcessingMove) return false;
+
+        const currentPhase = this.phases[this.gameState.phase];
+        if (currentPhase && currentPhase.onCardDropped) {
+            return currentPhase.onCardDropped(cardVisual, x, y);
+        }
+        return false;
     }
 
     onPhaseChanged({ phase, oldPhase }) {
