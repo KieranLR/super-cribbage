@@ -4,12 +4,14 @@ import { Boot } from './scenes/Boot';
 import { Game } from './scenes/Game';
 import { GameOver } from './scenes/GameOver';
 import { MainMenu } from './scenes/MainMenu';
-import { TestListScene } from './scenes/TestListScene';
-import { TestCardScene } from './scenes/TestCardScene';
-import { TestHandScene } from './scenes/TestHandScene';
-import { TestCribScene } from './scenes/TestCribScene';
-import { TestPeggingScene } from './scenes/TestPeggingScene';
-import { TestStarterScene } from './scenes/TestStarterScene';
+import { TestListScene } from './scenes/TestScenes/TestListScene';
+import { TestCardScene } from './scenes/TestScenes/TestCardScene';
+import { TestHandScene } from './scenes/TestScenes/TestHandScene';
+import { TestCribScene } from './scenes/TestScenes/TestCribScene';
+import { TestPeggingScene } from './scenes/TestScenes/TestPeggingScene';
+import { TestStarterScene } from './scenes/TestScenes/TestStarterScene';
+import { TestButtonScene } from './scenes/TestScenes/TestButtonScene';
+import { TestPeggingSceneComplex } from './scenes/TestScenes/TestPeggingSceneComplex';
 import { Preloader } from './scenes/Preloader';
 import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
 
@@ -47,7 +49,9 @@ import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
         TestHandScene,
         TestCribScene,
         TestPeggingScene,
-        TestStarterScene
+        TestStarterScene,
+        TestButtonScene,
+        TestPeggingSceneComplex
       ]
   };
 

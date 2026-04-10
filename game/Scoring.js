@@ -137,6 +137,7 @@ export class Scoring {
      * @returns {number} flush points
      */
     static checkFlush(handCards, starterCard, isCrib) {
+        if (!handCards || handCards.length === 0) return 0;
         const firstSuit = handCards[0].suit;
         const allHandSame = handCards.every(c => c.suit === firstSuit);
         

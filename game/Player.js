@@ -11,6 +11,7 @@ export class Player {
         this.score = 0;
         this.isDealer = false;
         this.hand = new Hand();
+        this.handForCounting = []; // Stores the 4 cards after discarding for final scoring
     }
 
     /**
@@ -26,5 +27,6 @@ export class Player {
      */
     clearHand() {
         this.hand.clear();
+        this.handForCounting = [];
     }
 }

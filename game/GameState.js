@@ -34,6 +34,7 @@ export class GameState {
      * @param {any} data 
      */
     emit(event, data) {
+        //console.log(`[GameState] Emitting ${event}:`, data);
         if (this.callbacks[event]) {
             this.callbacks[event](data);
         }
@@ -55,6 +56,7 @@ export class GameState {
      */
     nextPhase() {
         const oldPhase = this.phase;
+        //console.log(`[GameState] Transitioning from ${oldPhase}...`);
         switch (this.phase) {
             case PHASES.DEALING:
                 this.phase = PHASES.DISCARDING;
@@ -85,6 +87,7 @@ export class GameState {
         }
         
         this.emit('phaseChanged', { phase: this.phase, oldPhase });
+        //console.log(`[GameState] Phase is now ${this.phase}`);
         this.checkBotTurns();
     }
 
@@ -92,6 +95,7 @@ export class GameState {
      * Starts a new round of Cribbage.
      */
     startNewRound() {
+        //console.log('[GameState] Starting New Round');
         // Rotate dealer
         this.dealerIndex = (this.dealerIndex + 1) % this.players.length;
         this.updateDealer();
@@ -117,6 +121,7 @@ export class GameState {
      * Deals 6 cards to each player (standard 2-player Cribbage).
      */
     dealCards() {
+        //console.log('[GameState] Dealing cards');
         if (this.phase !== PHASES.DEALING) return;
 
         // Assuming 2 players for now as per common Cribbage rules.
@@ -154,6 +159,9 @@ export class GameState {
             }
         });
 
+        // Store the remaining 4 cards for final counting after pegging removes them
+        player.handForCounting = [...player.hand.cards];
+
         this.discardedToCrib[playerIndex] = true;
         this.emit('cardDiscarded', { player, cards });
 
@@ -170,24 +178,35 @@ export class GameState {
      */
     cutStarterCard() {
         this.starterCard = this.deck.deal();
+        //console.log(`[GameState] Starter card cut: ${this.starterCard.rank} of ${this.starterCard.suit}`);
         this.emit('starterCardCut', { card: this.starterCard });
 
         // If starter card is a Jack, dealer gets 2 points ("His Heels")
-        if (this.starterCard.value === 'Jack') {
+        if (this.starterCard.rank === 'Jack') {
             const dealer = this.players[this.dealerIndex];
             dealer.addPoints(2);
             this.emit('pointsEarned', { player: dealer, points: 2, reason: 'His Heels' });
             this.checkWin();
         }
+
+        // Wait a bit for the player to see the starter card before moving to pegging
+        setTimeout(() => {
+            if (this.phase === PHASES.CUTTING) {
+                //console.log('[GameState] Moving from CUTTING to PEGGING');
+                this.nextPhase();
+            }
+        }, 1500);
     }
 
     /**
      * Initializes the pegging phase.
      */
     startPegging() {
+        //console.log('[GameState] Starting Pegging Phase');
         // Player to the left of dealer starts pegging
         const startingPlayerIndex = (this.dealerIndex + 1) % this.players.length;
         this.pegging = new Pegging(this.players, startingPlayerIndex);
+        this.checkBotTurns();
     }
 
     /**
@@ -198,6 +217,10 @@ export class GameState {
     playPeggingCard(player, card) {
         if (this.phase !== PHASES.PEGGING || !this.pegging) return;
 
+        // Store a copy of the card before it's removed from hand if we're counting later
+        // Actually, we need to keep track of the original 4 cards each player had after discarding.
+        // Let's add a property to the player to hold their hand for counting.
+        
         let result;
         if (card === null) {
             this.pegging.sayGo(player);
@@ -225,6 +248,7 @@ export class GameState {
      * Scores the hands and the crib at the end of the round.
      */
     countHands() {
+        //console.log('[GameState] Counting Hands');
         // 1. Non-dealer(s) count their hands first
         const nonDealerIndices = this.players
             .map((_, index) => index)
@@ -234,7 +258,7 @@ export class GameState {
         // If we want to support more, we'd iterate.
         nonDealerIndices.forEach(index => {
             const player = this.players[index];
-            const score = Scoring.countHand(player.hand.cards, this.starterCard, false);
+            const score = Scoring.countHand(player.handForCounting, this.starterCard, false);
             player.addPoints(score.total);
             this.emit('pointsEarned', { player, points: score.total, reason: 'Hand Count', breakdown: score });
             if (this.checkWin()) return;
@@ -244,7 +268,7 @@ export class GameState {
 
         // 2. Dealer counts their hand
         const dealer = this.players[this.dealerIndex];
-        const handScore = Scoring.countHand(dealer.hand.cards, this.starterCard, false);
+        const handScore = Scoring.countHand(dealer.handForCounting, this.starterCard, false);
         dealer.addPoints(handScore.total);
         this.emit('pointsEarned', { player: dealer, points: handScore.total, reason: 'Hand Count', breakdown: handScore });
         if (this.checkWin()) return;
@@ -265,15 +289,28 @@ export class GameState {
         if (this.phase === PHASES.DISCARDING) {
             this.players.forEach((player, index) => {
                 if (player.isBot && !this.discardedToCrib[index]) {
-                    const discards = player.makeDiscardDecision();
-                    this.discardToCrib(player, discards);
+                    //console.log(`[GameState] Bot ${player.name} is deciding what to discard`);
+                    // Small delay for bot thinking
+                    setTimeout(() => {
+                        if (this.phase !== PHASES.DISCARDING) return;
+                        const discards = player.makeDiscardDecision();
+                        //console.log(`[GameState] Bot ${player.name} discarded:`, discards);
+                        this.discardToCrib(player, discards);
+                    }, 1000);
                 }
             });
         } else if (this.phase === PHASES.PEGGING && this.pegging) {
             const currentPlayer = this.pegging.getCurrentPlayer();
             if (currentPlayer.isBot) {
-                const card = currentPlayer.makePeggingDecision(this.pegging.currentTotal);
-                this.playPeggingCard(currentPlayer, card);
+                //console.log(`[GameState] Bot ${currentPlayer.name}'s turn in Pegging`);
+                // Small delay for bot thinking
+                setTimeout(() => {
+                    if (this.phase !== PHASES.PEGGING || !this.pegging) return;
+                    if (this.pegging.getCurrentPlayer() !== currentPlayer) return;
+                    const card = currentPlayer.makePeggingDecision(this.pegging.currentTotal);
+                    //console.log(`[GameState] Bot ${currentPlayer.name} decided to play:`, card ? card.rank + ' of ' + card.suit : 'Go');
+                    this.playPeggingCard(currentPlayer, card);
+                }, 1000);
             }
         }
     }
@@ -291,5 +328,42 @@ export class GameState {
             }
         }
         return false;
+    }
+
+    /**
+     * Returns a public representation of the game state suitable for UI.
+     * @returns {Object}
+     */
+    getPublicState() {
+        return {
+            phase: this.phase,
+            players: this.players.map(player => ({
+                id: player.id,
+                name: player.name,
+                score: player.score,
+                isDealer: player.isDealer,
+                handSize: player.hand.cards.length,
+                hand: [...player.hand.cards] // For now, we'll return the full hand for UI
+            })),
+            dealerIndex: this.dealerIndex,
+            starterCard: this.starterCard,
+            cribSize: this.crib ? this.crib.cards.length : 0,
+            crib: this.crib ? [...this.crib.cards] : [], // UI might need to see the crib at certain phases
+            pegging: this.pegging ? {
+                currentTotal: this.pegging.currentTotal,
+                playedCards: [...this.pegging.playedCards],
+                allPlayedCards: [...this.pegging.allPlayedCards],
+                turnIndex: this.pegging.turnIndex,
+                lastPlayerToPlay: this.pegging.lastPlayerToPlay ? {
+                    id: this.pegging.lastPlayerToPlay.id,
+                    name: this.pegging.lastPlayerToPlay.name
+                } : null
+            } : null,
+            winner: this.winner ? {
+                id: this.winner.id,
+                name: this.winner.name,
+                score: this.winner.score
+            } : null
+        };
     }
 }

@@ -8,10 +8,11 @@ export class HandVisual extends Phaser.GameObjects.Container {
      * @param {import('../../../game/Card.js').Card[]} cards
      * @param {boolean} isBot
      */
-    constructor(scene, x, y, cards = [], isBot = false) {
+    constructor(scene, x, y, cards = [], isBot = false, onCardClick = null) {
         super(scene, x, y);
         this.isBot = isBot;
         this.cardVisuals = [];
+        this.onCardClick = onCardClick;
         this.setCards(cards);
         scene.add.existing(this);
     }
@@ -32,6 +33,13 @@ export class HandVisual extends Phaser.GameObjects.Container {
                 // If it's a bot, we might want to hide the cards normally, 
                 // but for testing/visualizing we'll just show them or grey them out
                 visual.setAlpha(0.7);
+            } else {
+                // For human players, make cards interactive if onCardClick is provided
+                if (this.onCardClick) {
+                    visual.on('pointerdown', () => {
+                        this.onCardClick(visual);
+                    });
+                }
             }
 
             this.add(visual);

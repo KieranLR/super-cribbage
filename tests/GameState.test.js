@@ -1,17 +1,23 @@
 import { Player } from '../game/Player.js';
 import { GameState } from '../game/GameState.js';
 import { PHASES } from '../game/Constants.js';
+import { jest } from '@jest/globals';
 
 describe('GameState', () => {
     let players;
     let gameState;
 
     beforeEach(() => {
+        jest.useFakeTimers();
         players = [
             new Player('1', 'Alice'),
             new Player('2', 'Bob')
         ];
         gameState = new GameState(players);
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
     test('Initial state', () => {

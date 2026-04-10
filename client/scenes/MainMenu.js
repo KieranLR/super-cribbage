@@ -45,23 +45,23 @@ export class MainMenu extends Scene {
 
         menu.add(createMenuButton(this, 'Start Game', () => {
             this.scene.start('Game');
-        }), {expand: true});
+        }));
 
         menu.add(createMenuButton(this, 'Join Game', () => {
             console.log('Join Game');
-        }), {expand: true});
+        }));
 
         menu.add(createMenuButton(this, 'How to Play', () => {
             console.log('How to Play');
-        }), {expand: true});
+        }));
 
         menu.add(createMenuButton(this, 'Settings', () => {
             console.log('Settings');
-        }), {expand: true});
+        }));
 
         menu.add(createMenuButton(this, 'Test Visuals', () => {
             this.scene.start('TestListScene');
-        }), {expand: true});
+        }));
 
         menu.layout();
     }

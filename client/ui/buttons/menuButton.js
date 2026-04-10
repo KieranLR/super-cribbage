@@ -11,19 +11,8 @@ export const createMenuButton = (scene, label, callback) => {
         color: '#ffffff'
     }).setOrigin(0.5);
 
-    const button = scene.rexUI.add.label({
-        width,
-        height,
-        background,
-        text,
-        align: 'center',
-        space: {
-            left: 20,
-            right: 20,
-            top: 10,
-            bottom: 10
-        }
-    });
+    const button = scene.add.container(0, 0, [background, text]);
+    button.setSize(width, height);
 
     button.setInteractive({ useHandCursor: true });
 
