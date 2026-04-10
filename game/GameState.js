@@ -49,6 +49,7 @@ export class GameState {
         });
         // Create a new Crib for the current dealer
         this.crib = new Crib(this.players[this.dealerIndex]);
+        this.emit('dealerChanged', { dealerIndex: this.dealerIndex, dealer: this.players[this.dealerIndex] });
     }
 
     /**
@@ -56,7 +57,8 @@ export class GameState {
      */
     nextPhase() {
         const oldPhase = this.phase;
-        //console.log(`[GameState] Transitioning from ${oldPhase}...`);
+        console.log(`[GameState] Transitioning from ${oldPhase}...`);
+        console.log(this.getPublicState());
         switch (this.phase) {
             case PHASES.DEALING:
                 this.phase = PHASES.DISCARDING;
@@ -71,7 +73,8 @@ export class GameState {
                 break;
             case PHASES.PEGGING:
                 this.phase = PHASES.COUNTING;
-                this.countHands();
+                // Hand counting is now handled by the controller via countPlayerHand and countCrib
+                // this.countHands(); 
                 break;
             case PHASES.COUNTING:
                 if (this.checkWin()) {
@@ -223,11 +226,9 @@ export class GameState {
         
         let result;
         if (card === null) {
-            this.pegging.sayGo(player);
-            result = { isGo: true, player };
+            result = this.pegging.sayGo(player);
         } else {
             result = this.pegging.playCard(player, card);
-            result.player = player;
             result.card = card;
             if (result.points > 0) {
                 this.emit('pointsEarned', { player, points: result.points, reason: 'Pegging' });
@@ -258,26 +259,40 @@ export class GameState {
         // If we want to support more, we'd iterate.
         nonDealerIndices.forEach(index => {
             const player = this.players[index];
-            const score = Scoring.countHand(player.handForCounting, this.starterCard, false);
-            player.addPoints(score.total);
-            this.emit('pointsEarned', { player, points: score.total, reason: 'Hand Count', breakdown: score });
-            if (this.checkWin()) return;
+            this.countPlayerHand(player);
+            if (this.winner) return;
         });
 
         if (this.winner) return;
 
         // 2. Dealer counts their hand
         const dealer = this.players[this.dealerIndex];
-        const handScore = Scoring.countHand(dealer.handForCounting, this.starterCard, false);
-        dealer.addPoints(handScore.total);
-        this.emit('pointsEarned', { player: dealer, points: handScore.total, reason: 'Hand Count', breakdown: handScore });
-        if (this.checkWin()) return;
+        this.countPlayerHand(dealer);
+        if (this.winner) return;
 
         // 3. Dealer counts the crib
+        this.countCrib();
+        this.checkWin();
+    }
+
+    /**
+     * Counts a specific player's hand.
+     * @param {Player} player 
+     */
+    countPlayerHand(player) {
+        const score = Scoring.countHand(player.handForCounting, this.starterCard, false);
+        player.addPoints(score.total);
+        this.emit('pointsEarned', { player, points: score.total, reason: 'Hand Count', breakdown: score });
+    }
+
+    /**
+     * Counts the crib.
+     */
+    countCrib() {
+        const dealer = this.players[this.dealerIndex];
         const cribScore = Scoring.countHand(this.crib.cards, this.starterCard, true);
         dealer.addPoints(cribScore.total);
         this.emit('pointsEarned', { player: dealer, points: cribScore.total, reason: 'Crib Count', breakdown: cribScore });
-        this.checkWin();
     }
 
     /**
@@ -301,16 +316,20 @@ export class GameState {
             });
         } else if (this.phase === PHASES.PEGGING && this.pegging) {
             const currentPlayer = this.pegging.getCurrentPlayer();
-            if (currentPlayer.isBot) {
-                //console.log(`[GameState] Bot ${currentPlayer.name}'s turn in Pegging`);
-                // Small delay for bot thinking
+            if (currentPlayer && currentPlayer.isBot) {
+                // If the total was just reset to 0, or someone said Go, we should wait longer
+                // for the UI to display the last card/points.
+                const isNewCycle = this.pegging.currentTotal === 0;
+                const delay = isNewCycle ? 2500 : 1500;
+                
+                //console.log(`[GameState] Bot ${currentPlayer.name}'s turn in Pegging. Delay: ${delay}`);
                 setTimeout(() => {
                     if (this.phase !== PHASES.PEGGING || !this.pegging) return;
                     if (this.pegging.getCurrentPlayer() !== currentPlayer) return;
                     const card = currentPlayer.makePeggingDecision(this.pegging.currentTotal);
                     //console.log(`[GameState] Bot ${currentPlayer.name} decided to play:`, card ? card.rank + ' of ' + card.suit : 'Go');
                     this.playPeggingCard(currentPlayer, card);
-                }, 1000);
+                }, delay);
             }
         }
     }
@@ -349,7 +368,7 @@ export class GameState {
             starterCard: this.starterCard,
             cribSize: this.crib ? this.crib.cards.length : 0,
             crib: this.crib ? [...this.crib.cards] : [], // UI might need to see the crib at certain phases
-            pegging: this.pegging ? {
+            pegging: (this.pegging && typeof this.pegging.isPhaseComplete === 'function') ? {
                 currentTotal: this.pegging.currentTotal,
                 playedCards: [...this.pegging.playedCards],
                 allPlayedCards: [...this.pegging.allPlayedCards],

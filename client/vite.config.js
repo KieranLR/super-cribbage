@@ -2,12 +2,14 @@ import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
 
+const tunnelHost = process.env.VITE_TUNNEL_HOST;
 export default defineConfig({
   envDir: '../',
   server: {
-    allowedHosts: [
-      'basics-forums-acrylic-theories.trycloudflare.com',
-    ],
+    allowedHosts: tunnelHost
+        ? ['localhost', '127.0.0.1', tunnelHost]
+        : ['localhost', '127.0.0.1'],
+
     proxy: {
       '/.proxy/assets': {
         target: 'http://localhost:5173/assets',
@@ -22,9 +24,13 @@ export default defineConfig({
         ws: true,
       },
     },
-    hmr: {
-      clientPort: 443,
-    },
+    hmr: tunnelHost
+        ? {
+          protocol: 'wss',
+          host: tunnelHost,
+          clientPort: 443,
+        }
+        : undefined,
   },
 });
 

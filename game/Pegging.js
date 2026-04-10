@@ -25,7 +25,7 @@ export class Pegging {
      */
     playCard(player, card) {
         if (player !== this.getCurrentPlayer()) {
-            throw new Error("It is not this player's turn.");
+            throw new Error(`It is not ${player.name}'s turn. Current turn: ${this.getCurrentPlayer().name}`);
         }
 
         const cardValue = Scoring.getCardValue(card);
@@ -47,27 +47,38 @@ export class Pegging {
         // Update player card status
         this.playerHasCards[this.turnIndex] = player.hand.cards.length > 0;
 
+        // Capture cards for the result BEFORE reset
+        const cardsAtPlay = [...this.playedCards];
+        const totalAtPlay = this.currentTotal;
+
         // Check if cycle is over (e.g. 31)
+        let isGo = false;
         if (this.currentTotal === MAX_PEGGING_TOTAL) {
             this.handleCycleEnd();
+            isGo = true;
         } else {
-            this.nextTurn();
-            // If the next player cannot play and everyone else also cannot, the cycle ends
+            // Check if anyone else can play
             if (this.isCycleComplete()) {
                 this.handleCycleEnd();
+                isGo = true;
+            } else {
+                this.nextTurn();
             }
         }
 
         return {
+            player,
             points,
-            total: this.currentTotal,
-            isGo: this.isCycleComplete()
+            total: totalAtPlay,
+            isGo,
+            cardsAtPlay
         };
     }
 
     /**
      * Current player says "Go".
      * @param {import('./Player.js').Player} player
+     * @returns {Object} Result
      */
     sayGo(player) {
         if (player !== this.getCurrentPlayer()) {
@@ -80,15 +91,25 @@ export class Pegging {
 
         this.playerCanPlay[this.turnIndex] = false;
         
+        const cardsAtPlay = [...this.playedCards];
+        const totalAtPlay = this.currentTotal;
+
+        let isGo = false;
         // If everyone has said "Go", or no one can play anymore
         if (this.isCycleComplete()) {
-            // Last player to play gets a point for the "Go" (or 2 for 31)
-            // But 31 is already handled by countPegging.
-            // A simple "Go" is 1 point.
             this.handleCycleEnd();
+            isGo = true;
         } else {
             this.nextTurn();
         }
+
+        return {
+            player,
+            points: 0,
+            isGo,
+            total: totalAtPlay,
+            cardsAtPlay
+        };
     }
 
     /**
@@ -150,13 +171,19 @@ export class Pegging {
         this.currentTotal = 0;
         this.playedCards = [];
         this.playerCanPlay = this.players.map(() => true);
-        this.lastPlayerToPlay = null;
         
         // Update playerHasCards in case someone ran out
         this.playerHasCards = this.players.map(p => p.hand.cards.length > 0);
         
         // The player who would have played next starts the next cycle
+        // But we MUST use the player who was last to play as the reference.
+        // In Cribbage, the person to the left of the last player starts.
+        if (this.lastPlayerToPlay) {
+            this.turnIndex = this.players.indexOf(this.lastPlayerToPlay);
+        }
         this.nextTurn();
+        
+        this.lastPlayerToPlay = null;
     }
 
     /**
