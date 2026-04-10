@@ -62,7 +62,6 @@ export class GameState {
      */
     nextPhase() {
         const oldPhase = this.phase;
-        console.log(`[GameState] Transitioning from ${oldPhase}...`);
         switch (this.phase) {
             case PHASES.STARTING_CUT:
                 this.startNewRound();
@@ -92,6 +91,7 @@ export class GameState {
                 }
                 break;
             case PHASES.GAME_OVER:
+                console.log("GAME OVER!!!");
                 // No more phases after game over
                 break;
         }
@@ -437,9 +437,12 @@ export class GameState {
      * @returns {boolean}
      */
     checkWin() {
+        console.log('checking for win');
         for (const player of this.players) {
             if (player.score >= WINNING_SCORE) {
+                console.log("WINNNNBER");
                 this.winner = player;
+                this.emit('phaseChanged', { phase: PHASES.GAME_OVER, oldPhase: this.phase });
                 this.phase = PHASES.GAME_OVER;
                 return true;
             }
