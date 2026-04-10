@@ -13,8 +13,8 @@ export class GameState {
     constructor(players, options = {}) {
         this.players = players;
         this.deck = new Deck();
-        this.phase = PHASES.DEALING;
-        this.dealerIndex = 0; // The first player in the list starts as the dealer
+        this.phase = PHASES.STARTING_CUT;
+        this.dealerIndex = -1; // No dealer yet
         this.starterCard = null;
         this.crib = null;
         this.pegging = null;
@@ -23,6 +23,9 @@ export class GameState {
 
         // Keep track of which players have discarded to the crib
         this.discardedToCrib = players.map(() => false);
+        
+        // Tracking cuts for the starting cut phase
+        this.startingCuts = players.map(() => null);
         
         // Ensure initial dealer is set
         this.updateDealer();
@@ -48,8 +51,10 @@ export class GameState {
             player.isDealer = (index === this.dealerIndex);
         });
         // Create a new Crib for the current dealer
-        this.crib = new Crib(this.players[this.dealerIndex]);
-        this.emit('dealerChanged', { dealerIndex: this.dealerIndex, dealer: this.players[this.dealerIndex] });
+        if (this.dealerIndex !== -1) {
+            this.crib = new Crib(this.players[this.dealerIndex]);
+            this.emit('dealerChanged', { dealerIndex: this.dealerIndex, dealer: this.players[this.dealerIndex] });
+        }
     }
 
     /**
@@ -58,8 +63,10 @@ export class GameState {
     nextPhase() {
         const oldPhase = this.phase;
         console.log(`[GameState] Transitioning from ${oldPhase}...`);
-        console.log(this.getPublicState());
         switch (this.phase) {
+            case PHASES.STARTING_CUT:
+                this.startNewRound();
+                return; // startNewRound handles its own phase transitions/emits
             case PHASES.DEALING:
                 this.phase = PHASES.DISCARDING;
                 break;
@@ -99,8 +106,13 @@ export class GameState {
      */
     startNewRound() {
         //console.log('[GameState] Starting New Round');
-        // Rotate dealer
-        this.dealerIndex = (this.dealerIndex + 1) % this.players.length;
+        // Rotate dealer if it's not the very first round after starting cut
+        if (this.phase !== PHASES.STARTING_CUT && this.phase !== PHASES.GAME_OVER) {
+            this.dealerIndex = (this.dealerIndex + 1) % this.players.length;
+        }
+        
+        if (this.dealerIndex === -1) this.dealerIndex = 0; // Fallback
+        
         this.updateDealer();
 
         // Reset game elements
@@ -118,6 +130,70 @@ export class GameState {
         this.emit('phaseChanged', { phase: this.phase, oldPhase });
         
         this.dealCards();
+    }
+
+    /**
+     * Allows a player to cut a card to determine the first dealer.
+     * @param {Player} player 
+     * @param {number} cardIndex - The index of the card in the deck to cut.
+     */
+    cutForDealer(player, cardIndex) {
+        if (this.phase !== PHASES.STARTING_CUT) return;
+
+        const playerIndex = this.players.indexOf(player);
+        if (playerIndex === -1 || this.startingCuts[playerIndex]) return;
+
+        // Pick a card from the deck.
+        const card = this.deck.cards.splice(cardIndex % this.deck.cards.length, 1)[0];
+        this.startingCuts[playerIndex] = card;
+
+        this.emit('startingCardCut', { player, card, cardIndex });
+
+        // If everyone has cut, determine the dealer
+        console.log(this.startingCuts);
+        if (this.startingCuts.every(c => c !== null)) {
+            setTimeout(() => {
+                this.determineFirstDealer();
+            }, 2000);
+        } else {
+            this.checkBotTurns();
+        }
+    }
+
+    /**
+     * Determines who the first dealer is based on the starting cuts.
+     */
+    determineFirstDealer() {
+        // Lowest card deals. Ace is low.
+        let lowestRank = 15;
+        let dealerIdx = 0;
+        let tie = false;
+
+        this.startingCuts.forEach((card, index) => {
+            const rank = card.getRank();
+            if (rank < lowestRank) {
+                lowestRank = rank;
+                dealerIdx = index;
+                tie = false;
+            } else if (rank === lowestRank) {
+                tie = true;
+            }
+        });
+
+        if (tie) {
+            // If there's a tie for lowest, everyone cuts again
+            this.startingCuts = this.players.map(() => null);
+            this.deck.reset();
+            this.deck.shuffle();
+            this.emit('startingCutTie', {});
+            this.checkBotTurns();
+        } else {
+            this.dealerIndex = dealerIdx;
+            this.emit('firstDealerDetermined', { dealer: this.players[this.dealerIndex] });
+            setTimeout(() => {
+                this.nextPhase();
+            }, 2000);
+        }
     }
 
     /**
@@ -313,7 +389,17 @@ export class GameState {
     checkBotTurns() {
         if (this.winner) return;
 
-        if (this.phase === PHASES.DISCARDING) {
+        if (this.phase === PHASES.STARTING_CUT) {
+            this.players.forEach((player, index) => {
+                if (player.isBot && !this.startingCuts[index]) {
+                    setTimeout(() => {
+                        if (this.phase !== PHASES.STARTING_CUT) return;
+                        const cardIndex = Math.floor(Math.random() * this.deck.cards.length);
+                        this.cutForDealer(player, cardIndex);
+                    }, 1000);
+                }
+            });
+        } else if (this.phase === PHASES.DISCARDING) {
             this.players.forEach((player, index) => {
                 if (player.isBot && !this.discardedToCrib[index]) {
                     //console.log(`[GameState] Bot ${player.name} is deciding what to discard`);

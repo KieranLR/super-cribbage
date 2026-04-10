@@ -22,14 +22,16 @@ describe('GameState', () => {
 
     test('Initial state', () => {
         expect(gameState.players.length).toBe(2);
-        expect(gameState.phase).toBe(PHASES.DEALING);
-        expect(gameState.dealerIndex).toBe(0);
-        expect(players[0].isDealer).toBe(true);
-        expect(players[1].isDealer).toBe(false);
-        expect(gameState.crib.owner).toBe(players[0]);
+        expect(gameState.phase).toBe(PHASES.STARTING_CUT);
+        expect(gameState.dealerIndex).toBe(-1);
     });
 
     test('Dealing phase', () => {
+        // Skip Starting Cut
+        gameState.dealerIndex = 0;
+        gameState.updateDealer();
+        gameState.phase = PHASES.DEALING;
+        
         gameState.dealCards();
         expect(players[0].hand.cards.length).toBe(6);
         expect(players[1].hand.cards.length).toBe(6);
@@ -37,6 +39,11 @@ describe('GameState', () => {
     });
 
     test('Discarding phase', () => {
+        // Skip Starting Cut
+        gameState.dealerIndex = 0;
+        gameState.updateDealer();
+        gameState.phase = PHASES.DEALING;
+        
         gameState.dealCards(); // Now in DISCARDING phase
         
         const aliceCards = [players[0].hand.cards[0], players[0].hand.cards[1]];
@@ -54,6 +61,8 @@ describe('GameState', () => {
     });
 
     test('Cutting phase (via nextPhase)', () => {
+        gameState.dealerIndex = 0;
+        gameState.updateDealer();
         gameState.phase = PHASES.DISCARDING;
         gameState.discardedToCrib = [true, true];
         gameState.nextPhase(); // Should go to CUTTING, then CUTTING logic calls nextPhase if automated? 
@@ -65,6 +74,8 @@ describe('GameState', () => {
     });
 
     test('Pegging initialization', () => {
+        gameState.dealerIndex = 0;
+        gameState.updateDealer();
         gameState.phase = PHASES.CUTTING;
         gameState.nextPhase(); // Move to PEGGING
         
@@ -83,7 +94,28 @@ describe('GameState', () => {
         expect(gameState.phase).toBe(PHASES.GAME_OVER);
     });
 
+    test('Starting Cut transition to first dealer', () => {
+        // Mock starting cuts
+        gameState.startingCuts = [
+            { getRank: () => 5 }, // Alice cuts 5
+            { getRank: () => 10 } // Bob cuts 10
+        ];
+        
+        gameState.determineFirstDealer();
+        
+        // Wait for 2000ms timeout in determineFirstDealer
+        jest.advanceTimersByTime(2000);
+        
+        expect(gameState.dealerIndex).toBe(0); // Alice has lower card
+        expect(players[0].isDealer).toBe(true);
+        expect(gameState.phase).toBe(PHASES.DISCARDING); // DEALING automatically transitions to DISCARDING
+        expect(players[0].hand.cards.length).toBe(6);
+    });
+
     test('New round rotation', () => {
+        gameState.dealerIndex = 0;
+        gameState.updateDealer();
+        gameState.phase = PHASES.COUNTING; // Set to COUNTING so startNewRound rotates
         gameState.startNewRound();
         expect(gameState.dealerIndex).toBe(1);
         expect(players[1].isDealer).toBe(true);

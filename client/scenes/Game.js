@@ -18,8 +18,6 @@ export class Game extends Scene {
 
         // Initialize GameState
         this.gameState = new GameState(this.players);
-        this.gameState.dealerIndex = 0; // Set to 1 so startNewRound rotates back to 0
-        this.gameState.updateDealer();
 
         // Initialize View
         this.view = new CribbageGameView(this);
@@ -29,6 +27,7 @@ export class Game extends Scene {
         this.controller = new HumanVsBotController(this.gameState, this.view, this.humanPlayer, this.botPlayer);
 
         // Start Game
-        this.gameState.startNewRound();
+        // For Starting Cut, we don't call startNewRound yet, we just trigger the check for bots
+        this.controller.onPhaseChanged({ phase: this.gameState.phase, oldPhase: null });
     }
 }

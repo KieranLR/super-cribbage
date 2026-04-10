@@ -15,6 +15,11 @@ describe('GameState.getPublicState()', () => {
     });
 
     test('Returns correct structure in DEALING phase', () => {
+        // Skip Starting Cut
+        gameState.dealerIndex = 0;
+        gameState.updateDealer();
+        gameState.phase = PHASES.DEALING;
+        
         const publicState = gameState.getPublicState();
         expect(publicState).toHaveProperty('phase', PHASES.DEALING);
         expect(publicState).toHaveProperty('players');
@@ -35,6 +40,11 @@ describe('GameState.getPublicState()', () => {
     });
 
     test('Returns correct structure after cards are dealt', () => {
+        // Skip Starting Cut
+        gameState.dealerIndex = 0;
+        gameState.updateDealer();
+        gameState.phase = PHASES.DEALING;
+        
         gameState.dealCards();
         const publicState = gameState.getPublicState();
         expect(publicState.phase).toBe(PHASES.DISCARDING);
@@ -44,6 +54,11 @@ describe('GameState.getPublicState()', () => {
     });
 
     test('Returns correct structure in PEGGING phase', () => {
+        // Skip Starting Cut
+        gameState.dealerIndex = 0;
+        gameState.updateDealer();
+        gameState.phase = PHASES.DEALING;
+        
         gameState.dealCards();
         const aliceCards = [players[0].hand.cards[0], players[0].hand.cards[1]];
         const bobCards = [players[1].hand.cards[0], players[1].hand.cards[1]];

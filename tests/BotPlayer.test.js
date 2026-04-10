@@ -50,6 +50,11 @@ describe('GameState with Bot', () => {
         const bot = new BotPlayer('bot', 'Bot');
         const gameState = new GameState([human, bot]);
         
+        // Skip Starting Cut for this test
+        gameState.dealerIndex = 0;
+        gameState.updateDealer();
+        gameState.phase = PHASES.DEALING;
+        
         // Phase is currently DEALING. Calling dealCards moves it to DISCARDING.
         gameState.dealCards();
         
@@ -69,6 +74,8 @@ describe('GameState with Bot', () => {
         const bot = new BotPlayer('bot', 'Bot');
         // Dealer is human (index 0). Bot (index 1) starts pegging.
         const gameState = new GameState([human, bot]);
+        gameState.dealerIndex = 0;
+        gameState.updateDealer();
         
         // Setup state for pegging
         gameState.phase = PHASES.PEGGING;
@@ -95,6 +102,12 @@ describe('GameState with Bot', () => {
         };
         
         const gameState = new GameState([human, bot], { callbacks });
+
+        // Skip Starting Cut for this test
+        gameState.dealerIndex = 0;
+        gameState.updateDealer();
+        gameState.phase = PHASES.DEALING;
+        
         gameState.dealCards();
 
         // Fast-forward timers for bot discard events

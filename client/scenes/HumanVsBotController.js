@@ -1,4 +1,5 @@
 import { PHASES } from '../../game/Constants.js';
+import { StartingCutPhase } from './phases/StartingCutPhase.js';
 import { DealingPhase } from './phases/DealingPhase.js';
 import { DiscardingPhase } from './phases/DiscardingPhase.js';
 import { CuttingPhase } from './phases/CuttingPhase.js';
@@ -15,6 +16,7 @@ export class HumanVsBotController {
         this.isProcessingMove = false;
 
         this.phases = {
+            [PHASES.STARTING_CUT]: new StartingCutPhase(this),
             [PHASES.DEALING]: new DealingPhase(this),
             [PHASES.DISCARDING]: new DiscardingPhase(this),
             [PHASES.CUTTING]: new CuttingPhase(this),
@@ -30,6 +32,9 @@ export class HumanVsBotController {
     subscribeToEvents() {
         this.gameState.callbacks = {
             phaseChanged: (data) => this.onPhaseChanged(data),
+            startingCardCut: (data) => this.delegate('onStartingCardCut', data),
+            startingCutTie: (data) => this.delegate('onStartingCutTie', data),
+            firstDealerDetermined: (data) => this.delegate('onFirstDealerDetermined', data),
             cardsDealt: (data) => this.delegate('onCardsDealt', data),
             cardDiscarded: (data) => this.delegate('onCardDiscarded', data),
             starterCardCut: (data) => this.delegate('onStarterCardCut', data),
@@ -63,5 +68,8 @@ export class HumanVsBotController {
         if (phaseLogic && phaseLogic.start) {
             phaseLogic.start();
         }
+        
+        // Ensure bots take their turn if it's their phase
+        this.gameState.checkBotTurns();
     }
 }

@@ -5,6 +5,7 @@ import { StarterCardVisual } from '../components/GameVisuals/StarterCardVisual.j
 import { Scoreboard } from '../components/GameVisuals/Scoreboard.js';
 import { PhaseIndicator } from '../components/GameVisuals/PhaseIndicator.js';
 import { ActionButtons } from '../components/GameVisuals/ActionButtons.js';
+import { CardVisual } from '../components/GameVisuals/CardVisual.js';
 
 export class CribbageGameView {
     constructor(scene) {
@@ -34,6 +35,9 @@ export class CribbageGameView {
         this.phaseIndicator = new PhaseIndicator(this.scene, width / 2, 220);
         this.actionButtons = new ActionButtons(this.scene, width / 2, height - 240);
         this.actionButtons.setDepth(100);
+
+        // Starting Cut Phase Visuals
+        this.startingCutCards = [];
 
         // Callbacks
         this.cardClickedCallback = null;
@@ -94,6 +98,63 @@ export class CribbageGameView {
     updateScores() {
         if (this.scoreboard) {
             this.scoreboard.updateScores();
+        }
+    }
+
+    showStartingCutDeck(count) {
+        // Clear existing
+        this.startingCutCards.forEach(c => c.destroy());
+        this.startingCutCards = [];
+
+        const { width, height } = this.scene.scale;
+        const startX = 100;
+        const endX = width - 100;
+        const availableWidth = endX - startX;
+        const spacing = availableWidth / (count - 1);
+
+        for (let i = 0; i < count; i++) {
+            const posX = startX + (i * spacing);
+            const posY = height / 2;
+            
+            // We'll create a special CardVisual that is face down
+            const cardVisual = new CardVisual(this.scene, posX, posY, { suit: 'Hidden', value: '?' });
+            cardVisual.isStartingCutCard = true;
+            cardVisual.cutIndex = i;
+            
+            // Override the look to be face down
+            cardVisual.suitText.setVisible(false);
+            cardVisual.valueText.setVisible(false);
+            cardVisual.bg.setFillStyle(0x2222aa); // Blue back
+            
+            cardVisual.on('pointerdown', () => {
+                this.onCardClicked(cardVisual);
+            });
+            
+            this.startingCutCards.push(cardVisual);
+        }
+    }
+
+    revealStartingCutCard(player, card, cardIndex) {
+        const visual = this.startingCutCards.find(v => v.cutIndex === cardIndex);
+        if (visual) {
+            // Update the visual with real card data
+            visual.cardData = card;
+            visual.suitText.setText(visual.getSuitSymbol(card.suit)).setVisible(true);
+            visual.valueText.setText(visual.getShortValue(card.value)).setVisible(true);
+            visual.bg.setFillStyle(0xffffff);
+            
+            const color = (card.suit === 'Hearts' || card.suit === 'Diamonds') ? '#ff0000' : '#000000';
+            visual.suitText.setColor(color);
+            visual.valueText.setColor(color);
+
+            // Move it towards the player who cut it
+            const targetY = player.id === 'human' ? this.scene.scale.height - 300 : 300;
+            this.scene.tweens.add({
+                targets: visual,
+                y: targetY,
+                duration: 500,
+                ease: 'Power2'
+            });
         }
     }
 
