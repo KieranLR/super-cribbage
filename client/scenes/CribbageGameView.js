@@ -6,6 +6,7 @@ import { Scoreboard } from '../components/GameVisuals/Scoreboard.js';
 import { PhaseIndicator } from '../components/GameVisuals/PhaseIndicator.js';
 import { ActionButtons } from '../components/GameVisuals/ActionButtons.js';
 import { CardVisual } from '../components/GameVisuals/CardVisual.js';
+import { settingsManager } from '../utils/SettingsManager.js';
 
 export class CribbageGameView {
     constructor(scene) {
@@ -21,9 +22,10 @@ export class CribbageGameView {
     }
 
     setupVisuals(width, height) {
+        const showBotHand = settingsManager.get('showBotHand');
         // Hands
         this.humanHandVisual = new HandVisual(this.scene, width / 2, height - 120, [], false, (v) => this.onCardClicked(v));
-        this.botHandVisual = new HandVisual(this.scene, width / 2, 100, [], true);
+        this.botHandVisual = new HandVisual(this.scene, width / 2, 100, [], !showBotHand);
 
         // Areas
         this.peggingAreaVisual = new PeggingAreaVisual(this.scene, width / 2, height / 2 - 40);
@@ -79,12 +81,13 @@ export class CribbageGameView {
 
     updateHands(humanCards, botCards, revealBot = false) {
         this.humanHandVisual.setCards(humanCards);
-        this.botHandVisual.isBot = !revealBot;
+        const showBotHand = settingsManager.get('showBotHand');
+        this.botHandVisual.isBot = !revealBot && !showBotHand;
         this.botHandVisual.setCards(botCards);
     }
 
-    updateCrib(cards, spread = false) {
-        this.cribVisual.setCards(cards, spread);
+    updateCrib(cards, spread = false, reveal = false) {
+        this.cribVisual.setCards(cards, spread, reveal);
     }
 
     updateStarterCard(card) {

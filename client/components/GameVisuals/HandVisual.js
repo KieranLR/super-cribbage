@@ -27,12 +27,13 @@ export class HandVisual extends Phaser.GameObjects.Container {
 
         cards.forEach((card, index) => {
             const posX = (index * spacing) - (totalWidth / 2);
-            const visual = new CardVisual(this.scene, posX, 0, card);
+            const visual = new CardVisual(this.scene, posX, 0, card, this.isBot);
             
             if (this.isBot) {
-                // If it's a bot, we might want to hide the cards normally, 
-                // but for testing/visualizing we'll just show them or grey them out
-                visual.setAlpha(0.7);
+                // If it's a bot, and we ARE showing the hand (debug), maybe make it look slightly different
+                if (!visual.isFaceDown) {
+                    visual.setAlpha(0.7);
+                }
             } else {
                 // For human players, make cards interactive if onCardClick is provided
                 if (this.onCardClick) {

@@ -3,6 +3,7 @@ import { initiateDiscordSDK, discordSdk } from './utils/discordSdk';
 import { Boot } from './scenes/Boot';
 import { Game } from './scenes/Game';
 import { GameOver } from './scenes/GameOver';
+import { Settings } from './scenes/Settings';
 import { MainMenu } from './scenes/MainMenu';
 import { HowToPlay } from './scenes/HowToPlay';
 import { TestListScene } from './scenes/TestScenes/TestListScene';
@@ -47,6 +48,7 @@ import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
         HowToPlay,
         Game,
         GameOver,
+        Settings,
         TestListScene,
         TestCardScene,
         TestHandScene,

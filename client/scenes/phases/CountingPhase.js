@@ -48,7 +48,7 @@ export class CountingPhase extends Phase {
                 break;
             case 3: // Crib
                 this.view.updatePhase(PHASES.COUNTING, `${dealer.name}'s Crib`);
-                this.view.updateCrib(this.gameState.crib.cards, true);
+                this.view.updateCrib(this.gameState.crib.cards, true, true);
                 this.gameState.countCrib();
                 if (this.gameState.winner) return;
                 this.view.showButton('next', 'Next Round', () => {

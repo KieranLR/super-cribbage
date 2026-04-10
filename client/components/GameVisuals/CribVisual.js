@@ -29,7 +29,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
         scene.add.existing(this);
     }
 
-    setCards(cards, spread = false) {
+    setCards(cards, spread = false, reveal = false) {
         this.cardVisuals.forEach(v => v.destroy());
         this.cardVisuals = [];
         
@@ -39,7 +39,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
         cards.forEach((card, index) => {
             const posX = spread ? (index * spacing) - (totalWidth / 2) : index * spacing;
             const posY = spread ? 0 : index * spacing;
-            const visual = new CardVisual(this.scene, posX, posY, card);
+            const visual = new CardVisual(this.scene, posX, posY, card, !reveal);
             this.add(visual);
             this.cardVisuals.push(visual);
         });

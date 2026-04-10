@@ -56,7 +56,7 @@ export class MainMenu extends Scene {
         }));
 
         menu.add(createMenuButton(this, 'Settings', () => {
-            console.log('Settings');
+            this.scene.start('Settings');
         }));
 
         menu.add(createMenuButton(this, 'Test Visuals', () => {

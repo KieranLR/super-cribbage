@@ -7,11 +7,12 @@ export class CardVisual extends Phaser.GameObjects.Container {
      * @param {number} y
      * @param {import('../../game/Card.js').Card} card
      */
-    constructor(scene, x, y, card) {
+    constructor(scene, x, y, card, isFaceDown = false) {
         super(scene, x, y);
 
         this.cardData = card;
         this.isSelected = false;
+        this.isFaceDown = isFaceDown;
 
         // Card Dimensions
         const width = 100;
@@ -39,6 +40,12 @@ export class CardVisual extends Phaser.GameObjects.Container {
             color: color
         }).setOrigin(0.5);
         this.add(this.suitText);
+
+        if (this.isFaceDown) {
+            this.valueText.setVisible(false);
+            this.suitText.setVisible(false);
+            this.bg.setFillStyle(0x2222aa); // Blue back
+        }
 
         // Make interactive
         this.setSize(width, height);
@@ -93,6 +100,19 @@ export class CardVisual extends Phaser.GameObjects.Container {
         } else {
             this.bg.setStrokeStyle(2, 0x000000);
             this.y += 20;
+        }
+    }
+
+    setFaceDown(isFaceDown) {
+        this.isFaceDown = isFaceDown;
+        if (this.isFaceDown) {
+            this.valueText.setVisible(false);
+            this.suitText.setVisible(false);
+            this.bg.setFillStyle(0x2222aa);
+        } else {
+            this.valueText.setVisible(true);
+            this.suitText.setVisible(true);
+            this.bg.setFillStyle(0xffffff);
         }
     }
 }
