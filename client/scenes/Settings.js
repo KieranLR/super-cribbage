@@ -1,0 +1,69 @@
+import { Scene } from 'phaser';
+import { createMenuButton } from '../ui/buttons/menuButton.js';
+import { settingsManager } from '../utils/SettingsManager.js';
+
+export class Settings extends Scene {
+    constructor() {
+        super('Settings');
+    }
+
+    create() {
+        const { width, height } = this.scale;
+
+        // Background
+        const bg = this.add.image(width / 2, height / 2, 'background');
+        const scale = Math.max(width / bg.width + 0.2, height / bg.height + 0.2);
+        bg.setScale(scale).setScrollFactor(0).setAlpha(0.6);
+
+        // Main Panel
+        this.add.rectangle(width / 2, height / 2, width * 0.8, height * 0.8, 0x000000, 0.8)
+            .setStrokeStyle(4, 0xffffff);
+
+        // Title
+        this.add.text(width / 2, height * 0.2, 'Settings', {
+            fontSize: '48px',
+            fontStyle: 'bold',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+
+        // Vertical Menu Layout (RexUI)
+        const menu = this.rexUI.add.sizer({
+            x: width / 2,
+            y: height * 0.5,
+            orientation: 'y',
+            space: {
+                item: 40
+            }
+        });
+
+        // Debug: Show Bot Hand Toggle
+        const showBotHand = settingsManager.get('showBotHand');
+        this.botHandToggle = createMenuButton(this, this.getBotHandLabel(showBotHand), () => {
+            const current = settingsManager.get('showBotHand');
+            const newValue = !current;
+            settingsManager.set('showBotHand', newValue);
+            this.updateBotHandLabel(newValue);
+        });
+        menu.add(this.botHandToggle);
+
+        // Back Button
+        menu.add(createMenuButton(this, 'Back', () => {
+            this.scene.start('MainMenu');
+        }));
+
+        menu.layout();
+    }
+
+    getBotHandLabel(value) {
+        return `Show Bot Hand: ${value ? 'ON' : 'OFF'}`;
+    }
+
+    updateBotHandLabel(value) {
+        // Since createMenuButton doesn't expose the text object directly in a nice way, 
+        // and we want to keep it simple, we'll find the text child.
+        const text = this.botHandToggle.list.find(child => child.type === 'Text');
+        if (text) {
+            text.setText(this.getBotHandLabel(value));
+        }
+    }
+}
