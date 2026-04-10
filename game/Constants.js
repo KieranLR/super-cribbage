@@ -1,0 +1,11 @@
+export const WINNING_SCORE = 121;
+export const MAX_PEGGING_TOTAL = 31;
+
+export const PHASES = {
+    DEALING: 'DEALING',
+    DISCARDING: 'DISCARDING',
+    CUTTING: 'CUTTING',
+    PEGGING: 'PEGGING',
+    COUNTING: 'COUNTING',
+    GAME_OVER: 'GAME_OVER'
+};
