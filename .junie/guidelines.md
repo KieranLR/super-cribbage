@@ -10,6 +10,7 @@ This project is a Discord Activity implementing a Cribbage game, built using Pha
 - **Integration:** Discord Embedded App SDK
 
 ## Key Technologies & Libraries
+- **Jest:** The primary test runner for the project. Place test files in `/tests` with the `.test.js` extension.
 - **Phaser:** Handles all game logic, rendering, and UI.
 - **Node.js/Express:** Serves the backend, primarily handling OAuth2 token exchange with Discord.
 - **Discord Embedded App SDK:** Used for integrating the game into Discord's activity platform.
@@ -23,6 +24,7 @@ This project is a Discord Activity implementing a Cribbage game, built using Pha
 - `/server`: Backend source code.
     - `/server/server.js`: Express server for handling API requests (e.g., token exchange).
 - `/.env`: Environment variables (VITE_CLIENT_ID, DISCORD_CLIENT_SECRET, etc.).
+- `/tests`: Tests for making sure the game remains robust, with few bugs.  
 
 ## Development Guidelines
 - **Consistency:** Maintain the existing Phaser scene structure. Use the `Preloader` for asset loading and `MainMenu` for initial interaction.
@@ -30,6 +32,7 @@ This project is a Discord Activity implementing a Cribbage game, built using Pha
 - **Assets:** Place game assets in `client/assets`. Use Vite's import system or static loading as described in the README.
 - **Environment Variables:** Client-side variables must be prefixed with `VITE_` to be accessible via `import.meta.env`.
 - **Scaling:** The game uses `Phaser.Scale.FIT` to handle different Discord window sizes. Ensure UI elements are responsive or centered appropriately.
+- **Testing:** Tests are located in `/tests` and should be written using **Jest**. Each bug fix, or change should ideally be accompanied by a corresponding Jest test. Use the `.test.js` suffix for test files. Run tests using `npm test`. 
 
 ## Key Files to Reference
 - `README.md`: Basic setup and asset handling instructions.
