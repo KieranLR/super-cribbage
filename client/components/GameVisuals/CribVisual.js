@@ -1,0 +1,43 @@
+import { CardVisual } from './CardVisual.js';
+
+export class CribVisual extends Phaser.GameObjects.Container {
+    /**
+     * @param {Phaser.Scene} scene
+     * @param {number} x
+     * @param {number} y
+     * @param {import('../../../game/Card.js').Card[]} cards
+     */
+    constructor(scene, x, y, cards = []) {
+        super(scene, x, y);
+        this.cardVisuals = [];
+
+        // Label
+        const label = scene.add.text(0, -90, 'Crib', {
+            fontSize: '18px',
+            color: '#ffffff',
+            backgroundColor: '#000000',
+            padding: { x: 5, y: 2 }
+        }).setOrigin(0.5);
+        this.add(label);
+
+        // Background Area
+        const bg = scene.add.rectangle(0, 0, 110, 150, 0x000000, 0.3)
+            .setStrokeStyle(1, 0xffffff, 0.5);
+        this.add(bg);
+
+        this.setCards(cards);
+        scene.add.existing(this);
+    }
+
+    setCards(cards) {
+        this.cardVisuals.forEach(v => v.destroy());
+        this.cardVisuals = [];
+
+        cards.forEach((card, index) => {
+            // Stacked or slightly offset
+            const visual = new CardVisual(this.scene, index * 2, index * 2, card);
+            this.add(visual);
+            this.cardVisuals.push(visual);
+        });
+    }
+}
