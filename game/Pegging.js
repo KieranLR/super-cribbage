@@ -53,13 +53,14 @@ export class Pegging {
 
         // Check if cycle is over (e.g. 31)
         let isGo = false;
+        let cyclePoints = null;
         if (this.currentTotal === MAX_PEGGING_TOTAL) {
-            this.handleCycleEnd();
+            cyclePoints = this.handleCycleEnd();
             isGo = true;
         } else {
             // Check if anyone else can play
             if (this.isCycleComplete()) {
-                this.handleCycleEnd();
+                cyclePoints = this.handleCycleEnd();
                 isGo = true;
             } else {
                 this.nextTurn();
@@ -71,7 +72,8 @@ export class Pegging {
             points,
             total: totalAtPlay,
             isGo,
-            cardsAtPlay
+            cardsAtPlay,
+            cyclePoints
         };
     }
 
@@ -95,9 +97,10 @@ export class Pegging {
         const totalAtPlay = this.currentTotal;
 
         let isGo = false;
+        let cyclePoints = null;
         // If everyone has said "Go", or no one can play anymore
         if (this.isCycleComplete()) {
-            this.handleCycleEnd();
+            cyclePoints = this.handleCycleEnd();
             isGo = true;
         } else {
             this.nextTurn();
@@ -108,7 +111,8 @@ export class Pegging {
             points: 0,
             isGo,
             total: totalAtPlay,
-            cardsAtPlay
+            cardsAtPlay,
+            cyclePoints
         };
     }
 
@@ -152,16 +156,23 @@ export class Pegging {
 
     /**
      * Handles the end of a cycle (resetting total and played cards).
+     * @returns {Object|null} Info about points earned at cycle end, if any.
      */
     handleCycleEnd() {
+        let cyclePoints = null;
         // Last player to play gets a point for the "Go" (or 2 for 31)
         // If the total was exactly 31, they already got 2 points in countPegging.
         // If not, they get 1 point for the "Go".
         if (this.currentTotal !== 31 && this.lastPlayerToPlay) {
             this.lastPlayerToPlay.addPoints(1);
+            cyclePoints = {
+                player: this.lastPlayerToPlay,
+                points: 1
+            };
         }
         
         this.resetCycle();
+        return cyclePoints;
     }
 
     /**

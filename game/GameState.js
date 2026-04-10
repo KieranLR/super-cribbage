@@ -227,6 +227,9 @@ export class GameState {
         let result;
         if (card === null) {
             result = this.pegging.sayGo(player);
+            if (result.points > 0) {
+                this.emit('pointsEarned', { player, points: result.points, reason: 'Pegging' });
+            }
         } else {
             result = this.pegging.playCard(player, card);
             result.card = card;
@@ -236,6 +239,15 @@ export class GameState {
         }
 
         this.emit('cardPlayed', result);
+
+        if (result.cyclePoints && result.cyclePoints.points > 0) {
+            this.emit('pointsEarned', { 
+                player: result.cyclePoints.player, 
+                points: result.cyclePoints.points, 
+                reason: 'Pegging' 
+            });
+        }
+
         this.checkWin();
 
         if (this.pegging.isPhaseComplete()) {

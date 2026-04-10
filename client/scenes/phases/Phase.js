@@ -37,6 +37,8 @@ export class Phase {
         
         const displayReason = isGoPoint ? 'Go' : is31Point ? '31' : reason;
         const textColor = (isGoPoint || is31Point) ? 0xffffff : 0xffff00;
+
+        console.log('GIVING ', points, "for: ", reason);
         this.view.showFloatingText(x, y, `+${points} ${displayReason}`, textColor);
     }
 
