@@ -15,6 +15,13 @@ export class Phase {
     }
 
     /**
+     * Called when the phase ends.
+     */
+    cleanup() {
+        // To be implemented by subclasses
+    }
+
+    /**
      * Called when a card is clicked.
      * @param {CardVisual} cardVisual 
      */
@@ -63,6 +70,13 @@ export class Phase {
      */
     onStarterCardCut({ card }) {
         this.view.updateStarterCard(card);
+        const visual = this.view.starterCardVisual.cardVisual;
+        if (visual) {
+            visual.isLocked = true;
+            this.view.scene.time.delayedCall(500, () => {
+                visual.isLocked = false;
+            });
+        }
     }
 
     /**

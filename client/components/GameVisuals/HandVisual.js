@@ -140,6 +140,10 @@ export class HandVisual extends Phaser.GameObjects.Container {
                     overwrite: true,
                     onStart: () => {
                         visual.baseY = 0;
+                        visual.isLocked = true;
+                    },
+                    onComplete: () => {
+                        visual.isLocked = false;
                     }
                 });
             }
@@ -166,6 +170,10 @@ export class HandVisual extends Phaser.GameObjects.Container {
                 overwrite: true,
                 onStart: () => {
                     visual.baseY = 0;
+                    visual.isLocked = true;
+                },
+                onComplete: () => {
+                    visual.isLocked = false;
                 }
             });
         });

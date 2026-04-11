@@ -8,6 +8,13 @@ export class StartingCutPhase extends Phase {
         this.view.showStartingCutDeck(this.gameState.deck.cards.length);
     }
 
+    cleanup() {
+        if (this.view.startingCutCards) {
+            this.view.startingCutCards.forEach(c => c.destroy());
+            this.view.startingCutCards = [];
+        }
+    }
+
     onCardClicked(cardVisual) {
         console.log('on card clicked');
         if (this.gameState.phase !== PHASES.STARTING_CUT) return;
@@ -22,14 +29,34 @@ export class StartingCutPhase extends Phase {
     onStartingCardCut({ player, card, cardIndex }) {
         console.log('on starting card clicked');
         this.view.revealStartingCutCard(player, card, cardIndex);
+        
+        // Lock the card during reveal animation
+        const visual = this.view.startingCutCards.find(v => v.cutIndex === cardIndex);
+        if (visual) {
+            visual.isLocked = true;
+            this.view.scene.time.delayedCall(500, () => {
+                visual.isLocked = false;
+            });
+        }
     }
 
     onStartingCutTie() {
         console.log('on card tie clicked');
         this.view.showFloatingText(this.view.scene.scale.width / 2, this.view.scene.scale.height / 2, 'Tie! Cut again.', 0xffffff);
+        
+        // Disable interaction during the tie animation
+        if (this.view.startingCutCards) {
+            this.view.startingCutCards.forEach(c => {
+                if (c.disableInteractive) c.disableInteractive();
+            });
+        }
+
+        // Wait for the message and then the view reset
         setTimeout(() => {
+            // Before starting the phase again, clear the revealed cards
+            this.cleanup();
             this.start();
-        }, 2000);
+        }, 1500);
     }
 
     onFirstDealerDetermined({ dealer }) {

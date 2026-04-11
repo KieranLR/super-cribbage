@@ -101,7 +101,7 @@ describe('GameState', () => {
             { getRank: () => 10 } // Bob cuts 10
         ];
         
-        gameState.determineFirstDealer();
+        gameState.phases[PHASES.STARTING_CUT].determineFirstDealer();
         
         // Wait for 2000ms timeout in determineFirstDealer
         jest.advanceTimersByTime(2000);
@@ -110,6 +110,31 @@ describe('GameState', () => {
         expect(players[0].isDealer).toBe(true);
         expect(gameState.phase).toBe(PHASES.DISCARDING); // DEALING automatically transitions to DISCARDING
         expect(players[0].hand.cards.length).toBe(6);
+    });
+
+    test('Starting Cut tie', () => {
+        // Mock starting cuts with same rank
+        gameState.startingCuts = [
+            { getRank: () => 7 },
+            { getRank: () => 7 }
+        ];
+        
+        const emitSpy = jest.spyOn(gameState, 'emit');
+        
+        gameState.phases[PHASES.STARTING_CUT].determineFirstDealer();
+        
+        // Advance timers by the new 1000ms delay in determineFirstDealer
+        jest.advanceTimersByTime(1000);
+        
+        expect(gameState.startingCuts.every(c => c === null)).toBe(true);
+        expect(emitSpy).toHaveBeenCalledWith('startingCutTie', {});
+        expect(gameState.phase).toBe(PHASES.STARTING_CUT);
+        
+        // Ensure bots aren't triggered immediately after the tie event
+        // (Wait another 1500ms for the bot delay)
+        jest.advanceTimersByTime(1500);
+        // If it was a bot turn, it would have called cutForDealer or similar. 
+        // We can check if something was called or just that time has passed.
     });
 
     test('New round rotation', () => {

@@ -27,6 +27,13 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
         scene.add.existing(this);
     }
 
+    isPointInside(x, y) {
+        // The play area background is at (0,0) in the container
+        // We need to check if the point is within this rectangle
+        const bounds = new Phaser.Geom.Rectangle(this.x - 225, this.y - 80, 450, 160);
+        return bounds.contains(x, y);
+    }
+
     /**
      * @param {import('../../../game/Card.js').Card[]} cards
      * @param {number} total
@@ -45,6 +52,25 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
             this.add(visual);
             this.cardVisuals.push(visual);
         });
+    }
+
+    /**
+     * Returns the target world coordinates for the next card in the sequence.
+     * @param {number} currentCount - The number of cards that will be in the area (including the one about to be played)
+     */
+    getNextCardPosition(currentCount) {
+        if (currentCount <= 0) return { x: this.x, y: this.y };
+
+        const spacing = 50;
+        const totalWidth = (currentCount - 1) * spacing;
+        const index = currentCount - 1; // Last position
+        const posX = (index * spacing) - (totalWidth / 2);
+        
+        // Convert local posX, 0 to world coordinates
+        return {
+            x: this.x + posX,
+            y: this.y
+        };
     }
 
     /**

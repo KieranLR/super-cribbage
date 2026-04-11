@@ -37,7 +37,8 @@ export class TestListScene extends Scene {
             { name: 'Pegging Logic', scene: 'TestPeggingSceneComplex' },
             { name: 'Starter Card', scene: 'TestStarterScene' },
             { name: 'Button Interaction', scene: 'TestButtonScene' },
-            { name: 'Game Over Screen', scene: 'TestGameOverScene' }
+            { name: 'Game Over Screen', scene: 'TestGameOverScene' },
+            { name: 'Starting Cut Tie', scene: 'TestStartingCutTieScene' }
         ];
 
         testOptions.forEach(opt => {

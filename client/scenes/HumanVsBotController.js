@@ -75,6 +75,11 @@ export class HumanVsBotController {
         console.log(`[Controller] Phase changed from ${oldPhase} to ${phase}`);
         this.view.clearButtons();
 
+        // Cleanup the previous phase UI
+        if (oldPhase && this.phases[oldPhase]) {
+            this.phases[oldPhase].cleanup();
+        }
+
         const phaseLogic = this.phases[phase];
         if (phaseLogic && phaseLogic.start) {
             phaseLogic.start();

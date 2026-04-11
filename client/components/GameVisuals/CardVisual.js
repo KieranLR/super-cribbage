@@ -13,6 +13,7 @@ export class CardVisual extends Phaser.GameObjects.Container {
         this.cardData = card;
         this.isSelected = false;
         this.isFaceDown = isFaceDown;
+        this.isLocked = false;
         this.baseY = y; // Initialize to 0, matching HandVisual default
 
         // Card Dimensions
@@ -94,6 +95,12 @@ export class CardVisual extends Phaser.GameObjects.Container {
         this.setInteractive();
 
         this.on('pointerover', () => {
+            if (this.isLocked) return;
+
+            if (this.isInHoverTween()) {
+                return;
+            }
+
             if (this.parentContainer && this.parentContainer.isAnyDragging && this.parentContainer.isAnyDragging()) return;
             if (this.parentContainer && this.parentContainer.isAnyHovered && this.parentContainer.isAnyHovered()) return;
             this.isHovered = true;
@@ -109,6 +116,12 @@ export class CardVisual extends Phaser.GameObjects.Container {
 
         this.on('pointerout', () => {
             this.isHovered = false;
+
+            if (this.isInHoverTween()) {
+                return;
+            }
+
+            if (this.isLocked) return;
             if (this.parentContainer && this.parentContainer.isAnyDragging && this.parentContainer.isAnyDragging()) return;
             if (!this.isSelected) this.bg.setStrokeStyle(2, 0x000000);
             this.scene.tweens.add({
@@ -121,6 +134,23 @@ export class CardVisual extends Phaser.GameObjects.Container {
         });
 
         scene.add.existing(this);
+    }
+
+    isInHoverTween() {
+        if (this.scene.tweens.isTweening(this)) {
+            // If the only active tween is the "hover" tween, we can still allow the hover
+            // But we don't want to restart it if it's already going to the same target
+            const activeTweens = this.scene.tweens.getTweensOf(this);
+            const isOnlyHoverTween = activeTweens.every(t => {
+                // Phaser 3.60+ might have data differently, but typically it's t.data
+                // Let's be safer and check if it's a simple y-tween to one of our hover targets
+                return t.data && t.data[0] && t.data[0].key === 'y' &&
+                    (Math.abs(t.data[0].end - ((this.baseY ?? 0) - 10)) < 1 ||
+                        Math.abs(t.data[0].end - (this.baseY ?? 0)) < 1);
+            });
+            if (!isOnlyHoverTween) return true;
+        }
+        return false;
     }
 
     /**

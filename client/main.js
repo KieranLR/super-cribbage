@@ -15,6 +15,7 @@ import { TestStarterScene } from './scenes/TestScenes/TestStarterScene';
 import { TestButtonScene } from './scenes/TestScenes/TestButtonScene';
 import { TestPeggingSceneComplex } from './scenes/TestScenes/TestPeggingSceneComplex';
 import { TestGameOverScene } from './scenes/TestScenes/TestGameOverScene';
+import { TestStartingCutTieScene } from './scenes/TestScenes/TestStartingCutTieScene';
 import { Preloader } from './scenes/Preloader';
 import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
 
@@ -57,7 +58,8 @@ import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
         TestStarterScene,
         TestButtonScene,
         TestPeggingSceneComplex,
-        TestGameOverScene
+        TestGameOverScene,
+        TestStartingCutTieScene
       ]
   };
 

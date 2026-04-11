@@ -53,9 +53,14 @@ export class CountingPhase extends Phase {
                 this.gameState.countCrib();
                 if (this.gameState.winner) return;
                 this.view.showButton('next', 'Next Round', () => {
+                    this.view.hideButton('next');
                     this.gameState.startNewRound();
                 });
                 break;
         }
+    }
+
+    cleanup() {
+        this.view.cribVisual.setCards([]);
     }
 }
