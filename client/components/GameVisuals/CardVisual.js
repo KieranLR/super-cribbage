@@ -149,7 +149,6 @@ export class CardVisual extends Phaser.GameObjects.Container {
         });
 
         this.on('pointerout', () => {
-            console.log('ointerouted', this.input, this.input.enabled, this.isLocked);
             if (!this.input || !this.input.enabled) return;
             if (this.isLocked) return;
 

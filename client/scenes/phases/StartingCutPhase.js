@@ -4,18 +4,24 @@ import { TableLayout } from '../../utils/TableLayout.js';
 import { Phase } from './Phase.js';
 
 export class StartingCutPhase extends Phase {
-    start() {
+    start(onReady = null) {
         console.log('starting');
-        this.isTransitioning = false;
+        // If onReady is provided, we keep isTransitioning true until the fan is ready
+        this.isTransitioning = onReady ? true : false;
         this.updatePhaseView(PHASES.STARTING_CUT, 'Choose a card to determine the first dealer');
-        this.view.showStartingCutDeck(this.gameState.deck.cards.length, true);
+        this.view.showStartingCutDeck(this.gameState.deck.cards.length, true, onReady);
     }
 
-    cleanup() {
+    cleanup(onComplete = null) {
         console.log('cleanup for STarting cut phase');
-        this.isTransitioning = false;
+        // Keep transitioning true if we are in a tie reset flow
+        if (!onComplete) {
+            this.isTransitioning = false;
+        }
         if (this.view.deckVisual) {
-            this.view.animateDeckToPlay();
+            this.view.animateDeckToPlay(onComplete);
+        } else if (onComplete) {
+            onComplete();
         }
     }
 
@@ -46,6 +52,8 @@ export class StartingCutPhase extends Phase {
             const pos = TableLayout.getPositions(this.view.scene.scale);
             const targetY = (player.id === 'human' ? pos.startingCut.humanRevealY : pos.startingCut.botRevealY) - this.view.deckVisual.y;
             visual.baseY = targetY;
+            // Disable interactivity on both revealed cards to prevent hover/click issues
+            visual.disableInteractive();
 
             this.view.flow.startAnimation();
             this.animator.moveCard(visual, visual.x, targetY, {
@@ -79,8 +87,11 @@ export class StartingCutPhase extends Phase {
         // Wait for the message and then the view reset
         this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.STARTING_CUT_TIE_UI, () => {
             // Before starting the phase again, clear the revealed cards
-            this.cleanup();
-            this.start();
+            this.cleanup(() => {
+                this.start(() => {
+                    this.isTransitioning = false;
+                });
+            });
         });
     }
 

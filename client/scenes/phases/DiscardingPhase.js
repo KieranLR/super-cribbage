@@ -74,14 +74,12 @@ export class DiscardingPhase extends Phase {
     }
 
     animateDiscard(playerHand, cards, isBot, completionCallback) {
-        console.log('animating discard', playerHand, cards, isBot);
         const toAnimate = this._prepareDiscardVisuals(playerHand, cards, isBot);
         let completed = 0;
 
         const spacing = 2; // Matching CribVisual's stack spacing
         
         toAnimate.forEach((visual, index) => {
-            console.log(visual.x, visual.y);
             const targetX = 175 + index * spacing; 
             const targetY = index * spacing;
 
@@ -111,7 +109,6 @@ export class DiscardingPhase extends Phase {
 
         toAnimate.forEach(visual => {
             if (!isBot) visual.setFaceDown(true);
-            console.log("Preparing visual for crib animation, original hand pos:", visual.x, visual.y);
             
             // Remove from hand visual tracking
             const idx = playerHand.cardVisuals.indexOf(visual);
@@ -120,8 +117,6 @@ export class DiscardingPhase extends Phase {
             // Transition to crib container
             this.view.cribVisual.addForAnimation(visual, playerHand);
             playerHand.remove(visual);
-            
-            console.log("Visual position in crib container:", visual.x, visual.y);
         });
 
         return toAnimate;

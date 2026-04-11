@@ -401,7 +401,7 @@ export class CribbageGameView {
         }
     }
 
-    showStartingCutDeck(count, animate = false) {
+    showStartingCutDeck(count, animate = false, onComplete = null) {
         const pos = TableLayout.getPositions(this.scene.scale);
         
         // Use the DeckVisual to show the fan
@@ -415,10 +415,11 @@ export class CribbageGameView {
 
         if (animate) {
             this.deckVisual.setAlpha(1);
-            this.deckVisual.animateFan(count, localStartX, localEndX, localY, (v) => this.onCardClicked(v), TIMINGS.ANIMATIONS.DECK_FAN_DURATION, TIMINGS.ANIMATIONS.DECK_FAN_DELAY);
+            this.deckVisual.animateFan(count, localStartX, localEndX, localY, (v) => this.onCardClicked(v), TIMINGS.ANIMATIONS.DECK_FAN_DURATION, TIMINGS.ANIMATIONS.DECK_FAN_DELAY, onComplete);
         } else {
             this.deckVisual.setAlpha(1);
             this.deckVisual.showFan(count, localStartX, localEndX, localY, (v) => this.onCardClicked(v));
+            if (onComplete) onComplete();
         }
     }
 

@@ -16,8 +16,8 @@ export const TableLayout = {
         PHASE_INDICATOR_Y: 220,
         ACTION_BUTTONS_Y_OFFSET: -240, // offset from bottom
         STARTING_CUT_MARGIN: 100,
-        BOT_REVEAL_Y: 300,
-        HUMAN_REVEAL_Y: -300, // offset from bottom
+        BOT_REVEAL_Y: 330,
+        HUMAN_REVEAL_Y: -200, // offset from bottom
         SORT_WIDGET_Y_OFFSET: 50, // absolute from bottom
         SORT_WIDGET: {
             WIDTH: 340,
