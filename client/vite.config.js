@@ -11,12 +11,6 @@ export default defineConfig({
         : ['localhost', '127.0.0.1'],
 
     proxy: {
-      '/.proxy/assets': {
-        target: 'http://localhost:5173/assets',
-        changeOrigin: true,
-        ws: true,
-        rewrite: (path) => path.replace(/^\/.proxy\/assets/, ''),
-        },
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
@@ -42,12 +36,6 @@ export default defineConfig({
 //         'basics-forums-acrylic-theories.trycloudflare.com',
 //       ],
 //       proxy: {
-//         '/.proxy/assets': {
-//           target: 'http://localhost:5173/assets',
-//           changeOrigin: true,
-//           ws: true,
-//           rewrite: (path) => path.replace(/^\/.proxy\/assets/, ''),
-//         },
 //         '/.proxy/api': {
 //           target: 'http://localhost:3001',
 //           changeOrigin: true,
