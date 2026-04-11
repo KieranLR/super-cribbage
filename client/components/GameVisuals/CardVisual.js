@@ -16,6 +16,7 @@ export class CardVisual extends Phaser.GameObjects.Container {
         this.isFaceDown = isFaceDown;
         this.isLocked = false;
         this.baseY = y; // Initialize to 0, matching HandVisual default
+        this.originalParent = null; // Track original parent for world position calculations during transitions
 
         // Card Dimensions
         const width = 100;
@@ -93,10 +94,12 @@ export class CardVisual extends Phaser.GameObjects.Container {
 
         // Make interactive
         this.setSize(width, height);
+        // We set interactive by default, but we may want to disable it based on context
         this.setInteractive();
 
         this.on('pointerover', () => {
             if (this.isLocked) return;
+            if (!this.input || !this.input.enabled) return;
 
             if (this.isInHoverTween()) {
                 return;
@@ -123,6 +126,7 @@ export class CardVisual extends Phaser.GameObjects.Container {
 
         this.on('pointerout', () => {
             this.isHovered = false;
+            if (!this.input || !this.input.enabled) return;
 
             if (this.isInHoverTween()) {
                 return;
@@ -233,5 +237,18 @@ export class CardVisual extends Phaser.GameObjects.Container {
             this.bg.setFillStyle(0xffffff);
             this.backPattern.setVisible(false);
         }
+    }
+
+    /**
+     * Resets the visual state of the card, removing hover effects and borders.
+     */
+    resetVisualState() {
+        this.isHovered = false;
+        if (!this.isSelected) {
+            this.bg.setStrokeStyle(2, 0x000000);
+        } else {
+            this.bg.setStrokeStyle(4, 0xffd700);
+        }
+        this.y = this.baseY ?? this.y;
     }
 }

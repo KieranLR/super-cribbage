@@ -58,6 +58,7 @@ export class StarterCardVisual extends Phaser.GameObjects.Container {
 
         if (card) {
             this.cardVisual = new CardVisual(this.scene, 0, 0, card);
+            this.cardVisual.originalParent = this;
             this.add(this.cardVisual);
             this.placeholderPattern.setVisible(false);
         } else {

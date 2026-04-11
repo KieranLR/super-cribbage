@@ -47,7 +47,8 @@ export class Scoring {
         
         const findCombinations = (startIndex, currentSum) => {
             for (let i = startIndex; i < cards.length; i++) {
-                const nextSum = currentSum + this.getCardValue(cards[i]);
+                const cardValue = this.getCardValue(cards[i]);
+                const nextSum = currentSum + cardValue;
                 if (nextSum === 15) {
                     count++;
                 } else if (nextSum < 15) {
@@ -70,7 +71,8 @@ export class Scoring {
         const counts = {};
         
         for (const card of cards) {
-            counts[card.value] = (counts[card.value] || 0) + 1;
+            const rank = card.getRank();
+            counts[rank] = (counts[rank] || 0) + 1;
         }
 
         for (const val in counts) {
@@ -162,7 +164,7 @@ export class Scoring {
      */
     static checkNobs(handCards, starterCard) {
         for (const card of handCards) {
-            if (card.value === Values.JACK && card.suit === starterCard.suit) {
+            if (card.getRank() === 11 && card.suit === starterCard.suit) {
                 return 1;
             }
         }
@@ -188,7 +190,7 @@ export class Scoring {
         const lastCard = playedCards[playedCards.length - 1];
         let pairCount = 0;
         for (let i = playedCards.length - 2; i >= 0; i--) {
-            if (playedCards[i].value === lastCard.value) {
+            if (playedCards[i].getRank() === lastCard.getRank()) {
                 pairCount++;
             } else {
                 break;

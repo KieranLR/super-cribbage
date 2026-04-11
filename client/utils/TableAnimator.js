@@ -9,10 +9,6 @@ export class TableAnimator {
      * Animates a card from one position to another.
      */
     moveCard(cardVisual, x, y, options = {}) {
-        console.log('moveCard', cardVisual.x, cardVisual.y, x, y);
-
-
-
         const {
             duration = TIMINGS.ANIMATIONS.GENERIC_MOVE,
             ease = 'Power2',
@@ -123,12 +119,13 @@ export class TableAnimator {
     /**
      * Flips a card.
      */
-    flipCard(cardVisual, isFaceDown, onHalfway = null, onComplete = null) {
+    flipCard(cardVisual, isFaceDown, onHalfway = null, onComplete = null, delay = 0) {
         // Simple flip: Scale to 0, swap visuals, scale back
         return this.scene.tweens.add({
             targets: cardVisual,
             scaleX: 0,
             duration: TIMINGS.ANIMATIONS.CARD_FLIP / 2,
+            delay: delay,
             yoyo: true,
             onYoyo: (tween) => {
                 cardVisual.setFaceDown(isFaceDown);

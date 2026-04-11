@@ -1,13 +1,14 @@
-export const createMenuButton = (scene, label, callback) => {
-    const width = 420;
-    const height = 60;
+export const createMenuButton = (scene, label, callback, options = {}) => {
+    const width = options.width || 420;
+    const height = options.height || 60;
+    const fontSize = options.fontSize || '28px';
 
     const background = scene.add.rectangle(0, 0, width, height, 0x000000, 0.65)
         .setStrokeStyle(2, 0xffffff);
 
     const text = scene.add.text(0, 0, label, {
         fontFamily: 'Arial',
-        fontSize: '28px',
+        fontSize: fontSize,
         color: '#ffffff'
     }).setOrigin(0.5);
 

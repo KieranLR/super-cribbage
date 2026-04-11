@@ -54,7 +54,9 @@ export class CountingPhase extends Phase {
                 if (this.gameState.winner) return;
                 this.view.showButton('next', 'Next Round', () => {
                     this.view.hideButton('next');
-                    this.gameState.startNewRound();
+                    this.view.returnCardsToDeckAnimated(() => {
+                        this.gameState.startNewRound();
+                    });
                 });
                 break;
         }
@@ -62,6 +64,6 @@ export class CountingPhase extends Phase {
 
     cleanup() {
         console.log('cleaning up counting phase');
-        this.view.cribVisual.setCards([]);
+        // Animation is now handled before startNewRound is called
     }
 }

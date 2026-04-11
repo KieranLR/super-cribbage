@@ -10,7 +10,7 @@ export const TableLayout = {
         PEGGING_AREA_Y_OFFSET: -40, // offset from center Y
         CRIB_AREA_Y_OFFSET: 100, // offset from center Y
         CRIB_PARKED_X_OFFSET: 150, // offset from right
-        STARTER_CARD_X: 100,
+        STARTER_CARD_X: 250,
         SCOREBOARD_X: 160,
         SCOREBOARD_Y: 60,
         PHASE_INDICATOR_Y: 220,
@@ -45,6 +45,10 @@ export const TableLayout = {
             HEIGHT: 140,
             LABEL_Y: -90
         },
+        DECK: {
+            X: 80,
+            Y_OFFSET: 0     // center Y
+        },
         PHASE_INDICATOR: {
             WIDTH: 400,
             HEIGHT: 80,
@@ -54,6 +58,11 @@ export const TableLayout = {
         ACTION_BUTTONS: {
             WIDTH: 420,
             HEIGHT: 60
+        },
+        EXIT_BUTTON: {
+            WIDTH: 200,
+            HEIGHT: 50,
+            MARGIN: 40
         },
         FLOATING_TEXT: {
             PEGGING_GO_Y_OFFSET: -150, // offset from center Y
@@ -81,6 +90,8 @@ export const TableLayout = {
             scoreboard: { x: this.REL.SCOREBOARD_X, y: this.REL.SCOREBOARD_Y },
             phaseIndicator: { x: centerX, y: this.REL.PHASE_INDICATOR_Y },
             actionButtons: { x: centerX, y: height + this.REL.ACTION_BUTTONS_Y_OFFSET },
+            exitButton: { x: width - this.REL.EXIT_BUTTON.WIDTH / 2 - this.REL.EXIT_BUTTON.MARGIN, y: this.REL.EXIT_BUTTON.MARGIN + this.REL.EXIT_BUTTON.HEIGHT / 2 },
+            deck: { x: this.REL.DECK.X, y: centerY + this.REL.DECK.Y_OFFSET },
             
             // Starting Cut Phase
             startingCut: {

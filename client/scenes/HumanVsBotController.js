@@ -77,12 +77,17 @@ export class HumanVsBotController {
 
     onStartingCardCut(data) {
         this.delegate('onStartingCardCut', data);
-        this.checkBotTurns();
+        // Only call checkBotTurns if not in STARTING_CUT phase.
+        // In STARTING_CUT, the bot turn is already scheduled once at phase start or tie reset.
+        if (this.gameState.phase !== PHASES.STARTING_CUT) {
+            this.checkBotTurns();
+        }
     }
 
     onStartingCutTie(data) {
         this.delegate('onStartingCutTie', data);
-        this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.STARTING_CUT_TIE, () => {
+        this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.STARTING_CUT_TIE_UI + TIMINGS.BOT.STARTING_CUT, () => {
+            if (this.gameState.phase !== PHASES.STARTING_CUT) return;
             this.checkBotTurns();
         });
     }
@@ -154,6 +159,7 @@ export class HumanVsBotController {
                 if (player.isBot && !this.gameState.startingCuts[index]) {
                     this.view.scene.time.delayedCall(TIMINGS.BOT.STARTING_CUT, () => {
                         if (this.gameState.phase !== PHASES.STARTING_CUT) return;
+                        if (this.gameState.startingCuts[index]) return; // Extra guard
                         this.gameState.checkBotTurns();
                     });
                 }

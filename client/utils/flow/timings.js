@@ -15,12 +15,11 @@ const NORMAL_TIMINGS = {
 
     // Phase transition delays
     PHASE_TRANSITIONS: {
-        STARTING_CUT_TIE: 2000,
+        STARTING_CUT_TIE_UI: 1500,
         FIRST_DEALER_DETERMINED: 2000,
         CARDS_DEALT: 1000,
         PEGGING_COMPLETE: 1500,
         GAME_OVER: 3000,
-        STARTING_CUT_TIE_UI: 1500,
         CUT_FOR_DEALER_UI: 1500,
     },
 
@@ -44,6 +43,7 @@ const NORMAL_TIMINGS = {
         GENERIC_FADE: 500,
         GENERIC_MOVE: 200,
         SCOREBOARD_UPDATE: 2000,
+        DEAL_INTERVAL: 150
     }
 };
 
@@ -58,12 +58,11 @@ const FAST_TIMINGS = {
 
     // Phase transition delays
     PHASE_TRANSITIONS: {
-        STARTING_CUT_TIE: 800,
+        STARTING_CUT_TIE_UI: 600,
         FIRST_DEALER_DETERMINED: 800,
         CARDS_DEALT: 400,
         PEGGING_COMPLETE: 600,
         GAME_OVER: 1500,
-        STARTING_CUT_TIE_UI: 600,
         CUT_FOR_DEALER_UI: 600,
     },
 

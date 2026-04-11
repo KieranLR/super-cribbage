@@ -10,8 +10,10 @@ import { Scoreboard } from '../components/GameVisuals/Scoreboard.js';
 import { PhaseIndicator } from '../components/GameVisuals/PhaseIndicator.js';
 import { ActionButtons } from '../components/GameVisuals/ActionButtons.js';
 import { CardVisual } from '../components/GameVisuals/CardVisual.js';
+import { DeckVisual } from '../components/GameVisuals/DeckVisual.js';
 import { settingsManager } from '../utils/SettingsManager.js';
 import { TableAnimator } from '../utils/TableAnimator.js';
+import { createMenuButton } from '../ui/buttons/menuButton.js';
 
 export class CribbageGameView {
     constructor(scene, animator) {
@@ -50,6 +52,8 @@ export class CribbageGameView {
         this.cribVisual = new CribVisual(this.scene, pos.cribCenter.x, pos.cribCenter.y);
         this.cribVisual.setVisible(false);
         this.starterCardVisual = new StarterCardVisual(this.scene, pos.starterCard.x, pos.starterCard.y);
+        this.starterCardVisual.setVisible(false);
+        this.deckVisual = new DeckVisual(this.scene, pos.deck.x, pos.deck.y);
 
         // HUD
         this.scoreboard = null; // Will be initialized in initializeScoreboard
@@ -57,8 +61,10 @@ export class CribbageGameView {
         this.actionButtons = new ActionButtons(this.scene, pos.actionButtons.x, pos.actionButtons.y);
         this.actionButtons.setDepth(100);
 
+        this.setupExitButton();
+
         // Starting Cut Phase Visuals
-        this.startingCutCards = [];
+        this.startingCutCards = []; // Deprecated, but keeping for compatibility if needed elsewhere
 
         // Callbacks
         this.cardClickedCallback = null;
@@ -68,6 +74,54 @@ export class CribbageGameView {
     initializeScoreboard(players) {
         const pos = TableLayout.getPositions(this.scene.scale);
         this.scoreboard = new Scoreboard(this.scene, pos.scoreboard.x, pos.scoreboard.y, players);
+    }
+
+    setupExitButton() {
+        const pos = TableLayout.getPositions(this.scene.scale);
+        const config = TableLayout.REL.EXIT_BUTTON;
+
+        this.exitButton = createMenuButton(this.scene, 'Main Menu', () => this.onExitClicked(), {
+            width: config.WIDTH,
+            height: config.HEIGHT,
+            fontSize: '22px'
+        });
+        this.exitButton.setPosition(pos.exitButton.x, pos.exitButton.y);
+        this.exitButton.setDepth(1000); // Always on top
+
+        // Confirmation dialog (initially hidden)
+        this.exitConfirmContainer = this.scene.add.container(this.scene.scale.width / 2, this.scene.scale.height / 2);
+        this.exitConfirmContainer.setDepth(2000);
+        this.exitConfirmContainer.setVisible(false);
+
+        const overlay = this.scene.add.rectangle(0, 0, this.scene.scale.width, this.scene.scale.height, 0x000000, 0.7)
+            .setInteractive(); // Blocks input below
+
+        const bg = this.scene.add.rectangle(0, 0, 500, 300, 0x222222, 1)
+            .setStrokeStyle(4, 0xffffff);
+
+        const warningText = this.scene.add.text(0, -60, 'Return to Main Menu?\n\nYour current game will not be saved.', {
+            fontFamily: 'Arial',
+            fontSize: '24px',
+            color: '#ffffff',
+            align: 'center',
+            wordWrap: { width: 450 }
+        }).setOrigin(0.5);
+
+        const yesBtn = createMenuButton(this.scene, 'Yes, Exit', () => {
+            this.scene.scene.start('MainMenu');
+        }, { width: 200, height: 50, fontSize: '20px' });
+        yesBtn.setPosition(-110, 80);
+
+        const noBtn = createMenuButton(this.scene, 'No, Stay', () => {
+            this.exitConfirmContainer.setVisible(false);
+        }, { width: 200, height: 50, fontSize: '20px' });
+        noBtn.setPosition(110, 80);
+
+        this.exitConfirmContainer.add([overlay, bg, warningText, yesBtn, noBtn]);
+    }
+
+    onExitClicked() {
+        this.exitConfirmContainer.setVisible(true);
     }
 
     onCardClicked(cardVisual) {
@@ -118,6 +172,203 @@ export class CribbageGameView {
         this.botHandVisual.setCards(botCards);
     }
 
+    /**
+     * Animates the deck from its current position/state (like fanned) 
+     * back to a stack at the play position.
+     * @param {Function} onComplete 
+     */
+    animateDeckToPlay(onComplete = null) {
+        const pos = TableLayout.getPositions(this.scene.scale);
+        
+        this.flow.startAnimation();
+        this.animator.moveCard(this.deckVisual, pos.deck.x, pos.deck.y, {
+            duration: TIMINGS.ANIMATIONS.GENERIC_MOVE,
+            onComplete: () => {
+                this.deckVisual.animateStack(TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
+                    this.flow.endAnimation();
+                    if (onComplete) onComplete();
+                });
+            }
+        });
+    }
+
+    /**
+     * Animates dealing cards from the deck to the players.
+     * @param {Object} data - Contains players and their hands.
+     * @param {Function} onComplete 
+     */
+    dealCardsAnimated(data, onComplete = null) {
+        const { players } = data;
+        const cardsToDeal = [];
+        
+        // Cribbage usually deals one by one. 
+        // We'll alternate players for each card based on their actual hand size in data.
+        const maxHandSize = Math.max(...players.map(p => p.hand.cards.length));
+        
+        for (let i = 0; i < maxHandSize; i++) {
+            players.forEach(player => {
+                if (player.hand.cards[i]) {
+                    cardsToDeal.push({
+                        player: player,
+                        cardData: player.hand.cards[i],
+                        cardIndexInHand: i
+                    });
+                }
+            });
+        }
+
+        let dealIndex = 0;
+        const dealNextCard = () => {
+            if (dealIndex >= cardsToDeal.length) {
+                if (onComplete) onComplete();
+                return;
+            }
+
+            const { player, cardData, cardIndexInHand } = cardsToDeal[dealIndex];
+            const isHuman = player.id === 'human';
+            const handVisual = isHuman ? this.humanHandVisual : this.botHandVisual;
+            
+            const cardVisual = this.deckVisual.popCard();
+            if (!cardVisual) {
+                console.warn('DeckVisual ran out of cards during deal! Fallback to immediate update.');
+                this.updateHands(this.humanHandVisual.isBot ? [] : this.humanHandVisual.cardVisuals.map(v => v.cardData), 
+                                this.botHandVisual.isBot ? [] : this.botHandVisual.cardVisuals.map(v => v.cardData));
+                if (onComplete) onComplete();
+                return;
+            }
+
+            // Convert deck local to world, then to hand local
+            const worldX = cardVisual.x + this.deckVisual.x;
+            const worldY = cardVisual.y + this.deckVisual.y;
+            
+            cardVisual.x = worldX - handVisual.x;
+            cardVisual.y = worldY - handVisual.y;
+            handVisual.add(cardVisual);
+            handVisual.cardVisuals.push(cardVisual);
+            
+            cardVisual.cardData = cardData;
+
+            // Re-setup interactivity based on hand's rules
+            handVisual.setupCardInteractivity(cardVisual);
+            
+            // Bot cards are face down, human cards face up (unless setting says otherwise)
+            const showBotHand = settingsManager.get('showBotHand');
+            const shouldBeFaceDown = !isHuman && !showBotHand;
+            
+            if (shouldBeFaceDown) {
+                cardVisual.setFaceDown(true);
+            }
+
+            // Calculate slot position in hand
+            const spacing = 60;
+            const totalCardsForThisPlayer = player.hand.cards.length;
+            const totalWidth = (totalCardsForThisPlayer - 1) * spacing;
+            const targetX = (cardIndexInHand * spacing) - (totalWidth / 2);
+            const targetY = 0;
+
+            this.flow.startAnimation();
+            this.animator.dealCardToHand(cardVisual, targetX, targetY, 0, () => {
+                if (!shouldBeFaceDown) {
+                    this.animator.flipCard(cardVisual, false);
+                }
+                this.flow.endAnimation();
+            });
+
+            dealIndex++;
+            this.scene.time.delayedCall(TIMINGS.ANIMATIONS.DEAL_INTERVAL || 150, dealNextCard);
+        };
+
+        dealNextCard();
+    }
+
+    /**
+     * Animates returning all cards on the table to the deck.
+     * @param {Function} onComplete 
+     */
+    returnCardsToDeckAnimated(onComplete = null) {
+        const cardsToReturn = [];
+        
+        // Collect cards from hands
+        this.humanHandVisual.cardVisuals.forEach(v => {
+            cardsToReturn.push(v);
+        });
+        this.humanHandVisual.cardVisuals = [];
+
+        this.botHandVisual.cardVisuals.forEach(v => {
+            cardsToReturn.push(v);
+        });
+        this.botHandVisual.cardVisuals = [];
+
+        // Collect cards from crib
+        this.cribVisual.cardVisuals.forEach(v => {
+            cardsToReturn.push(v);
+        });
+        this.cribVisual.cardVisuals = [];
+        this.cribVisual.submittedVisuals.forEach(v => {
+            cardsToReturn.push(v);
+        });
+        this.cribVisual.submittedVisuals = [];
+
+        // Collect from pegging area (if any)
+        this.peggingAreaVisual.cardVisuals.forEach(v => {
+            cardsToReturn.push(v);
+        });
+        this.peggingAreaVisual.cardVisuals = [];
+        this.peggingAreaVisual.label.setText('Pegging Area: 0');
+
+        // Collect starter card
+        if (this.starterCardVisual.cardVisual) {
+            const starterCard = this.starterCardVisual.cardVisual;
+            cardsToReturn.push(starterCard);
+            this.starterCardVisual.cardVisual = null;
+            this.starterCardVisual.placeholderPattern.setVisible(true);
+        }
+
+        if (cardsToReturn.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+
+        this.flow.startAnimation();
+        let finishedCount = 0;
+
+        cardsToReturn.forEach((card, index) => {
+            // Get current world position
+            const matrix = card.getWorldTransformMatrix();
+            const worldX = matrix.tx;
+            const worldY = matrix.ty;
+
+            // Remove from old parent if any
+            if (card.parentContainer) {
+                card.parentContainer.remove(card, false);
+            }
+
+            // Put it on the scene (to avoid container clipping)
+            this.scene.add.existing(card);
+            card.setPosition(worldX, worldY);
+
+            const delay = index * 30;
+            if (!card.isFaceDown) {
+                this.animator.flipCard(card, true, null, null, delay - 30);
+            }
+            card.setDepth(100 + index); // Ensure they are on top
+
+            this.animator.moveCard(card, this.deckVisual.x, this.deckVisual.y, {
+                duration: TIMINGS.ANIMATIONS.GENERIC_MOVE,
+                delay: delay,
+                onComplete: () => {
+                    card.setFaceDown(true);
+                    this.deckVisual.addCard(card);
+                    finishedCount++;
+                    if (finishedCount === cardsToReturn.length) {
+                        this.flow.endAnimation();
+                        if (onComplete) onComplete();
+                    }
+                }
+            });
+        });
+    }
+
     updateCrib(cards, spread = false, reveal = false) {
         this.cribVisual.setCards(cards, spread, reveal);
     }
@@ -136,29 +387,30 @@ export class CribbageGameView {
         }
     }
 
-    showStartingCutDeck(count) {
-        // Clear existing
-        this.startingCutCards.forEach(c => c.destroy());
-        this.startingCutCards = [];
-
+    showStartingCutDeck(count, animate = false) {
         const pos = TableLayout.getPositions(this.scene.scale);
-        const availableWidth = pos.startingCut.endX - pos.startingCut.startX;
-        const spacing = availableWidth / (count - 1);
+        
+        // Use the DeckVisual to show the fan
+        // The DeckVisual is positioned at pos.deck.x, pos.deck.y
+        // We want the fan to be centered on the screen and span from startX to endX
+        // So we need to calculate local coordinates relative to deckVisual.x
+        
+        const localStartX = pos.startingCut.startX - this.deckVisual.x;
+        const localEndX = pos.startingCut.endX - this.deckVisual.x;
+        const localY = pos.startingCut.y - this.deckVisual.y;
 
-        for (let i = 0; i < count; i++) {
-            const posX = pos.startingCut.startX + (i * spacing);
-            const posY = pos.startingCut.y;
-            
-            // We'll create a special CardVisual that is face down
-            const cardVisual = new CardVisual(this.scene, posX, posY, { suit: 'Hidden', value: '?' }, true);
-            cardVisual.isStartingCutCard = true;
-            cardVisual.cutIndex = i;
-            
-            cardVisual.on('pointerdown', () => {
-                this.onCardClicked(cardVisual);
+        // Temporarily move the deck visual to Y position for starting cut if needed, 
+        // but pos.startingCut.y is usually centerY, same as pos.deck.y.
+        this.deckVisual.y = pos.startingCut.y;
+
+        if (animate) {
+            this.deckVisual.setAlpha(0);
+            this.animator.fade(this.deckVisual, 1, TIMINGS.ANIMATIONS.GENERIC_FADE, () => {
+                this.deckVisual.animateFan(count, localStartX, localEndX, (v) => this.onCardClicked(v));
             });
-            
-            this.startingCutCards.push(cardVisual);
+        } else {
+            this.deckVisual.setAlpha(1);
+            this.deckVisual.showFan(count, localStartX, localEndX, (v) => this.onCardClicked(v));
         }
     }
 

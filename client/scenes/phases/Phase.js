@@ -22,8 +22,30 @@ export class Phase {
         const isPegging = phase === PHASES.PEGGING;
         this.view.peggingAreaVisual.setVisible(isPegging);
 
+        // Visibility of Starter Card
+        const isStarterVisible = [PHASES.CUTTING, PHASES.PEGGING, PHASES.COUNTING].includes(phase);
+        this.transitionStarterCard(isStarterVisible);
+
         const targetPos = TableLayout.getCribPosition(this.view.scene.scale, phase, PHASES);
         this.transitionCrib(phase, targetPos);
+    }
+
+    /**
+     * Fades the starter card placeholder based on visibility.
+     */
+    transitionStarterCard(isVisible) {
+        if (isVisible && !this.view.starterCardVisual.visible) {
+            this.view.starterCardVisual.setVisible(true);
+            this.view.starterCardVisual.alpha = 0;
+            this.view.flow.startAnimation();
+            this.animator.fade(this.view.starterCardVisual, 1, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => this.view.flow.endAnimation());
+        } else if (!isVisible && this.view.starterCardVisual.visible) {
+            this.view.flow.startAnimation();
+            this.animator.fade(this.view.starterCardVisual, 0, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
+                this.view.starterCardVisual.setVisible(false);
+                this.view.flow.endAnimation();
+            });
+        }
     }
 
 

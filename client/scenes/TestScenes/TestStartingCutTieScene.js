@@ -5,6 +5,7 @@ import { BotPlayer } from '../../../game/BotPlayer.js';
 import { Card, Suits, Values } from '../../../game/Card.js';
 import { CribbageGameView } from '../CribbageGameView.js';
 import { HumanVsBotController } from '../HumanVsBotController.js';
+import {TableAnimator} from "../../utils/TableAnimator.js";
 
 /**
  * Test scene specifically designed to trigger and test the "tie" condition 
@@ -16,6 +17,7 @@ export class TestStartingCutTieScene extends Scene {
     }
 
     create() {
+        this.animator = new TableAnimator(this);
         // Initialize Players
         this.humanPlayer = new Player('human', 'You');
         this.botPlayer = new BotPlayer('bot', 'Bot');
@@ -45,11 +47,11 @@ export class TestStartingCutTieScene extends Scene {
         };
 
         // Initialize View
-        this.view = new CribbageGameView(this);
+        this.view = new CribbageGameView(this, this.animator);
         this.view.initializeScoreboard(this.players);
 
         // Initialize Controller
-        this.controller = new HumanVsBotController(this.gameState, this.view, this.humanPlayer, this.botPlayer);
+        this.controller = new HumanVsBotController(this.gameState, this.view, this.humanPlayer, this.botPlayer, this.animator);
 
         // Start Game - this will start in the STARTING_CUT phase
         this.controller.onPhaseChanged({ phase: this.gameState.phase, oldPhase: null });

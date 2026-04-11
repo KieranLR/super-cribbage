@@ -42,7 +42,6 @@ export class CribVisual extends Phaser.GameObjects.Container {
     }
 
     setCards(cards, spread = false, reveal = false) {
-        console.log('setting crib visuals');
         this.cardVisuals.forEach(v => v.destroy());
         this.cardVisuals = [];
         this.submittedVisuals.forEach(v => v.destroy());
@@ -55,6 +54,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
             const posX = spread ? (index * spacing) - (totalWidth / 2) : index * spacing;
             const posY = spread ? 0 : index * spacing;
             const visual = new CardVisual(this.scene, posX, posY, card, !reveal);
+            visual.originalParent = this;
             this.add(visual);
             this.cardVisuals.push(visual);
         });
@@ -72,6 +72,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
             const posX = TableLayout.REL.CRIB_PARKED_X_OFFSET + index * 2;
             const posY = 0 + index * 2;
             const visual = new CardVisual(this.scene, posX, posY, card, true);
+            visual.originalParent = this;
             visual.setScale(0.8);
             this.add(visual);
             this.submittedVisuals.push(visual);
@@ -89,7 +90,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
         // we need to calculate the target position in the crib's coordinate space
         // while preserving its current visual position on screen.
 
-        const parent = originalParent || visual.parentContainer;
+        const parent = originalParent || visual.originalParent || visual.parentContainer;
         
         let worldX = visual.x;
         let worldY = visual.y;
@@ -97,26 +98,14 @@ export class CribVisual extends Phaser.GameObjects.Container {
         if (parent) {
             worldX += parent.x;
             worldY += parent.y;
-            
-            // If the parent is the bot hand, it is rotated 180 degrees
-            // HandVisual uses a container, and TableLayout positions it at the top.
-            // Check if it's the bot hand.
-            if (parent.y < this.scene.scale.height / 2) {
-                // This is likely the bot hand at the top.
-                // In this project, bot cards are often flipped/rotated.
-                // However, visual.x/y are local to the container.
-                // If the container itself is NOT rotated but its children are, we are fine.
-                // If the container IS rotated, we'd need to account for it.
-            }
         }
 
         // Now calculate what this world position is in terms of THIS container's local space.
         const localX = worldX - this.x;
         const localY = worldY - this.y;
         
-        console.log(`CribVisual.addForAnimation: world(${worldX}, ${worldY}) -> local(${localX}, ${localY}) [Parent was ${parent ? 'found' : 'NULL'}]`);
-        
         visual.setPosition(localX, localY);
+        visual.originalParent = this;
         this.add(visual);
         this.submittedVisuals.push(visual);
     }

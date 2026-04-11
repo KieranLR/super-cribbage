@@ -40,77 +40,91 @@ export class HandVisual extends Phaser.GameObjects.Container {
         cards.forEach((card, index) => {
             const posX = (index * spacing) - (totalWidth / 2);
             const visual = new CardVisual(this.scene, posX, 0, card, this.isBot);
-            visual.isDragging = false;
-            
-            if (this.isBot) {
-                // If it's a bot, and we ARE showing the hand (debug), maybe make it look slightly different
-                if (!visual.isFaceDown) {
-                    visual.setAlpha(0.7);
-                }
-            } else {
-                // For human players, make cards interactive if onCardClick is provided
-                visual.setInteractive({ draggable: true });
-                this.scene.input.setDraggable(visual);
-
-                if (this.onCardClick) {
-                    visual.on('pointerup', () => {
-                        if (!visual.isDragging && !visual.hasMovedSignificantly) {
-                            this.onCardClick(visual);
-                        }
-                    });
-                }
-
-                // Dragging Logic
-                visual.on('dragstart', (pointer, dragX, dragY) => {
-                    this.bringToTop(visual);
-                    visual.setAlpha(0.8);
-                    visual.isDragging = true;
-                    visual.startX = visual.x;
-                    visual.startY = visual.y;
-                    visual.hasMovedSignificantly = false;
-                });
-
-                visual.on('drag', (pointer, dragX, dragY) => {
-                    visual.x = dragX;
-                    // Keep y near the original position but allow some vertical movement if desired
-                    // For now, let's allow free movement as requested "dragged around the screen"
-                    visual.y = dragY; 
-                    
-                    if (!visual.hasMovedSignificantly) {
-                        const dist = Phaser.Math.Distance.Between(visual.startX, visual.startY, visual.x, visual.y);
-                        if (dist > 10) {
-                            visual.hasMovedSignificantly = true;
-                        }
-                    }
-                    
-                    // Live reorder (shifting cards around)
-                    this.sortCardVisualsByX();
-                    this.arrangeCards(visual);
-                });
-
-                visual.on('dragend', (pointer, dragX, dragY) => {
-                    console.log('dragging');
-                    visual.setAlpha(1);
-                    visual.isDragging = false;
-                    
-                    if (this.onCardDropped) {
-                        const worldX = visual.x + this.x;
-                        const worldY = visual.y + this.y;
-                        const handled = this.onCardDropped(visual, worldX, worldY);
-                        if (handled) {
-                            // The card has been consumed by the drop zone
-                            // The handler should probably call setCards or similar to refresh the hand
-                            return;
-                        }
-                    }
-                    
-                    this.reorderCards();
-                });
-            }
-
+            visual.originalParent = this;
+            this.setupCardInteractivity(visual);
             this.add(visual);
             this.cardVisuals.push(visual);
         });
+    }
+
+    /**
+     * Sets up interactivity for a card visual based on this hand's configuration.
+     * @param {CardVisual} visual 
+     */
+    setupCardInteractivity(visual) {
+        visual.isDragging = false;
+        
+        if (this.isBot) {
+            // If it's a bot, and we ARE showing the hand (debug), maybe make it look slightly different
+            if (!visual.isFaceDown) {
+                visual.setAlpha(0.7);
+            }
+            if (visual.input) visual.input.enabled = false;
+        } else {
+            // For human players, make cards interactive if onCardClick is provided
+            visual.setInteractive({ draggable: true });
+            if (visual.input) visual.input.enabled = true;
+            this.scene.input.setDraggable(visual);
+
+            // Pointer/Click Logic
+            visual.off('pointerup');
+            if (this.onCardClick) {
+                visual.on('pointerup', () => {
+                    if (!visual.isDragging && !visual.hasMovedSignificantly) {
+                        this.onCardClick(visual);
+                    }
+                });
+            }
+
+            // Dragging Logic
+            visual.off('dragstart');
+            visual.on('dragstart', (pointer, dragX, dragY) => {
+                this.bringToTop(visual);
+                visual.setAlpha(0.8);
+                visual.isDragging = true;
+                visual.startX = visual.x;
+                visual.startY = visual.y;
+                visual.hasMovedSignificantly = false;
+            });
+
+            visual.off('drag');
+            visual.on('drag', (pointer, dragX, dragY) => {
+                visual.x = dragX;
+                // Keep y near the original position but allow some vertical movement if desired
+                // For now, let's allow free movement as requested "dragged around the screen"
+                visual.y = dragY; 
+                
+                if (!visual.hasMovedSignificantly) {
+                    const dist = Phaser.Math.Distance.Between(visual.startX, visual.startY, visual.x, visual.y);
+                    if (dist > 10) {
+                        visual.hasMovedSignificantly = true;
+                    }
+                }
+                
+                // Live reorder (shifting cards around)
+                this.sortCardVisualsByX();
+                this.arrangeCards(visual);
+            });
+
+            visual.off('dragend');
+            visual.on('dragend', (pointer, dragX, dragY) => {
+                visual.setAlpha(1);
+                visual.isDragging = false;
+                
+                if (this.onCardDropped) {
+                    const worldX = visual.x + this.x;
+                    const worldY = visual.y + this.y;
+                    const handled = this.onCardDropped(visual, worldX, worldY);
+                    if (handled) {
+                        // The card has been consumed by the drop zone
+                        // The handler should probably call setCards or similar to refresh the hand
+                        return;
+                    }
+                }
+                
+                this.reorderCards();
+            });
+        }
     }
 
     isAnyHovered() {

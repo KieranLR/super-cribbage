@@ -55,8 +55,48 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
         cards.forEach((card, index) => {
             const posX = (index * spacing) - (totalWidth / 2);
             const visual = new CardVisual(this.scene, posX, 0, card);
+            visual.originalParent = this;
             this.add(visual);
             this.cardVisuals.push(visual);
+        });
+    }
+
+    /**
+     * @param {import('../../../game/Card.js').Card} cardData
+     */
+    addCard(cardData) {
+        // The current update logic is simple and replaces everything.
+        // For addCard, we calculate its position and add it to the list.
+        const currentCount = this.cardVisuals.length + 1;
+        const pos = this.getNextCardPosition(currentCount);
+        
+        // Convert world position back to local position
+        const localX = pos.x - this.x;
+        const localY = pos.y - this.y;
+
+        const visual = new CardVisual(this.scene, localX, localY, cardData);
+        visual.originalParent = this;
+        this.add(visual);
+        this.cardVisuals.push(visual);
+        
+        // Shift existing cards to maintain centering
+        this.repositionCards();
+    }
+
+    /**
+     * Repositions all cards in the area to keep them centered as a group.
+     */
+    repositionCards() {
+        const count = this.cardVisuals.length;
+        if (count === 0) return;
+
+        const config = TableLayout.REL.PEGGING_AREA;
+        const spacing = config.CARD_SPACING;
+        const totalWidth = (count - 1) * spacing;
+
+        this.cardVisuals.forEach((visual, index) => {
+            const posX = (index * spacing) - (totalWidth / 2);
+            visual.setPosition(posX, 0);
         });
     }
 

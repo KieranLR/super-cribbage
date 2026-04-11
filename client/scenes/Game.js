@@ -17,7 +17,7 @@ export class Game extends Scene {
 
         // Initialize Players
         this.humanPlayer = new Player('human', 'You');
-        this.botPlayer = new BotPlayer('bot', 'Bot');
+        this.botPlayer = new BotPlayer('bot', 'Stanley');
         this.players = [this.humanPlayer, this.botPlayer];
 
         // Initialize GameState
