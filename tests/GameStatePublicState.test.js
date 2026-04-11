@@ -11,7 +11,7 @@ describe('GameState.getPublicState()', () => {
             new Player('1', 'Alice'),
             new Player('2', 'Bob')
         ];
-        gameState = new GameState(players);
+        gameState = new GameState(players, { isHeadless: true });
     });
 
     test('Returns correct structure in DEALING phase', () => {
@@ -47,7 +47,7 @@ describe('GameState.getPublicState()', () => {
         
         gameState.dealCards();
         const publicState = gameState.getPublicState();
-        expect(publicState.phase).toBe(PHASES.DISCARDING);
+        expect(publicState.phase).toBe(PHASES.DEALING);
         expect(publicState.players[0].handSize).toBe(6);
         expect(publicState.players[0].hand.length).toBe(6);
         expect(publicState.cribSize).toBe(0);
@@ -62,9 +62,11 @@ describe('GameState.getPublicState()', () => {
         gameState.dealCards();
         const aliceCards = [players[0].hand.cards[0], players[0].hand.cards[1]];
         const bobCards = [players[1].hand.cards[0], players[1].hand.cards[1]];
+        gameState.nextPhase();
         gameState.discardToCrib(players[0], aliceCards);
         gameState.discardToCrib(players[1], bobCards);
-        gameState.nextPhase(); // Move to PEGGING (already at CUTTING after discarding)
+        gameState.nextPhase(); // Move to CUTTING
+        gameState.nextPhase(); // Move to PEGGING
         
         const publicState = gameState.getPublicState();
         expect(publicState.phase).toBe(PHASES.PEGGING);

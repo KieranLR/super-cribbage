@@ -1,29 +1,19 @@
-import { GamePhase } from './GamePhase.js';
+import { GameLogicPhase } from './GameLogicPhase.js';
 import { Pegging } from '../Pegging.js';
 
-export class PeggingPhase extends GamePhase {
+export class PeggingLogic extends GameLogicPhase {
     start() {
         // Player to the left of dealer starts pegging
         const startingPlayerIndex = (this.gameState.dealerIndex + 1) % this.gameState.players.length;
         this.gameState.pegging = new Pegging(this.gameState.players, startingPlayerIndex);
-        this.checkBotTurns();
     }
 
     checkBotTurns() {
         if (this.gameState.winner || !this.gameState.pegging) return;
         const currentPlayer = this.gameState.pegging.getCurrentPlayer();
         if (currentPlayer && currentPlayer.isBot) {
-            // If the total was just reset to 0, or someone said Go, we should wait longer
-            // for the UI to display the last card/points.
-            const isNewCycle = this.gameState.pegging.currentTotal === 0;
-            const delay = isNewCycle ? 2500 : 1500;
-            
-            setTimeout(() => {
-                if (this.gameState.phase !== "PEGGING" || !this.gameState.pegging) return;
-                if (this.gameState.pegging.getCurrentPlayer() !== currentPlayer) return;
-                const card = currentPlayer.makePeggingDecision(this.gameState.pegging.currentTotal);
-                this.playPeggingCard(currentPlayer, card);
-            }, delay);
+            const card = currentPlayer.makePeggingDecision(this.gameState.pegging.currentTotal);
+            this.playPeggingCard(currentPlayer, card);
         }
     }
 
@@ -57,9 +47,7 @@ export class PeggingPhase extends GamePhase {
         this.gameState.checkWin();
 
         if (this.gameState.pegging.isPhaseComplete()) {
-            this.gameState.nextPhase(); // Move to COUNTING
-        } else {
-            this.checkBotTurns();
+            this.gameState.emit('peggingComplete', {});
         }
     }
 }

@@ -1,4 +1,5 @@
 import { PHASES } from '../../game/Constants.js';
+import { TIMINGS } from '../utils/flow/timings.js';
 import { StartingCutPhase } from './phases/StartingCutPhase.js';
 import { DealingPhase } from './phases/DealingPhase.js';
 import { DiscardingPhase } from './phases/DiscardingPhase.js';
@@ -33,13 +34,15 @@ export class HumanVsBotController {
     subscribeToEvents() {
         this.gameState.callbacks = {
             phaseChanged: (data) => this.onPhaseChanged(data),
-            startingCardCut: (data) => this.delegate('onStartingCardCut', data),
-            startingCutTie: (data) => this.delegate('onStartingCutTie', data),
-            firstDealerDetermined: (data) => this.delegate('onFirstDealerDetermined', data),
-            cardsDealt: (data) => this.delegate('onCardsDealt', data),
-            cardDiscarded: (data) => this.delegate('onCardDiscarded', data),
+            startingCardCut: (data) => this.onStartingCardCut(data),
+            startingCutTie: (data) => this.onStartingCutTie(data),
+            firstDealerDetermined: (data) => this.onFirstDealerDetermined(data),
+            cardsDealt: (data) => this.onCardsDealt(data),
+            cardDiscarded: (data) => this.onCardDiscarded(data),
+            allDiscarded: (data) => this.onAllDiscarded(data),
             starterCardCut: (data) => this.delegate('onStarterCardCut', data),
-            cardPlayed: (data) => this.delegate('onCardPlayed', data),
+            cardPlayed: (data) => this.onCardPlayed(data),
+            peggingComplete: (data) => this.onPeggingComplete(data),
             pointsEarned: (data) => this.delegate('onPointsEarned', data),
             dealerChanged: (data) => this.delegate('onDealerChanged', data)
         };
@@ -71,6 +74,52 @@ export class HumanVsBotController {
         return false;
     }
 
+    onStartingCardCut(data) {
+        this.delegate('onStartingCardCut', data);
+        this.checkBotTurns();
+    }
+
+    onStartingCutTie(data) {
+        this.delegate('onStartingCutTie', data);
+        this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.STARTING_CUT_TIE, () => {
+            this.checkBotTurns();
+        });
+    }
+
+    onFirstDealerDetermined(data) {
+        this.delegate('onFirstDealerDetermined', data);
+        this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.FIRST_DEALER_DETERMINED, () => {
+            this.gameState.nextPhase();
+        });
+    }
+
+    onCardsDealt(data) {
+        this.delegate('onCardsDealt', data);
+        this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.CARDS_DEALT, () => {
+            this.gameState.nextPhase();
+        });
+    }
+
+    onCardDiscarded(data) {
+        this.delegate('onCardDiscarded', data);
+        this.checkBotTurns();
+    }
+
+    onAllDiscarded(data) {
+        this.gameState.nextPhase();
+    }
+
+    onPeggingComplete(data) {
+        this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.PEGGING_COMPLETE, () => {
+            this.gameState.nextPhase();
+        });
+    }
+
+    onCardPlayed(data) {
+        this.delegate('onCardPlayed', data);
+        this.checkBotTurns();
+    }
+
     onPhaseChanged({ phase, oldPhase }) {
         console.log(`[Controller] Phase changed from ${oldPhase} to ${phase}`);
         this.view.clearButtons();
@@ -86,6 +135,46 @@ export class HumanVsBotController {
         }
         
         // Ensure bots take their turn if it's their phase
-        this.gameState.checkBotTurns();
+        this.checkBotTurns();
+    }
+
+    checkBotTurns() {
+        if (this.gameState.winner) return;
+
+        const phase = this.gameState.phase;
+        
+        if (phase === PHASES.STARTING_CUT) {
+            this.gameState.players.forEach((player, index) => {
+                if (player.isBot && !this.gameState.startingCuts[index]) {
+                    this.view.scene.time.delayedCall(TIMINGS.BOT.STARTING_CUT, () => {
+                        if (this.gameState.phase !== PHASES.STARTING_CUT) return;
+                        this.gameState.checkBotTurns();
+                    });
+                }
+            });
+        } else if (phase === PHASES.DISCARDING) {
+            this.gameState.players.forEach((player, index) => {
+                if (player.isBot && !this.gameState.discardedToCrib[index]) {
+                    this.view.scene.time.delayedCall(TIMINGS.BOT.DISCARDING, () => {
+                        if (this.gameState.phase !== PHASES.DISCARDING) return;
+                        this.gameState.checkBotTurns();
+                    });
+                }
+            });
+        } else if (phase === PHASES.PEGGING) {
+            const pegging = this.gameState.pegging;
+            if (!pegging) return;
+            const currentPlayer = pegging.getCurrentPlayer();
+            if (currentPlayer && currentPlayer.isBot) {
+                const isNewCycle = pegging.currentTotal === 0;
+                const delay = isNewCycle ? TIMINGS.BOT.PEGGING_NEW_CYCLE : TIMINGS.BOT.PEGGING;
+                
+                this.view.scene.time.delayedCall(delay, () => {
+                    if (this.gameState.phase !== PHASES.PEGGING || !this.gameState.pegging) return;
+                    if (this.gameState.pegging.getCurrentPlayer() !== currentPlayer) return;
+                    this.gameState.checkBotTurns();
+                });
+            }
+        }
     }
 }

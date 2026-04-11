@@ -48,20 +48,21 @@ describe('GameState with Bot', () => {
     test('Bot automatically discards when phase changes to DISCARDING', () => {
         const human = new Player('human', 'Human');
         const bot = new BotPlayer('bot', 'Bot');
-        const gameState = new GameState([human, bot]);
+        const gameState = new GameState([human, bot], { isHeadless: true });
         
         // Skip Starting Cut for this test
         gameState.dealerIndex = 0;
         gameState.updateDealer();
         gameState.phase = PHASES.DEALING;
         
-        // Phase is currently DEALING. Calling dealCards moves it to DISCARDING.
+        // Phase is currently DEALING. Calling dealCards will deal, then we must manually move to DISCARDING.
         gameState.dealCards();
+        gameState.nextPhase();
         
         expect(gameState.phase).toBe(PHASES.DISCARDING);
 
-        // Fast-forward timers for bot to discard
-        jest.runAllTimers();
+        // Manually trigger bot turn since GameState no longer does it automatically
+        gameState.checkBotTurns();
 
         // The bot should have already discarded
         expect(gameState.discardedToCrib[1]).toBe(true);
@@ -73,16 +74,21 @@ describe('GameState with Bot', () => {
         const human = new Player('human', 'Human');
         const bot = new BotPlayer('bot', 'Bot');
         // Dealer is human (index 0). Bot (index 1) starts pegging.
-        const gameState = new GameState([human, bot]);
+        const gameState = new GameState([human, bot], { isHeadless: true });
         gameState.dealerIndex = 0;
         gameState.updateDealer();
         
         // Setup state for pegging
-        gameState.phase = PHASES.PEGGING;
+        gameState.phase = PHASES.CUTTING; // nextPhase will move to PEGGING
         human.hand.addCard(new Card(Suits.HEARTS, Values.FIVE));
         bot.hand.addCard(new Card(Suits.CLUBS, Values.FIVE));
-        gameState.startPegging();
+
+        gameState.nextPhase();
+        // gameState.startPegging(); // nextPhase already calls start() on the phase logic
         
+        // Manually trigger bot turn
+        gameState.checkBotTurns();
+
         // Fast-forward timers for bot to play
         jest.runAllTimers();
         
@@ -109,6 +115,10 @@ describe('GameState with Bot', () => {
         gameState.phase = PHASES.DEALING;
         
         gameState.dealCards();
+        gameState.nextPhase();
+
+        // Manually trigger bot turn
+        gameState.checkBotTurns();
 
         // Fast-forward timers for bot discard events
         jest.runAllTimers();

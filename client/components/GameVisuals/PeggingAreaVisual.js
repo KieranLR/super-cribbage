@@ -1,4 +1,5 @@
 import { CardVisual } from './CardVisual.js';
+import { TIMINGS } from '../../utils/flow/timings.js';
 
 export class PeggingAreaVisual extends Phaser.GameObjects.Container {
     /**
@@ -81,7 +82,7 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
         this.scene.tweens.add({
             targets: flashRect,
             alpha: 0,
-            duration: 500,
+            duration: TIMINGS.ANIMATIONS.PEGGING_UI_MOVE,
             onComplete: () => flashRect.destroy()
         });
     }

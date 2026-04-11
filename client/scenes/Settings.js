@@ -42,9 +42,19 @@ export class Settings extends Scene {
             const current = settingsManager.get('showBotHand');
             const newValue = !current;
             settingsManager.set('showBotHand', newValue);
-            this.updateBotHandLabel(newValue);
+            this.updateLabel(this.botHandToggle, this.getBotHandLabel(newValue));
         });
         menu.add(this.botHandToggle);
+
+        // Fast Mode Toggle
+        const fastMode = settingsManager.get('fastMode');
+        this.fastModeToggle = createMenuButton(this, this.getFastModeLabel(fastMode), () => {
+            const current = settingsManager.get('fastMode');
+            const newValue = !current;
+            settingsManager.set('fastMode', newValue);
+            this.updateLabel(this.fastModeToggle, this.getFastModeLabel(newValue));
+        });
+        menu.add(this.fastModeToggle);
 
         // Back Button
         menu.add(createMenuButton(this, 'Back', () => {
@@ -58,12 +68,16 @@ export class Settings extends Scene {
         return `Show Bot Hand: ${value ? 'ON' : 'OFF'}`;
     }
 
-    updateBotHandLabel(value) {
+    getFastModeLabel(value) {
+        return `Fast Mode: ${value ? 'ON' : 'OFF'}`;
+    }
+
+    updateLabel(button, newLabel) {
         // Since createMenuButton doesn't expose the text object directly in a nice way, 
         // and we want to keep it simple, we'll find the text child.
-        const text = this.botHandToggle.list.find(child => child.type === 'Text');
+        const text = button.list.find(child => child.type === 'Text');
         if (text) {
-            text.setText(this.getBotHandLabel(value));
+            text.setText(newLabel);
         }
     }
 }

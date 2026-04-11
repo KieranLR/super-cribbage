@@ -1,5 +1,6 @@
 import { PHASES } from '../../../game/Constants.js';
 import { Scoring } from '../../../game/Scoring.js';
+import { TIMINGS } from '../../utils/flow/timings.js';
 import { CardVisual } from '../../components/GameVisuals/CardVisual.js';
 import { CardInteractionHelper } from '../../utils/CardInteractionHelper.js';
 import { Phase } from './Phase.js';
@@ -26,7 +27,7 @@ export class PeggingPhase extends Phase {
             config: {
                 maxSelected: 1,
                 immediateAction: true,
-                animationDuration: 300
+                animationDuration: TIMINGS.ANIMATIONS.CARD_MOVE_DEFAULT
             }
         });
     }
@@ -68,7 +69,7 @@ export class PeggingPhase extends Phase {
             this.view.showFloatingText(x, y, "GO!", 0xffffff);
         }
         
-        const isCycleEnd = result.isGo || this.gameState.pegging.currentTotal === 0;
+        const isCycleEnd = result.isGo || (this.gameState.pegging && this.gameState.pegging.currentTotal === 0);
         const isPhaseEnd = this.gameState.phase !== PHASES.PEGGING;
 
         if (result.card) {
@@ -113,7 +114,7 @@ export class PeggingPhase extends Phase {
             targets: visual,
             x: targetWorldPos.x,
             y: targetWorldPos.y,
-            duration: 400,
+            duration: TIMINGS.ANIMATIONS.PEGGING_CARD_MOVE,
             ease: 'Power2',
             onComplete: () => {
                 visual.destroy();
@@ -126,10 +127,13 @@ export class PeggingPhase extends Phase {
         if (isCycleEnd || isPhaseEnd) {
             this.controller.isProcessingMove = true;
             this.view.humanHandVisual.cardVisuals.forEach(v => v.isLocked = true);
-            this.view.scene.time.delayedCall(1500, () => {
+            this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.PEGGING_COMPLETE, () => {
                 this.controller.isProcessingMove = false;
                 this.view.humanHandVisual.cardVisuals.forEach(v => v.isLocked = false);
-                this.view.updatePegging(this.gameState.pegging.playedCards, this.gameState.pegging.currentTotal);
+                
+                if (this.gameState.pegging) {
+                    this.view.updatePegging(this.gameState.pegging.playedCards, this.gameState.pegging.currentTotal);
+                }
                 
                 if (this.gameState.phase === PHASES.PEGGING) {
                     this.updatePeggingInstructions();

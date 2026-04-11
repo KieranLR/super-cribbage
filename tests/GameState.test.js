@@ -13,7 +13,7 @@ describe('GameState', () => {
             new Player('1', 'Alice'),
             new Player('2', 'Bob')
         ];
-        gameState = new GameState(players);
+        gameState = new GameState(players, { isHeadless: true });
     });
 
     afterEach(() => {
@@ -35,6 +35,8 @@ describe('GameState', () => {
         gameState.dealCards();
         expect(players[0].hand.cards.length).toBe(6);
         expect(players[1].hand.cards.length).toBe(6);
+        // Transition to DISCARDING
+        gameState.nextPhase();
         expect(gameState.phase).toBe(PHASES.DISCARDING);
     });
 
@@ -44,12 +46,15 @@ describe('GameState', () => {
         gameState.updateDealer();
         gameState.phase = PHASES.DEALING;
         
-        gameState.dealCards(); // Now in DISCARDING phase
+        gameState.dealCards(); 
+        gameState.nextPhase(); // Now in DISCARDING phase
         
         const aliceCards = [players[0].hand.cards[0], players[0].hand.cards[1]];
         const bobCards = [players[1].hand.cards[0], players[1].hand.cards[1]];
 
         gameState.discardToCrib(players[0], aliceCards);
+        console.log(gameState.discardedToCrib);
+        console.log(gameState.getPublicState());
         expect(gameState.discardedToCrib[0]).toBe(true);
         expect(gameState.crib.cards.length).toBe(2);
         expect(gameState.phase).toBe(PHASES.DISCARDING);
@@ -57,6 +62,7 @@ describe('GameState', () => {
         gameState.discardToCrib(players[1], bobCards);
         expect(gameState.discardedToCrib[1]).toBe(true);
         expect(gameState.crib.cards.length).toBe(4);
+        gameState.nextPhase();
         expect(gameState.phase).toBe(PHASES.CUTTING); // nextPhase for DISCARDING sets phase to CUTTING
     });
 
@@ -108,7 +114,9 @@ describe('GameState', () => {
         
         expect(gameState.dealerIndex).toBe(0); // Alice has lower card
         expect(players[0].isDealer).toBe(true);
-        expect(gameState.phase).toBe(PHASES.DISCARDING); // DEALING automatically transitions to DISCARDING
+        // Start DEALING phase
+        gameState.nextPhase();
+        expect(gameState.phase).toBe(PHASES.DEALING); 
         expect(players[0].hand.cards.length).toBe(6);
     });
 
@@ -146,6 +154,6 @@ describe('GameState', () => {
         expect(players[1].isDealer).toBe(true);
         expect(players[0].isDealer).toBe(false);
         expect(gameState.crib.owner).toBe(players[1]);
-        expect(gameState.phase).toBe(PHASES.DISCARDING); // startNewRound calls dealCards which moves to DISCARDING
+        expect(gameState.phase).toBe(PHASES.DEALING); // startNewRound calls dealCards which moves to DISCARDING
     });
 });

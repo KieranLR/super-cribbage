@@ -1,4 +1,4 @@
-export class GamePhase {
+export class GameLogicPhase {
     constructor(gameState) {
         this.gameState = gameState;
     }

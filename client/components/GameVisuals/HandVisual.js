@@ -1,4 +1,5 @@
 import { CardVisual } from './CardVisual.js';
+import { TIMINGS } from '../../utils/flow/timings.js';
 
 export class HandVisual extends Phaser.GameObjects.Container {
     /**
@@ -135,7 +136,7 @@ export class HandVisual extends Phaser.GameObjects.Container {
                     targets: visual,
                     x: posX,
                     y: (visual.baseY || 0),
-                    duration: 100,
+                    duration: TIMINGS.ANIMATIONS.CARD_HOVER,
                     ease: 'Power2',
                     overwrite: true,
                     onStart: () => {
@@ -165,7 +166,7 @@ export class HandVisual extends Phaser.GameObjects.Container {
                 targets: visual,
                 x: posX,
                 y: 0,
-                duration: 200,
+                duration: TIMINGS.ANIMATIONS.GENERIC_MOVE,
                 ease: 'Power2',
                 overwrite: true,
                 onStart: () => {

@@ -66,13 +66,27 @@ export class CribVisual extends Phaser.GameObjects.Container {
         this.submittedVisuals = [];
 
         cards.forEach((card, index) => {
-            // Place in the top-right corner of the zone
-            const posX = 80 + index * 2;
-            const posY = -50 + index * 2;
+            // Place to the right of the discard zone, centered vertically
+            const posX = 150 + index * 2;
+            const posY = 0 + index * 2;
             const visual = new CardVisual(this.scene, posX, posY, card, true);
             visual.setScale(0.8);
             this.add(visual);
             this.submittedVisuals.push(visual);
         });
+    }
+
+    /**
+     * Adds an existing CardVisual to this container while maintaining its world position.
+     * Useful for starting animations that end inside this container.
+     * @param {CardVisual} visual 
+     */
+    addForAnimation(visual) {
+        const worldPos = visual.getWorldTransformMatrix();
+        const localPos = this.getLocalPoint(worldPos.tx, worldPos.ty);
+        
+        visual.setPosition(localPos.x, localPos.y);
+        this.add(visual);
+        this.submittedVisuals.push(visual);
     }
 }

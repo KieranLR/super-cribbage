@@ -5,13 +5,13 @@ import { Pegging } from './Pegging.js';
 import { Scoring } from './Scoring.js';
 import { PHASES, WINNING_SCORE } from './Constants.js';
 
-import { StartingCutPhase } from './phases/StartingCutPhase.js';
-import { DealingPhase } from './phases/DealingPhase.js';
-import { DiscardingPhase } from './phases/DiscardingPhase.js';
-import { CuttingPhase } from './phases/CuttingPhase.js';
-import { PeggingPhase } from './phases/PeggingPhase.js';
-import { CountingPhase } from './phases/CountingPhase.js';
-import { GameOverPhase } from './phases/GameOverPhase.js';
+import { StartingCutLogic } from './phases/StartingCutLogic.js';
+import { DealingLogic } from './phases/DealingLogic.js';
+import { DiscardingLogic } from './phases/DiscardingLogic.js';
+import { CuttingLogic } from './phases/CuttingLogic.js';
+import { PeggingLogic } from './phases/PeggingLogic.js';
+import { CountingLogic } from './phases/CountingLogic.js';
+import { GameOverLogic } from './phases/GameOverLogic.js';
 
 export class GameState {
     /**
@@ -20,6 +20,7 @@ export class GameState {
      */
     constructor(players, options = {}) {
         this.players = players;
+        this.isHeadless = options.isHeadless || false;
         this.deck = new Deck();
         this.phase = PHASES.STARTING_CUT;
         this.dealerIndex = -1; // No dealer yet
@@ -36,17 +37,51 @@ export class GameState {
         this.startingCuts = players.map(() => null);
         
         this.phases = {
-            [PHASES.STARTING_CUT]: new StartingCutPhase(this),
-            [PHASES.DEALING]: new DealingPhase(this),
-            [PHASES.DISCARDING]: new DiscardingPhase(this),
-            [PHASES.CUTTING]: new CuttingPhase(this),
-            [PHASES.PEGGING]: new PeggingPhase(this),
-            [PHASES.COUNTING]: new CountingPhase(this),
-            [PHASES.GAME_OVER]: new GameOverPhase(this)
+            [PHASES.STARTING_CUT]: new StartingCutLogic(this),
+            [PHASES.DEALING]: new DealingLogic(this),
+            [PHASES.DISCARDING]: new DiscardingLogic(this),
+            [PHASES.CUTTING]: new CuttingLogic(this),
+            [PHASES.PEGGING]: new PeggingLogic(this),
+            [PHASES.COUNTING]: new CountingLogic(this),
+            [PHASES.GAME_OVER]: new GameOverLogic(this)
         };
 
         // Ensure initial dealer is set
         this.updateDealer();
+    }
+
+    /**
+     * Helper to call a method on the current phase.
+     * @param {string} methodName 
+     * @param {...any} args 
+     * @returns {any}
+     */
+    _callPhaseMethod(methodName, ...args) {
+        const currentPhase = this.phases[this.phase];
+        if (currentPhase) {
+            if (typeof currentPhase[methodName] === 'function') {
+                return currentPhase[methodName](...args);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Helper to call a method on the current phase and warn if it doesn't exist.
+     * @param {string} methodName 
+     * @param {...any} args 
+     * @returns {any}
+     */
+    _callPhaseMethodWithWarning(methodName, ...args) {
+        const currentPhase = this.phases[this.phase];
+        if (currentPhase) {
+            if (typeof currentPhase[methodName] === 'function') {
+                return currentPhase[methodName](...args);
+            } else {
+                console.warn(`[GameState] Phase ${this.phase} does not have method ${methodName}`);
+            }
+        }
+        return null;
     }
 
     /**
@@ -136,20 +171,14 @@ export class GameState {
      * @param {number} cardIndex - The index of the card in the deck to cut.
      */
     cutForDealer(player, cardIndex) {
-        const currentPhase = this.phases[this.phase];
-        if (currentPhase && typeof currentPhase.cutForDealer === 'function') {
-            currentPhase.cutForDealer(player, cardIndex);
-        }
+        this._callPhaseMethodWithWarning('cutForDealer', player, cardIndex);
     }
 
     /**
      * Deals 6 cards to each player (standard 2-player Cribbage).
      */
     dealCards() {
-        const currentPhase = this.phases[this.phase];
-        if (currentPhase && typeof currentPhase.dealCards === 'function') {
-            currentPhase.dealCards();
-        }
+        this._callPhaseMethodWithWarning('dealCards');
     }
 
     /**
@@ -158,30 +187,21 @@ export class GameState {
      * @param {import('./Card.js').Card[]} cards - Cards to discard.
      */
     discardToCrib(player, cards) {
-        const currentPhase = this.phases[this.phase];
-        if (currentPhase && typeof currentPhase.discardToCrib === 'function') {
-            currentPhase.discardToCrib(player, cards);
-        }
+        this._callPhaseMethodWithWarning('discardToCrib', player, cards);
     }
 
     /**
      * Cuts the deck to reveal the starter card.
      */
     cutStarterCard() {
-        const currentPhase = this.phases[this.phase];
-        if (currentPhase && typeof currentPhase.cutStarterCard === 'function') {
-            currentPhase.cutStarterCard();
-        }
+        this._callPhaseMethodWithWarning('cutStarterCard');
     }
 
     /**
      * Initializes the pegging phase.
      */
     startPegging() {
-        const currentPhase = this.phases[this.phase];
-        if (currentPhase && typeof currentPhase.startPegging === 'function') {
-            currentPhase.startPegging();
-        }
+        this._callPhaseMethodWithWarning('startPegging');
     }
 
     /**
@@ -190,20 +210,14 @@ export class GameState {
      * @param {import('./Card.js').Card|null} card - Card to play, or null for "Go".
      */
     playPeggingCard(player, card) {
-        const currentPhase = this.phases[this.phase];
-        if (currentPhase && typeof currentPhase.playPeggingCard === 'function') {
-            currentPhase.playPeggingCard(player, card);
-        }
+        this._callPhaseMethodWithWarning('playPeggingCard', player, card);
     }
 
     /**
      * Scores the hands and the crib at the end of the round.
      */
     countHands() {
-        const currentPhase = this.phases[this.phase];
-        if (currentPhase && typeof currentPhase.countHands === 'function') {
-            currentPhase.countHands();
-        }
+        this._callPhaseMethodWithWarning('countHands');
     }
 
     /**
@@ -211,20 +225,14 @@ export class GameState {
      * @param {Player} player 
      */
     countPlayerHand(player) {
-        const currentPhase = this.phases[this.phase];
-        if (currentPhase && typeof currentPhase.countPlayerHand === 'function') {
-            currentPhase.countPlayerHand(player);
-        }
+        this._callPhaseMethodWithWarning('countPlayerHand', player);
     }
 
     /**
      * Counts the crib.
      */
     countCrib() {
-        const currentPhase = this.phases[this.phase];
-        if (currentPhase && typeof currentPhase.countCrib === 'function') {
-            currentPhase.countCrib();
-        }
+        this._callPhaseMethodWithWarning('countCrib');
     }
 
     /**
@@ -249,10 +257,7 @@ export class GameState {
      * Checks if it's a Bot's turn and triggers their move if so.
      */
     checkBotTurns() {
-        const currentPhase = this.phases[this.phase];
-        if (currentPhase && typeof currentPhase.checkBotTurns === 'function') {
-            currentPhase.checkBotTurns();
-        }
+        this._callPhaseMethod('checkBotTurns');
     }
 
     getPublicState() {

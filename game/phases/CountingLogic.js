@@ -1,7 +1,7 @@
-import { GamePhase } from './GamePhase.js';
+import { GameLogicPhase } from './GameLogicPhase.js';
 import { Scoring } from '../Scoring.js';
 
-export class CountingPhase extends GamePhase {
+export class CountingLogic extends GameLogicPhase {
     start() {
         // No automatic counting here, the UI will step through it
     }
@@ -38,7 +38,7 @@ export class CountingPhase extends GamePhase {
      * @param {Player} player 
      */
     countPlayerHand(player) {
-        // Use handForCounting which was stored during DiscardingPhase
+        // Use handForCounting which was stored during DiscardingLogic
         const score = Scoring.countHand(player.handForCounting, this.gameState.starterCard, false);
         player.addPoints(score.total);
         this.gameState.emit('pointsEarned', { player, points: score.total, reason: 'Hand Count', breakdown: score });

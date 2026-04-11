@@ -1,3 +1,5 @@
+import { TIMINGS } from './flow/timings.js';
+
 export class CardInteractionHelper {
     /**
      * @param {Object} options
@@ -21,7 +23,7 @@ export class CardInteractionHelper {
         this.config = {
             maxSelected: 1,
             immediateAction: false,
-            animationDuration: 300,
+            animationDuration: TIMINGS.ANIMATIONS.CARD_MOVE_DEFAULT,
             ...config
         };
     }

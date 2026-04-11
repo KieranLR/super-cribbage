@@ -1,13 +1,14 @@
-import { GamePhase } from './GamePhase.js';
+import { GameLogicPhase } from './GameLogicPhase.js';
 import { PHASES } from '../Constants.js';
 
-export class CuttingPhase extends GamePhase {
+export class CuttingLogic extends GameLogicPhase {
     start() {
         this.cutStarterCard();
     }
 
     cutStarterCard() {
         this.gameState.starterCard = this.gameState.deck.deal();
+        // Let the controller/client handle nextPhase after showing the card
         this.gameState.emit('starterCardCut', { card: this.gameState.starterCard });
 
         // If starter card is a Jack, dealer gets 2 points ("His Heels")
@@ -17,12 +18,5 @@ export class CuttingPhase extends GamePhase {
             this.gameState.emit('pointsEarned', { player: dealer, points: 2, reason: 'His Heels' });
             this.gameState.checkWin();
         }
-
-        // Wait a bit for the player to see the starter card before moving to pegging
-        setTimeout(() => {
-            if (this.gameState.phase === PHASES.CUTTING) {
-                this.gameState.nextPhase();
-            }
-        }, 1500);
     }
 }

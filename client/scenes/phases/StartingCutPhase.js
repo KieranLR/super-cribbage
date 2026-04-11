@@ -1,4 +1,5 @@
 import { PHASES } from '../../../game/Constants.js';
+import { TIMINGS } from '../../utils/flow/timings.js';
 import { Phase } from './Phase.js';
 
 export class StartingCutPhase extends Phase {
@@ -34,7 +35,7 @@ export class StartingCutPhase extends Phase {
         const visual = this.view.startingCutCards.find(v => v.cutIndex === cardIndex);
         if (visual) {
             visual.isLocked = true;
-            this.view.scene.time.delayedCall(500, () => {
+            this.view.scene.time.delayedCall(TIMINGS.UI.STARTING_CUT_LOCK, () => {
                 visual.isLocked = false;
             });
         }
@@ -52,11 +53,11 @@ export class StartingCutPhase extends Phase {
         }
 
         // Wait for the message and then the view reset
-        setTimeout(() => {
+        this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.STARTING_CUT_TIE_UI, () => {
             // Before starting the phase again, clear the revealed cards
             this.cleanup();
             this.start();
-        }, 1500);
+        });
     }
 
     onFirstDealerDetermined({ dealer }) {

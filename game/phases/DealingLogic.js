@@ -1,6 +1,6 @@
-import { GamePhase } from './GamePhase.js';
+import { GameLogicPhase } from './GameLogicPhase.js';
 
-export class DealingPhase extends GamePhase {
+export class DealingLogic extends GameLogicPhase {
     start() {
         // No auto-rotation here; Dealer rotation is now handled in GameState.nextPhase()
         // or specifically in the transitions leading to DEALING.
@@ -32,6 +32,5 @@ export class DealingPhase extends GamePhase {
         });
 
         this.gameState.emit('cardsDealt', { players: this.gameState.players });
-        this.gameState.nextPhase(); // Move to DISCARDING
     }
 }

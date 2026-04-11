@@ -13,7 +13,7 @@ describe('GameState Counting Integration', () => {
             new Player('1', 'Alice'),
             new Player('2', 'Bob')
         ];
-        gameState = new GameState(players);
+        gameState = new GameState(players, { isHeadless: true });
         // Alice is dealer (index 0)
         gameState.dealerIndex = 0;
         gameState.updateDealer();
@@ -60,6 +60,7 @@ describe('GameState Counting Integration', () => {
         // Nobs: J of Spades, starter 5 of Spades = 1.
         // Total = 16 + 12 + 1 = 29.
 
+        gameState.phase = PHASES.COUNTING;
         players[1].handForCounting = [
             new Card(Suits.CLUBS, Values.FIVE),
             new Card(Suits.DIAMONDS, Values.FIVE),
@@ -67,7 +68,6 @@ describe('GameState Counting Integration', () => {
             new Card(Suits.SPADES, Values.JACK)
         ];
         gameState.starterCard = new Card(Suits.SPADES, Values.FIVE);
-
         gameState.countPlayerHand(players[1]);
 
         expect(players[1].score).toBe(29);

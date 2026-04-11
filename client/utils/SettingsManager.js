@@ -1,7 +1,8 @@
 class SettingsManager {
     constructor() {
         this.settings = {
-            showBotHand: false
+            showBotHand: false,
+            fastMode: false
         };
         this.load();
     }

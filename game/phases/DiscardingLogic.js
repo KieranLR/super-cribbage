@@ -1,20 +1,15 @@
-import { GamePhase } from './GamePhase.js';
+import { GameLogicPhase } from './GameLogicPhase.js';
 
-export class DiscardingPhase extends GamePhase {
+export class DiscardingLogic extends GameLogicPhase {
     start() {
-        this.checkBotTurns();
     }
 
     checkBotTurns() {
         if (this.gameState.winner) return;
         this.gameState.players.forEach((player, index) => {
             if (player.isBot && !this.gameState.discardedToCrib[index]) {
-                // Small delay for bot thinking
-                setTimeout(() => {
-                    if (this.gameState.phase !== "DISCARDING") return;
-                    const discards = player.makeDiscardDecision();
-                    this.discardToCrib(player, discards);
-                }, 1000);
+                const discards = player.makeDiscardDecision();
+                this.discardToCrib(player, discards);
             }
         });
     }
@@ -42,9 +37,7 @@ export class DiscardingPhase extends GamePhase {
 
         // If everyone has discarded, move to next phase
         if (this.gameState.discardedToCrib.every(d => d)) {
-            this.gameState.nextPhase();
-        } else {
-            this.checkBotTurns();
+            this.gameState.emit('allDiscarded', {});
         }
     }
 }

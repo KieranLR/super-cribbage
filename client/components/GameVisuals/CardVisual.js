@@ -1,4 +1,5 @@
 import { Suits } from '../../../game/Card.js';
+import { TIMINGS } from '../../utils/flow/timings.js';
 
 export class CardVisual extends Phaser.GameObjects.Container {
     /**
@@ -108,7 +109,7 @@ export class CardVisual extends Phaser.GameObjects.Container {
             this.scene.tweens.add({
                 targets: this,
                 y: (this.baseY ?? this.y) - 10,
-                duration: 150,
+                duration: TIMINGS.ANIMATIONS.CARD_FLIP,
                 ease: 'Power2',
                 overwrite: true
             });
@@ -127,7 +128,7 @@ export class CardVisual extends Phaser.GameObjects.Container {
             this.scene.tweens.add({
                 targets: this,
                 y: (this.baseY ?? this.y),
-                duration: 150,
+                duration: TIMINGS.ANIMATIONS.CARD_FLIP,
                 ease: 'Power2',
                 overwrite: true
             });

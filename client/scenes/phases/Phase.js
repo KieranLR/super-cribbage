@@ -1,3 +1,5 @@
+import { TIMINGS } from '../../utils/flow/timings.js';
+
 export class Phase {
     constructor(controller) {
         this.controller = controller;
@@ -40,7 +42,7 @@ export class Phase {
         const y = player === this.humanPlayer ? this.view.scene.scale.height - 200 : 200;
         
         const isGoPoint = reason === 'Pegging' && points === 1;
-        const is31Point = reason === 'Pegging' && points === 2 && this.gameState.pegging.currentTotal === 0 && this.gameState.pegging.playedCards.length === 0;
+        const is31Point = reason === 'Pegging' && points === 2 && this.gameState.pegging?.currentTotal === 0 && this.gameState.pegging?.playedCards.length === 0;
         
         const displayReason = isGoPoint ? 'Go' : is31Point ? '31' : reason;
         const textColor = (isGoPoint || is31Point) ? 0xffffff : 0xffff00;
@@ -73,7 +75,7 @@ export class Phase {
         const visual = this.view.starterCardVisual.cardVisual;
         if (visual) {
             visual.isLocked = true;
-            this.view.scene.time.delayedCall(500, () => {
+            this.view.scene.time.delayedCall(TIMINGS.UI.PHASE_INDICATOR_DELAY, () => {
                 visual.isLocked = false;
             });
         }

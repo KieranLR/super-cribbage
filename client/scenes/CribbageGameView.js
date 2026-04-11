@@ -1,4 +1,5 @@
 import { PHASES } from '../../game/Constants.js';
+import { TIMINGS } from '../utils/flow/timings.js';
 import { HandVisual } from '../components/GameVisuals/HandVisual.js';
 import { CribVisual } from '../components/GameVisuals/CribVisual.js';
 import { PeggingAreaVisual } from '../components/GameVisuals/PeggingAreaVisual.js';
@@ -101,29 +102,32 @@ export class CribbageGameView {
             this.scene.tweens.add({
                 targets: this.cribVisual,
                 alpha: 1,
-                duration: 200
+                duration: TIMINGS.ANIMATIONS.GENERIC_MOVE
             });
         } else if (!isVisible && this.cribVisual.visible) {
             // If it's becoming invisible, fade it out
             this.scene.tweens.add({
                 targets: this.cribVisual,
                 alpha: 0,
-                duration: 200,
+                duration: TIMINGS.ANIMATIONS.GENERIC_MOVE,
                 onComplete: () => {
                     this.cribVisual.setVisible(false);
                 }
             });
         }
 
-        const targetX = (phase === PHASES.PEGGING || phase === PHASES.COUNTING) ? width - 150 : width / 2;
+        const targetX = (phase === PHASES.PEGGING || phase === PHASES.COUNTING || phase === PHASES.CUTTING) ? width - 150 : width / 2;
         const targetY = height / 2 + 100;
 
         if (this.cribVisual.visible) {
+            // Don't move the crib if we are still in discarding phase but both players discarded
+            // wait for the actual phase change to happen in the game state.
+            // Actually, we WANT it to move when the phase changes.
             this.scene.tweens.add({
                 targets: this.cribVisual,
                 x: targetX,
                 y: targetY,
-                duration: 500,
+                duration: TIMINGS.ANIMATIONS.PEGGING_UI_MOVE,
                 ease: 'Power2',
                 overwrite: true
             });
@@ -214,7 +218,7 @@ export class CribbageGameView {
             this.scene.tweens.add({
                 targets: visual,
                 y: targetY,
-                duration: 500,
+                duration: TIMINGS.ANIMATIONS.GENERIC_FADE,
                 ease: 'Power2'
             });
         }
@@ -229,7 +233,7 @@ export class CribbageGameView {
             targets: floatingText,
             y: y - 100,
             alpha: 0,
-            duration: 2000,
+            duration: TIMINGS.ANIMATIONS.SCOREBOARD_UPDATE,
             onComplete: () => floatingText.destroy()
         });
     }

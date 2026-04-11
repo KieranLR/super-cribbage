@@ -20,7 +20,7 @@ export class MainMenu extends Scene {
         // Title
         const titleY = height * 0.22;
 
-        this.add.text(width * 0.5, titleY + 100, 'Super Cribbage', {
+        this.add.text(width * 0.5, titleY + 100, 'Super Gribbage', {
             fontFamily: 'Arial Black',
             fontSize: '64px',
             color: '#ffffff',
