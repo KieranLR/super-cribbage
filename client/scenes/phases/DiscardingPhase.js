@@ -64,7 +64,11 @@ export class DiscardingPhase extends Phase {
 
         this.animateDiscard(handVisual, data.cards, isBot, () => {
             const remainingCards = data.player.hand.cards;
-            handVisual.setCards(remainingCards);
+            if (isBot) {
+                this.view.updateHands(this.humanPlayer.hand.cards, remainingCards);
+            } else {
+                handVisual.setCards(remainingCards);
+            }
             this.checkPhaseTransition();
         });
     }

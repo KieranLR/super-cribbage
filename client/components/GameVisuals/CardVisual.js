@@ -43,7 +43,13 @@ export class CardVisual extends Phaser.GameObjects.Container {
         this.backPattern.setVisible(false);
 
         // Suit Color
-        const color = (card.suit === Suits.HEARTS || card.suit === Suits.DIAMONDS) ? '#ff0000' : '#000000';
+        const suitColors = {
+            [Suits.HEARTS]: '#ff0000',    // Red
+            [Suits.DIAMONDS]: '#ff8c00',  // DarkOrange
+            [Suits.CLUBS]: '#00008b',     // DarkBlue
+            [Suits.SPADES]: '#000000'     // Black
+        };
+        const color = suitColors[card.suit] || '#000000';
 
         // Value Text (Top Left)
         this.valueText = scene.add.text(-width / 2 + 5, -height / 2 + 5, this.getShortValue(card.value), {
@@ -213,7 +219,13 @@ export class CardVisual extends Phaser.GameObjects.Container {
         this.isFaceDown = isFaceDown;
         
         // Update colors based on current card data
-        const color = (this.cardData.suit === Suits.HEARTS || this.cardData.suit === Suits.DIAMONDS) ? '#ff0000' : '#000000';
+        const suitColors = {
+            [Suits.HEARTS]: '#ff0000',    // Red
+            [Suits.DIAMONDS]: '#ff8c00',  // DarkOrange
+            [Suits.CLUBS]: '#00008b',     // DarkBlue
+            [Suits.SPADES]: '#000000'     // Black
+        };
+        const color = suitColors[this.cardData.suit] || '#000000';
         this.valueText.setColor(color).setText(this.getShortValue(this.cardData.value));
         this.smallSuitText.setColor(color).setText(this.getSuitSymbol(this.cardData.suit));
         this.valueTextBottom.setColor(color).setText(this.getShortValue(this.cardData.value));

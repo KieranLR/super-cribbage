@@ -201,6 +201,10 @@ export class CribbageGameView {
         const { players } = data;
         const cardsToDeal = [];
         
+        // Reset botHandVisual.isBot at the start of dealing to ensure it's correct for this round
+        const showBotHand = settingsManager.get('showBotHand');
+        this.botHandVisual.isBot = !showBotHand;
+        
         // Cribbage usually deals one by one. 
         // We'll alternate players for each card based on their actual hand size in data.
         const maxHandSize = Math.max(...players.map(p => p.hand.cards.length));
@@ -252,8 +256,7 @@ export class CribbageGameView {
             handVisual.setupCardInteractivity(cardVisual);
             
             // Bot cards are face down, human cards face up (unless setting says otherwise)
-            const showBotHand = settingsManager.get('showBotHand');
-            const shouldBeFaceDown = !isHuman && !showBotHand;
+            const shouldBeFaceDown = !isHuman && this.botHandVisual.isBot;
             
             if (shouldBeFaceDown) {
                 cardVisual.setFaceDown(true);
