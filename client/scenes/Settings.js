@@ -1,6 +1,8 @@
 import { Scene } from 'phaser';
 import { createMenuButton } from '../ui/buttons/menuButton.js';
+import { CARD_DECKS } from '../utils/CardDeckConfigs.js';
 import { settingsManager } from '../utils/SettingsManager.js';
+import { BackgroundVisual } from '../components/GameVisuals/BackgroundVisual.js';
 
 export class Settings extends Scene {
     constructor() {
@@ -11,9 +13,7 @@ export class Settings extends Scene {
         const { width, height } = this.scale;
 
         // Background
-        const bg = this.add.image(width / 2, height / 2, 'background');
-        const scale = Math.max(width / bg.width + 0.2, height / bg.height + 0.2);
-        bg.setScale(scale).setScrollFactor(0).setAlpha(0.6);
+        this.bg = new BackgroundVisual(this, 0.6);
 
         // Main Panel
         this.add.rectangle(width / 2, height / 2, width * 0.8, height * 0.8, 0x000000, 0.8)
@@ -56,6 +56,20 @@ export class Settings extends Scene {
         });
         menu.add(this.fastModeToggle);
 
+        // Card Deck Selection
+        const currentDeckId = settingsManager.get('cardDeck') || 'default';
+        const currentDeck = Object.values(CARD_DECKS).find(d => d.id === currentDeckId) || CARD_DECKS.DEFAULT;
+        this.deckToggle = createMenuButton(this, this.getDeckLabel(currentDeck.name), () => {
+            const allDecks = Object.values(CARD_DECKS);
+            const currentIndex = allDecks.findIndex(d => d.id === settingsManager.get('cardDeck'));
+            const nextIndex = (currentIndex + 1) % allDecks.length;
+            const nextDeck = allDecks[nextIndex];
+            
+            settingsManager.set('cardDeck', nextDeck.id);
+            this.updateLabel(this.deckToggle, this.getDeckLabel(nextDeck.name));
+        });
+        menu.add(this.deckToggle);
+
         // Back Button
         menu.add(createMenuButton(this, 'Back', () => {
             this.scene.start('MainMenu');
@@ -72,6 +86,10 @@ export class Settings extends Scene {
         return `Fast Mode: ${value ? 'ON' : 'OFF'}`;
     }
 
+    getDeckLabel(name) {
+        return `Card Deck: ${name}`;
+    }
+
     updateLabel(button, newLabel) {
         // Since createMenuButton doesn't expose the text object directly in a nice way, 
         // and we want to keep it simple, we'll find the text child.
@@ -80,4 +98,5 @@ export class Settings extends Scene {
             text.setText(newLabel);
         }
     }
+
 }

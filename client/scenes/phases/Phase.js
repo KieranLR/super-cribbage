@@ -28,6 +28,30 @@ export class Phase {
 
         const targetPos = TableLayout.getCribPosition(this.view.scene.scale, phase, PHASES);
         this.transitionCrib(phase, targetPos);
+
+        // Visibility of Sort Widget
+        const isSortVisible = [PHASES.DISCARDING, PHASES.PEGGING].includes(phase);
+        this.transitionSortWidget(isSortVisible);
+    }
+
+    /**
+     * Fades the sort widget based on visibility.
+     */
+    transitionSortWidget(isVisible) {
+        if (!this.view.sortWidget) return;
+
+        if (isVisible && !this.view.sortWidget.visible) {
+            this.view.sortWidget.setVisible(true);
+            this.view.sortWidget.alpha = 0;
+            this.view.flow.startAnimation();
+            this.animator.fade(this.view.sortWidget, 1, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => this.view.flow.endAnimation());
+        } else if (!isVisible && this.view.sortWidget.visible) {
+            this.view.flow.startAnimation();
+            this.animator.fade(this.view.sortWidget, 0, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
+                this.view.sortWidget.setVisible(false);
+                this.view.flow.endAnimation();
+            });
+        }
     }
 
     /**

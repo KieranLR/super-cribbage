@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import {createMenuButton} from "../ui/buttons/menuButton.js";
+import { BackgroundVisual } from '../components/GameVisuals/BackgroundVisual.js';
 
 export class MainMenu extends Scene {
     constructor() {
@@ -10,12 +11,7 @@ export class MainMenu extends Scene {
         const {width, height} = this.scale;
 
         // Background
-        const bg = this.add.image(width / 2, height / 2, 'background');
-        const scale = Math.max(
-            width / bg.width + 0.2,
-            height / bg.height + 0.2
-        );
-        bg.setScale(scale).setScrollFactor(0);
+        this.bg = new BackgroundVisual(this);
 
         // Title
         const titleY = height * 0.22;
@@ -63,4 +59,5 @@ export class MainMenu extends Scene {
 
         menu.layout();
     }
+
 }

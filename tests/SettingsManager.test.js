@@ -13,7 +13,11 @@ describe('SettingsManager', () => {
             }
         };
         // Reset settingsManager state
-        settingsManager.settings = { showBotHand: false };
+        settingsManager.settings = { 
+            showBotHand: false,
+            fastMode: false,
+            cardDeck: 'default'
+        };
     });
 
     afterEach(() => {
@@ -22,6 +26,7 @@ describe('SettingsManager', () => {
 
     test('should have default settings', () => {
         expect(settingsManager.get('showBotHand')).toBe(false);
+        expect(settingsManager.get('cardDeck')).toBe('default');
     });
 
     test('should set and get a setting', () => {

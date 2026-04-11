@@ -5,7 +5,7 @@
 export const TableLayout = {
     // Relative positions (fractions of screen width/height)
     REL: {
-        PLAYER_HAND_Y: 120, // offset from bottom
+        PLAYER_HAND_Y: 170, // offset from bottom (moved up slightly from 150)
         BOT_HAND_Y: 100, // offset from top
         PEGGING_AREA_Y_OFFSET: -40, // offset from center Y
         CRIB_AREA_Y_OFFSET: 100, // offset from center Y
@@ -18,6 +18,13 @@ export const TableLayout = {
         STARTING_CUT_MARGIN: 100,
         BOT_REVEAL_Y: 300,
         HUMAN_REVEAL_Y: -300, // offset from bottom
+        SORT_WIDGET_Y_OFFSET: 50, // absolute from bottom
+        SORT_WIDGET: {
+            WIDTH: 340,
+            HEIGHT: 70,
+            BUTTON_WIDTH: 80,
+            BUTTON_HEIGHT: 40
+        },
 
         // Component specific dimensions/offsets
         SCOREBOARD: {
@@ -90,6 +97,7 @@ export const TableLayout = {
             scoreboard: { x: this.REL.SCOREBOARD_X, y: this.REL.SCOREBOARD_Y },
             phaseIndicator: { x: centerX, y: this.REL.PHASE_INDICATOR_Y },
             actionButtons: { x: centerX, y: height + this.REL.ACTION_BUTTONS_Y_OFFSET },
+            sortWidget: { x: centerX, y: height - this.REL.SORT_WIDGET_Y_OFFSET },
             exitButton: { x: width - this.REL.EXIT_BUTTON.WIDTH / 2 - this.REL.EXIT_BUTTON.MARGIN, y: this.REL.EXIT_BUTTON.MARGIN + this.REL.EXIT_BUTTON.HEIGHT / 2 },
             deck: { x: this.REL.DECK.X, y: centerY + this.REL.DECK.Y_OFFSET },
             
@@ -97,7 +105,7 @@ export const TableLayout = {
             startingCut: {
                 startX: this.REL.STARTING_CUT_MARGIN,
                 endX: width - this.REL.STARTING_CUT_MARGIN,
-                y: centerY,
+                y: centerY + 150, // Moved slightly lower as requested
                 botRevealY: this.REL.BOT_REVEAL_Y,
                 humanRevealY: height + this.REL.HUMAN_REVEAL_Y
             }

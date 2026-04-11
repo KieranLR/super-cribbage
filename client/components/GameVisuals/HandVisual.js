@@ -1,6 +1,7 @@
 import { CardVisual } from './CardVisual.js';
 import { TIMINGS } from '../../utils/flow/timings.js';
 import { TableAnimator } from '../../utils/TableAnimator.js';
+import { Suits } from '../../../game/Card.js';
 
 export class HandVisual extends Phaser.GameObjects.Container {
     /**
@@ -111,6 +112,12 @@ export class HandVisual extends Phaser.GameObjects.Container {
                 visual.setAlpha(1);
                 visual.isDragging = false;
                 
+                // Force reset visual state (background/highlight) but allow the position to be handled by reflow
+                visual.isHovered = false;
+                if (!visual.isSelected) {
+                    visual.resetVisualState();
+                }
+
                 if (this.onCardDropped) {
                     const worldX = visual.x + this.x;
                     const worldY = visual.y + this.y;
@@ -137,9 +144,6 @@ export class HandVisual extends Phaser.GameObjects.Container {
 
     sortCardVisualsByX() {
         this.cardVisuals.sort((a, b) => a.x - b.x);
-        this.cardVisuals.forEach((v, index) => {
-            this.bringToTop(v);
-        });
     }
 
     arrangeCards(activeVisual = null) {
@@ -166,9 +170,15 @@ export class HandVisual extends Phaser.GameObjects.Container {
         });
     }
 
-    reorderCards() {
+    reorderCards(sortByX = true) {
         // Sort cardVisuals by their current x position
-        this.sortCardVisualsByX();
+        if (sortByX) {
+            this.sortCardVisualsByX();
+        }
+
+        this.cardVisuals.forEach((v, index) => {
+            this.bringToTop(v);
+        });
 
         const spacing = 60;
         const handCards = this.cardVisuals.filter(v => !v.isSelected);
@@ -182,5 +192,31 @@ export class HandVisual extends Phaser.GameObjects.Container {
      */
     getSelectedCards() {
         return this.cardVisuals.filter(v => v.isSelected);
+    }
+
+    sortByRank() {
+        console.log('Sorting by rank');
+        this.cardVisuals.sort((a, b) => {
+            const rankA = a.cardData.getRank();
+            const rankB = b.cardData.getRank();
+            if (rankA !== rankB) return rankA - rankB;
+            // Secondary sort by suit
+            const suitsOrder = [Suits.HEARTS, Suits.DIAMONDS, Suits.CLUBS, Suits.SPADES];
+            return suitsOrder.indexOf(a.cardData.suit) - suitsOrder.indexOf(b.cardData.suit);
+        });
+        this.reorderCards(false);
+    }
+
+    sortBySuit() {
+        console.log('Sorting by suit');
+        this.cardVisuals.sort((a, b) => {
+            const suitsOrder = [Suits.HEARTS, Suits.DIAMONDS, Suits.CLUBS, Suits.SPADES];
+            const suitA = suitsOrder.indexOf(a.cardData.suit);
+            const suitB = suitsOrder.indexOf(b.cardData.suit);
+            if (suitA !== suitB) return suitA - suitB;
+            // Secondary sort by rank
+            return a.cardData.getRank() - b.cardData.getRank();
+        });
+        this.reorderCards(false);
     }
 }

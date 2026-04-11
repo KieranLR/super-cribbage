@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { BackgroundVisual } from '../components/GameVisuals/BackgroundVisual.js';
 
 export class GameOver extends Scene
 {
@@ -9,15 +10,12 @@ export class GameOver extends Scene
 
     create ()
     {
-        this.cameras.main.setBackgroundColor(0xff0000);
+        const { width, height } = this.scale;
 
-        const bg = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'background');
-        let scaleX = this.cameras.main.width / bg.width + 0.2;
-        let scaleY = this.cameras.main.height / bg.height + 0.2;
-        let scale = Math.max(scaleX, scaleY);
-        bg.setScale(scale).setScrollFactor(0);
+        // Background
+        this.bg = new BackgroundVisual(this);
 
-        this.add.text(this.game.config.width * 0.5, 384, 'Game Over', {
+        this.add.text(width * 0.5, 384, 'Game Over', {
             fontFamily: 'Arial Black', fontSize: 64, color: '#ffffff',
             stroke: '#000000', strokeThickness: 8,
             align: 'center'
@@ -29,4 +27,5 @@ export class GameOver extends Scene
 
         });
     }
+
 }

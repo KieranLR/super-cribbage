@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { Card, Suits, Values } from '../../game/Card.js';
 import { CardVisual } from '../components/GameVisuals/CardVisual.js';
+import { BackgroundVisual } from '../components/GameVisuals/BackgroundVisual.js';
 
 export class HowToPlay extends Scene {
     constructor() {
@@ -120,9 +121,7 @@ export class HowToPlay extends Scene {
         const { width, height } = this.scale;
 
         // Background
-        const bg = this.add.image(width / 2, height / 2, 'background');
-        const scale = Math.max(width / bg.width + 0.2, height / bg.height + 0.2);
-        bg.setScale(scale).setScrollFactor(0).setAlpha(0.6);
+        this.bg = new BackgroundVisual(this, 0.6);
 
         // Main Panel
         this.panel = this.add.rectangle(width / 2, height / 2, width * 0.8, height * 0.8, 0x000000, 0.8)
@@ -201,4 +200,5 @@ export class HowToPlay extends Scene {
             this.updateSlide();
         }
     }
+
 }

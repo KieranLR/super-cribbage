@@ -42,6 +42,8 @@ const NORMAL_TIMINGS = {
         PEGGING_UI_MOVE: 500,
         GENERIC_FADE: 500,
         GENERIC_MOVE: 200,
+        DECK_FAN_DURATION: 600,
+        DECK_FAN_DELAY: 750,
         SCOREBOARD_UPDATE: 2000,
         DEAL_INTERVAL: 150
     }
@@ -85,6 +87,8 @@ const FAST_TIMINGS = {
         PEGGING_UI_MOVE: 250,
         GENERIC_FADE: 200,
         GENERIC_MOVE: 100,
+        DECK_FAN_DURATION: 300,
+        DECK_FAN_DELAY: 250,
         SCOREBOARD_UPDATE: 800,
     }
 };

@@ -14,6 +14,8 @@ import { DeckVisual } from '../components/GameVisuals/DeckVisual.js';
 import { settingsManager } from '../utils/SettingsManager.js';
 import { TableAnimator } from '../utils/TableAnimator.js';
 import { createMenuButton } from '../ui/buttons/menuButton.js';
+import { BackgroundVisual } from '../components/GameVisuals/BackgroundVisual.js';
+import { SortWidget } from '../components/GameVisuals/SortWidget.js';
 
 export class CribbageGameView {
     constructor(scene, animator) {
@@ -23,12 +25,11 @@ export class CribbageGameView {
         const pos = TableLayout.getPositions(scene.scale);
 
         // Background
-        this.bg = scene.add.image(pos.background.x, pos.background.y, 'background');
-        const scale = Math.max(scene.scale.width / this.bg.width + 0.2, scene.scale.height / this.bg.height + 0.2);
-        this.bg.setScale(scale).setScrollFactor(0);
+        this.bg = new BackgroundVisual(scene);
 
         this.setupVisuals();
     }
+
 
     setupVisuals() {
         const pos = TableLayout.getPositions(this.scene.scale);
@@ -60,6 +61,16 @@ export class CribbageGameView {
         this.phaseIndicator = new PhaseIndicator(this.scene, pos.phaseIndicator.x, pos.phaseIndicator.y);
         this.actionButtons = new ActionButtons(this.scene, pos.actionButtons.x, pos.actionButtons.y);
         this.actionButtons.setDepth(100);
+
+        this.sortWidget = new SortWidget(
+            this.scene,
+            pos.sortWidget.x,
+            pos.sortWidget.y,
+            () => this.humanHandVisual.sortByRank(),
+            () => this.humanHandVisual.sortBySuit()
+        );
+        this.sortWidget.setDepth(100);
+        this.sortWidget.setVisible(false);
 
         this.setupExitButton();
 
@@ -396,24 +407,18 @@ export class CribbageGameView {
         // Use the DeckVisual to show the fan
         // The DeckVisual is positioned at pos.deck.x, pos.deck.y
         // We want the fan to be centered on the screen and span from startX to endX
-        // So we need to calculate local coordinates relative to deckVisual.x
+        // So we need to calculate local coordinates relative to deckVisual.x/y
         
         const localStartX = pos.startingCut.startX - this.deckVisual.x;
         const localEndX = pos.startingCut.endX - this.deckVisual.x;
         const localY = pos.startingCut.y - this.deckVisual.y;
 
-        // Temporarily move the deck visual to Y position for starting cut if needed, 
-        // but pos.startingCut.y is usually centerY, same as pos.deck.y.
-        this.deckVisual.y = pos.startingCut.y;
-
         if (animate) {
-            this.deckVisual.setAlpha(0);
-            this.animator.fade(this.deckVisual, 1, TIMINGS.ANIMATIONS.GENERIC_FADE, () => {
-                this.deckVisual.animateFan(count, localStartX, localEndX, (v) => this.onCardClicked(v));
-            });
+            this.deckVisual.setAlpha(1);
+            this.deckVisual.animateFan(count, localStartX, localEndX, localY, (v) => this.onCardClicked(v), TIMINGS.ANIMATIONS.DECK_FAN_DURATION, TIMINGS.ANIMATIONS.DECK_FAN_DELAY);
         } else {
             this.deckVisual.setAlpha(1);
-            this.deckVisual.showFan(count, localStartX, localEndX, (v) => this.onCardClicked(v));
+            this.deckVisual.showFan(count, localStartX, localEndX, localY, (v) => this.onCardClicked(v));
         }
     }
 

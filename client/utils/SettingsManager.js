@@ -2,7 +2,8 @@ class SettingsManager {
     constructor() {
         this.settings = {
             showBotHand: false,
-            fastMode: false
+            fastMode: false,
+            cardDeck: 'default'
         };
         this.load();
     }

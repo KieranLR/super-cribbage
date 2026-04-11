@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { BackgroundVisual } from '../components/GameVisuals/BackgroundVisual.js';
 
 export class Preloader extends Scene {
     constructor() {
@@ -6,11 +7,10 @@ export class Preloader extends Scene {
     }
 
     init() {
-        const bg = this.add.image(this.cameras.main.width / 2, this.cameras.main.height / 2, 'background');
-        let scaleX = this.cameras.main.width / bg.width + 0.2;
-        let scaleY = this.cameras.main.height / bg.height + 0.2;
-        let scale = Math.max(scaleX, scaleY);
-        bg.setScale(scale).setScrollFactor(0);
+        const { width, height } = this.scale;
+
+        // Background
+        this.bg = new BackgroundVisual(this);
 
         //  A simple progress bar. This is the outline of the bar.
         this.add.rectangle(this.game.config.width * 0.5, this.game.config.height * 0.5, 468, 32).setStrokeStyle(1, 0xffffff);
@@ -34,4 +34,5 @@ export class Preloader extends Scene {
         //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
         this.scene.start('MainMenu');
     }
+
 }

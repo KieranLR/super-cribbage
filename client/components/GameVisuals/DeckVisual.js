@@ -26,17 +26,20 @@ export class DeckVisual extends Phaser.GameObjects.Container {
      * @param {number} count - Number of cards in the deck.
      * @param {number} startX - Local X start of the fan.
      * @param {number} endX - Local X end of the fan.
+     * @param {number} y - Local Y position of the fan.
      * @param {Function} onCardClicked - Callback when a card is clicked.
      */
-    showFan(count, startX, endX, onCardClicked) {
+    showFan(count, startX, endX, y = 0, onCardClicked) {
         this.clear();
         
         const availableWidth = endX - startX;
         const spacing = availableWidth / (count - 1);
 
         for (let i = 0; i < count; i++) {
-            const posX = startX + (i * spacing);
-            const posY = 0;
+            // Cards are indexed from bottom (0) to top (count-1)
+            // We want the top card to be on the left (startX) and fan out to the right (endX)
+            const posX = startX + ((count - 1 - i) * spacing);
+            const posY = y;
             
             const cardVisual = new CardVisual(this.scene, posX, posY, { suit: 'Hidden', value: '?' }, true);
             cardVisual.originalParent = this;
@@ -58,11 +61,13 @@ export class DeckVisual extends Phaser.GameObjects.Container {
      * @param {number} count - Number of cards in the deck.
      * @param {number} startX - Local X start of the fan.
      * @param {number} endX - Local X end of the fan.
+     * @param {number} y - Local Y position of the fan.
      * @param {Function} onCardClicked - Callback when a card is clicked.
      * @param {number} duration - Animation duration.
+     * @param {number} delay - Delay before animation starts.
      * @param {Function} onComplete - Animation complete callback.
      */
-    animateFan(count, startX, endX, onCardClicked, duration = TIMINGS.ANIMATIONS.GENERIC_MOVE, onComplete = null) {
+    animateFan(count, startX, endX, y = 0, onCardClicked, duration = TIMINGS.ANIMATIONS.GENERIC_MOVE, delay = 0, onComplete = null) {
         // Start as a stack
         this.showStack(count);
 
@@ -70,8 +75,10 @@ export class DeckVisual extends Phaser.GameObjects.Container {
         const spacing = availableWidth / (count - 1);
 
         this.cardVisuals.forEach((card, i) => {
-            const posX = startX + (i * spacing);
-            const posY = 0;
+            // Cards are indexed from bottom (0) to top (count-1)
+            // We want the top card (count-1) to be on the left (startX) and fan out to the right (endX)
+            const posX = startX + ((count - 1 - i) * spacing);
+            const posY = y;
             
             card.isStartingCutCard = true;
             card.cutIndex = i;
@@ -87,10 +94,10 @@ export class DeckVisual extends Phaser.GameObjects.Container {
                 y: posY,
                 duration: duration,
                 ease: 'Power2',
-                delay: i * 5, // Slight ripple effect
+                delay: delay + ((count - 1 - i) * 5), // Global delay + ripple from top card
                 onComplete: () => {
                     card.baseY = posY;
-                    if (i === count - 1 && onComplete) {
+                    if (i === 0 && onComplete) {
                         onComplete();
                     }
                 }

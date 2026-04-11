@@ -10,8 +10,9 @@ export class Boot extends Scene {
         //  The smaller the file size of the assets, the better, as the Boot Scene itself has no preloader.
 
         this.load.setPath('/.proxy/assets');
-        this.load.image('background', 'bg.png');
+        this.load.image('background', 'bg.jpg');
         this.load.image('logo', 'logo.png');
+        this.load.image('card_back_custom', 'card.png');
     }
 
     create() {
