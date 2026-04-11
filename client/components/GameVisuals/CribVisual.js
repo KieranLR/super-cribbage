@@ -1,3 +1,4 @@
+import { TableLayout } from '../../utils/TableLayout.js';
 import { CardVisual } from './CardVisual.js';
 
 export class CribVisual extends Phaser.GameObjects.Container {
@@ -67,7 +68,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
 
         cards.forEach((card, index) => {
             // Place to the right of the discard zone, centered vertically
-            const posX = 150 + index * 2;
+            const posX = TableLayout.REL.CRIB_PARKED_X_OFFSET + index * 2;
             const posY = 0 + index * 2;
             const visual = new CardVisual(this.scene, posX, posY, card, true);
             visual.setScale(0.8);

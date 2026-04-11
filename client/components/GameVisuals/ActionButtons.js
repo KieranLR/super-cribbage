@@ -1,3 +1,4 @@
+import { TableLayout } from '../../utils/TableLayout.js';
 import { createMenuButton } from '../../ui/buttons/menuButton.js';
 
 export class ActionButtons extends Phaser.GameObjects.Container {
@@ -21,8 +22,9 @@ export class ActionButtons extends Phaser.GameObjects.Container {
         btn.setPosition(0, 0);
         this.add(btn);
         
+        const config = TableLayout.REL.ACTION_BUTTONS;
         // Ensure container has a size for interaction if needed
-        this.setSize(420, 60); 
+        this.setSize(config.WIDTH, config.HEIGHT); 
         this.buttons[key] = btn;
         return btn;
     }

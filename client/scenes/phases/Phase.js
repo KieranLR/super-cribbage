@@ -1,4 +1,5 @@
 import { TIMINGS } from '../../utils/flow/timings.js';
+import { TableLayout } from '../../utils/TableLayout.js';
 
 export class Phase {
     constructor(controller) {
@@ -38,8 +39,8 @@ export class Phase {
     onPointsEarned({ player, points, reason }) {
         this.view.updateScores();
         
-        const x = this.view.scene.scale.width / 2;
-        const y = player === this.humanPlayer ? this.view.scene.scale.height - 200 : 200;
+        const isHuman = player === this.humanPlayer;
+        const { x, y } = TableLayout.getFloatingTextPosition(this.view.scene.scale, isHuman);
         
         const isGoPoint = reason === 'Pegging' && points === 1;
         const is31Point = reason === 'Pegging' && points === 2 && this.gameState.pegging?.currentTotal === 0 && this.gameState.pegging?.playedCards.length === 0;

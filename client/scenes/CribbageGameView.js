@@ -1,5 +1,6 @@
 import { PHASES } from '../../game/Constants.js';
 import { TIMINGS } from '../utils/flow/timings.js';
+import { TableLayout } from '../utils/TableLayout.js';
 import { HandVisual } from '../components/GameVisuals/HandVisual.js';
 import { CribVisual } from '../components/GameVisuals/CribVisual.js';
 import { PeggingAreaVisual } from '../components/GameVisuals/PeggingAreaVisual.js';
@@ -13,41 +14,42 @@ import { settingsManager } from '../utils/SettingsManager.js';
 export class CribbageGameView {
     constructor(scene) {
         this.scene = scene;
-        const { width, height } = scene.scale;
+        const pos = TableLayout.getPositions(scene.scale);
 
         // Background
-        this.bg = scene.add.image(width / 2, height / 2, 'background');
-        const scale = Math.max(width / this.bg.width + 0.2, height / this.bg.height + 0.2);
+        this.bg = scene.add.image(pos.background.x, pos.background.y, 'background');
+        const scale = Math.max(scene.scale.width / this.bg.width + 0.2, scene.scale.height / this.bg.height + 0.2);
         this.bg.setScale(scale).setScrollFactor(0);
 
-        this.setupVisuals(width, height);
+        this.setupVisuals();
     }
 
-    setupVisuals(width, height) {
+    setupVisuals() {
+        const pos = TableLayout.getPositions(this.scene.scale);
         const showBotHand = settingsManager.get('showBotHand');
         // Hands
         this.humanHandVisual = new HandVisual(
             this.scene, 
-            width / 2, 
-            height - 120, 
+            pos.playerHand.x, 
+            pos.playerHand.y, 
             [], 
             false, 
             (v) => this.onCardClicked(v),
             (v, x, y) => this.onCardDropped(v, x, y)
         );
-        this.botHandVisual = new HandVisual(this.scene, width / 2, 100, [], !showBotHand);
+        this.botHandVisual = new HandVisual(this.scene, pos.botHand.x, pos.botHand.y, [], !showBotHand);
 
         // Areas
-        this.peggingAreaVisual = new PeggingAreaVisual(this.scene, width / 2, height / 2 - 40);
+        this.peggingAreaVisual = new PeggingAreaVisual(this.scene, pos.peggingArea.x, pos.peggingArea.y);
         this.peggingAreaVisual.setVisible(false);
-        this.cribVisual = new CribVisual(this.scene, width / 2, height / 2 + 100);
+        this.cribVisual = new CribVisual(this.scene, pos.cribCenter.x, pos.cribCenter.y);
         this.cribVisual.setVisible(false);
-        this.starterCardVisual = new StarterCardVisual(this.scene, 100, height / 2);
+        this.starterCardVisual = new StarterCardVisual(this.scene, pos.starterCard.x, pos.starterCard.y);
 
         // HUD
         this.scoreboard = null; // Will be initialized in initializeScoreboard
-        this.phaseIndicator = new PhaseIndicator(this.scene, width / 2, 220);
-        this.actionButtons = new ActionButtons(this.scene, width / 2, height - 240);
+        this.phaseIndicator = new PhaseIndicator(this.scene, pos.phaseIndicator.x, pos.phaseIndicator.y);
+        this.actionButtons = new ActionButtons(this.scene, pos.actionButtons.x, pos.actionButtons.y);
         this.actionButtons.setDepth(100);
 
         // Starting Cut Phase Visuals
@@ -59,7 +61,8 @@ export class CribbageGameView {
     }
 
     initializeScoreboard(players) {
-        this.scoreboard = new Scoreboard(this.scene, 160, 60, players);
+        const pos = TableLayout.getPositions(this.scene.scale);
+        this.scoreboard = new Scoreboard(this.scene, pos.scoreboard.x, pos.scoreboard.y, players);
     }
 
     onCardClicked(cardVisual) {
@@ -85,8 +88,6 @@ export class CribbageGameView {
 
     updatePhase(phase, instruction) {
         this.phaseIndicator.updatePhase(phase, instruction);
-
-        const { width, height } = this.scene.scale;
 
         // Visibility of Pegging Area
         const isPegging = phase === PHASES.PEGGING;
@@ -116,8 +117,7 @@ export class CribbageGameView {
             });
         }
 
-        const targetX = (phase === PHASES.PEGGING || phase === PHASES.COUNTING || phase === PHASES.CUTTING) ? width - 150 : width / 2;
-        const targetY = height / 2 + 100;
+        const targetPos = TableLayout.getCribPosition(this.scene.scale, phase, PHASES);
 
         if (this.cribVisual.visible) {
             // Don't move the crib if we are still in discarding phase but both players discarded
@@ -125,14 +125,14 @@ export class CribbageGameView {
             // Actually, we WANT it to move when the phase changes.
             this.scene.tweens.add({
                 targets: this.cribVisual,
-                x: targetX,
-                y: targetY,
+                x: targetPos.x,
+                y: targetPos.y,
                 duration: TIMINGS.ANIMATIONS.PEGGING_UI_MOVE,
                 ease: 'Power2',
                 overwrite: true
             });
         } else {
-            this.cribVisual.setPosition(targetX, targetY);
+            this.cribVisual.setPosition(targetPos.x, targetPos.y);
         }
     }
 
@@ -182,15 +182,13 @@ export class CribbageGameView {
         this.startingCutCards.forEach(c => c.destroy());
         this.startingCutCards = [];
 
-        const { width, height } = this.scene.scale;
-        const startX = 100;
-        const endX = width - 100;
-        const availableWidth = endX - startX;
+        const pos = TableLayout.getPositions(this.scene.scale);
+        const availableWidth = pos.startingCut.endX - pos.startingCut.startX;
         const spacing = availableWidth / (count - 1);
 
         for (let i = 0; i < count; i++) {
-            const posX = startX + (i * spacing);
-            const posY = height / 2;
+            const posX = pos.startingCut.startX + (i * spacing);
+            const posY = pos.startingCut.y;
             
             // We'll create a special CardVisual that is face down
             const cardVisual = new CardVisual(this.scene, posX, posY, { suit: 'Hidden', value: '?' }, true);
@@ -213,7 +211,8 @@ export class CribbageGameView {
             visual.setFaceDown(false);
             
             // Move it towards the player who cut it
-            const targetY = player.id === 'human' ? this.scene.scale.height - 300 : 300;
+            const pos = TableLayout.getPositions(this.scene.scale);
+            const targetY = player.id === 'human' ? pos.startingCut.humanRevealY : pos.startingCut.botRevealY;
             visual.baseY = targetY;
             this.scene.tweens.add({
                 targets: visual,

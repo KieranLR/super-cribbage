@@ -1,3 +1,4 @@
+import { TableLayout } from '../../utils/TableLayout.js';
 import { CardVisual } from './CardVisual.js';
 
 export class StarterCardVisual extends Phaser.GameObjects.Container {
@@ -11,8 +12,10 @@ export class StarterCardVisual extends Phaser.GameObjects.Container {
         super(scene, x, y);
         this.cardVisual = null;
 
+        const config = TableLayout.REL.STARTER_CARD;
+
         // Label
-        const label = scene.add.text(0, -90, 'Starter Card', {
+        const label = scene.add.text(0, config.LABEL_Y, 'Starter Card', {
             fontSize: '18px',
             color: '#ffffff',
             backgroundColor: '#000000',
@@ -21,8 +24,8 @@ export class StarterCardVisual extends Phaser.GameObjects.Container {
         this.add(label);
 
         // Placeholder area
-        const width = 100;
-        const height = 140;
+        const width = config.WIDTH;
+        const height = config.HEIGHT;
         const placeholder = scene.add.rectangle(0, 0, width, height, 0x3333ff, 0.8)
             .setStrokeStyle(2, 0xffffff, 0.5);
         this.add(placeholder);

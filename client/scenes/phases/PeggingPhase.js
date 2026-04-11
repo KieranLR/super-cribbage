@@ -1,6 +1,7 @@
 import { PHASES } from '../../../game/Constants.js';
 import { Scoring } from '../../../game/Scoring.js';
 import { TIMINGS } from '../../utils/flow/timings.js';
+import { TableLayout } from '../../utils/TableLayout.js';
 import { CardVisual } from '../../components/GameVisuals/CardVisual.js';
 import { CardInteractionHelper } from '../../utils/CardInteractionHelper.js';
 import { Phase } from './Phase.js';
@@ -64,8 +65,9 @@ export class PeggingPhase extends Phase {
 
     onCardPlayed(result) {
         if (result.isGo) {
-            const x = this.view.scene.scale.width / 2;
-            const y = this.view.scene.scale.height / 2 - 150;
+            const { width, height } = this.view.scene.scale;
+            const x = width / 2;
+            const y = height / 2 + TableLayout.REL.FLOATING_TEXT.PEGGING_GO_Y_OFFSET;
             this.view.showFloatingText(x, y, "GO!", 0xffffff);
         }
         

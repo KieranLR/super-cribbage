@@ -1,5 +1,6 @@
 import { PHASES } from '../../../game/Constants.js';
 import { TIMINGS } from '../../utils/flow/timings.js';
+import { TableLayout } from '../../utils/TableLayout.js';
 import { CardInteractionHelper } from '../../utils/CardInteractionHelper.js';
 import { Phase } from './Phase.js';
 
@@ -88,7 +89,7 @@ export class DiscardingPhase extends Phase {
         let completedCount = 0;
         toAnimate.forEach((visual, index) => {
             // Target coordinates are local to the crib container
-            const targetX = 150 + index * 2;
+            const targetX = TableLayout.REL.CRIB_PARKED_X_OFFSET + index * 2;
             const targetY = 0 + index * 2;
 
             this.activeAnimations++;
@@ -130,7 +131,7 @@ export class DiscardingPhase extends Phase {
         let completedCount = 0;
         toAnimate.forEach((visual, index) => {
             // Target coordinates are local to the crib container
-            const targetX = 150 + index * 2;
+            const targetX = TableLayout.REL.CRIB_PARKED_X_OFFSET + index * 2;
             const targetY = 0 + index * 2;
 
             this.activeAnimations++;
