@@ -9,11 +9,12 @@ import { CountingPhase } from './phases/CountingPhase.js';
 import { GameOverPhase } from './phases/GameOverPhase.js';
 
 export class HumanVsBotController {
-    constructor(gameState, view, humanPlayer, botPlayer) {
+    constructor(gameState, view, humanPlayer, botPlayer, animator) {
         this.gameState = gameState;
         this.view = view;
         this.humanPlayer = humanPlayer;
         this.botPlayer = botPlayer;
+        this.animator = animator;
         this.isProcessingMove = false;
 
         this.phases = {

@@ -1,5 +1,6 @@
 import { CardVisual } from './CardVisual.js';
 import { TIMINGS } from '../../utils/flow/timings.js';
+import { TableAnimator } from '../../utils/TableAnimator.js';
 
 export class HandVisual extends Phaser.GameObjects.Container {
     /**
@@ -8,9 +9,11 @@ export class HandVisual extends Phaser.GameObjects.Container {
      * @param {number} y
      * @param {import('../../../game/Card.js').Card[]} cards
      * @param {boolean} isBot
+     * @param {TableAnimator} animator
      */
-    constructor(scene, x, y, cards = [], isBot = false, onCardClick = null, onCardDropped = null) {
+    constructor(scene, x, y, cards = [], isBot = false, animator = null, onCardClick = null, onCardDropped = null) {
         super(scene, x, y);
+        this.animator = animator || new TableAnimator(scene);
         this.isBot = isBot;
         this.cardVisuals = [];
         this.onCardClick = onCardClick;
@@ -132,19 +135,12 @@ export class HandVisual extends Phaser.GameObjects.Container {
             
             // Only move if the target position is different enough to avoid jitter
             if (Math.abs(visual.x - posX) > 1) {
-                this.scene.tweens.add({
-                    targets: visual,
-                    x: posX,
-                    y: (visual.baseY || 0),
+                this.animator.moveCard(visual, posX, (visual.baseY || 0), {
                     duration: TIMINGS.ANIMATIONS.CARD_HOVER,
                     ease: 'Power2',
                     overwrite: true,
                     onStart: () => {
                         visual.baseY = 0;
-                        visual.isLocked = true;
-                    },
-                    onComplete: () => {
-                        visual.isLocked = false;
                     }
                 });
             }
@@ -159,25 +155,7 @@ export class HandVisual extends Phaser.GameObjects.Container {
         const handCards = this.cardVisuals.filter(v => !v.isSelected);
         const totalWidth = (handCards.length - 1) * spacing;
 
-        handCards.forEach((visual, index) => {
-            const posX = (index * spacing) - (totalWidth / 2);
-            // Animate to new positions
-            this.scene.tweens.add({
-                targets: visual,
-                x: posX,
-                y: 0,
-                duration: TIMINGS.ANIMATIONS.GENERIC_MOVE,
-                ease: 'Power2',
-                overwrite: true,
-                onStart: () => {
-                    visual.baseY = 0;
-                    visual.isLocked = true;
-                },
-                onComplete: () => {
-                    visual.isLocked = false;
-                }
-            });
-        });
+        this.animator.reflowHand(handCards, totalWidth, spacing);
     }
 
     /**

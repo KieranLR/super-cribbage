@@ -1,4 +1,5 @@
 import { TIMINGS } from './flow/timings.js';
+import { TableAnimator } from './TableAnimator.js';
 
 export class CardInteractionHelper {
     /**
@@ -13,8 +14,9 @@ export class CardInteractionHelper {
      * @param {boolean} [options.config.immediateAction] - If true, performs action on valid drop/click immediately
      * @param {number} [options.config.animationDuration] - Duration for move animations
      */
-    constructor({ scene, handVisual, dropZoneVisual, onValidateMove, onMoveApplied, config = {} }) {
+    constructor({ scene, handVisual, dropZoneVisual, onValidateMove, onMoveApplied, animator = null, config = {} }) {
         this.scene = scene;
+        this.animator = animator || new TableAnimator(scene);
         this.handVisual = handVisual;
         this.dropZoneVisual = dropZoneVisual;
         this.onValidateMove = onValidateMove;
@@ -150,19 +152,12 @@ export class CardInteractionHelper {
                 visual.parentContainer.bringToTop(visual);
             }
 
-            this.scene.tweens.add({
-                targets: visual,
-                x: targetX,
-                y: targetY,
+            this.animator.moveCard(visual, targetX, targetY, {
                 duration: this.config.animationDuration,
                 ease: 'Power2',
                 overwrite: true,
                 onStart: () => {
                     visual.baseY = targetY;
-                    visual.isLocked = true;
-                },
-                onComplete: () => {
-                    visual.isLocked = false;
                 }
             });
         });
@@ -198,48 +193,26 @@ export class CardInteractionHelper {
             cardVisual.parentContainer.bringToTop(cardVisual);
         }
 
-        this.scene.tweens.add({
-            targets: cardVisual,
-            x: targetX,
-            y: targetY,
+        this.animator.moveCard(cardVisual, targetX, targetY, {
             duration: this.config.animationDuration,
             ease: 'Power2',
-            onStart: () => {
-                cardVisual.isLocked = true;
-            },
             onComplete: () => {
-                cardVisual.isLocked = false;
                 if (onComplete) onComplete();
             }
         });
     }
 
     playErrorAnimation(cardVisual) {
-        // Position-independent error animation: Rotate and Flash
-        this.scene.tweens.add({
-            targets: cardVisual,
-            angle: 10,
-            duration: 50,
-            yoyo: true,
-            repeat: 3,
-            onStart: () => {
-                cardVisual.isLocked = true;
-            },
-            onComplete: () => {
-                // Ensure card is fully visible and upright after animation
-                cardVisual.setAngle(0);
-                cardVisual.isLocked = false;
-
-                // After effect, return to home position
-                this.scene.time.delayedCall(100, () => {
-                    if (!cardVisual.isSelected) {
-                        cardVisual.baseY = 0;
-                        this.handVisual.reorderCards();
-                    } else {
-                        this.updateCardPositions();
-                    }
-                });
-            }
+        this.animator.playErrorAnimation(cardVisual, () => {
+            // After effect, return to home position
+            this.scene.time.delayedCall(100, () => {
+                if (!cardVisual.isSelected) {
+                    cardVisual.baseY = 0;
+                    this.handVisual.reorderCards();
+                } else {
+                    this.updateCardPositions();
+                }
+            });
         });
     }
 }

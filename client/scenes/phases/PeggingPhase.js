@@ -4,6 +4,7 @@ import { TIMINGS } from '../../utils/flow/timings.js';
 import { TableLayout } from '../../utils/TableLayout.js';
 import { CardVisual } from '../../components/GameVisuals/CardVisual.js';
 import { CardInteractionHelper } from '../../utils/CardInteractionHelper.js';
+import { TableAnimator } from '../../utils/TableAnimator.js';
 import { Phase } from './Phase.js';
 
 export class PeggingPhase extends Phase {
@@ -14,6 +15,7 @@ export class PeggingPhase extends Phase {
             scene: this.view.scene,
             handVisual: this.view.humanHandVisual,
             dropZoneVisual: this.view.peggingAreaVisual,
+            animator: this.animator,
             onValidateMove: (cardVisual) => {
                 const pegging = this.gameState.pegging;
                 if (!pegging || pegging.getCurrentPlayer() !== this.humanPlayer) return false;
@@ -112,16 +114,9 @@ export class PeggingPhase extends Phase {
         visual.setScale(0.8);
         visual.setDepth(1000); // Ensure it's on top of everything
 
-        this.view.scene.tweens.add({
-            targets: visual,
-            x: targetWorldPos.x,
-            y: targetWorldPos.y,
-            duration: TIMINGS.ANIMATIONS.PEGGING_CARD_MOVE,
-            ease: 'Power2',
-            onComplete: () => {
-                visual.destroy();
-                onComplete();
-            }
+        this.animator.playCardToPegging(visual, targetWorldPos.x, targetWorldPos.y, () => {
+            visual.destroy();
+            onComplete();
         });
     }
 

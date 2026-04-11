@@ -10,10 +10,12 @@ import { PhaseIndicator } from '../components/GameVisuals/PhaseIndicator.js';
 import { ActionButtons } from '../components/GameVisuals/ActionButtons.js';
 import { CardVisual } from '../components/GameVisuals/CardVisual.js';
 import { settingsManager } from '../utils/SettingsManager.js';
+import { TableAnimator } from '../utils/TableAnimator.js';
 
 export class CribbageGameView {
-    constructor(scene) {
+    constructor(scene, animator) {
         this.scene = scene;
+        this.animator = animator;
         const pos = TableLayout.getPositions(scene.scale);
 
         // Background
@@ -34,10 +36,11 @@ export class CribbageGameView {
             pos.playerHand.y, 
             [], 
             false, 
+            this.animator,
             (v) => this.onCardClicked(v),
             (v, x, y) => this.onCardDropped(v, x, y)
         );
-        this.botHandVisual = new HandVisual(this.scene, pos.botHand.x, pos.botHand.y, [], !showBotHand);
+        this.botHandVisual = new HandVisual(this.scene, pos.botHand.x, pos.botHand.y, [], !showBotHand, this.animator);
 
         // Areas
         this.peggingAreaVisual = new PeggingAreaVisual(this.scene, pos.peggingArea.x, pos.peggingArea.y);
@@ -100,20 +103,11 @@ export class CribbageGameView {
         if (isVisible && !this.cribVisual.visible) {
             this.cribVisual.setVisible(true);
             this.cribVisual.alpha = 0;
-            this.scene.tweens.add({
-                targets: this.cribVisual,
-                alpha: 1,
-                duration: TIMINGS.ANIMATIONS.GENERIC_MOVE
-            });
+            this.animator.fade(this.cribVisual, 1, TIMINGS.ANIMATIONS.GENERIC_MOVE);
         } else if (!isVisible && this.cribVisual.visible) {
             // If it's becoming invisible, fade it out
-            this.scene.tweens.add({
-                targets: this.cribVisual,
-                alpha: 0,
-                duration: TIMINGS.ANIMATIONS.GENERIC_MOVE,
-                onComplete: () => {
-                    this.cribVisual.setVisible(false);
-                }
+            this.animator.fade(this.cribVisual, 0, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
+                this.cribVisual.setVisible(false);
             });
         }
 
@@ -123,14 +117,7 @@ export class CribbageGameView {
             // Don't move the crib if we are still in discarding phase but both players discarded
             // wait for the actual phase change to happen in the game state.
             // Actually, we WANT it to move when the phase changes.
-            this.scene.tweens.add({
-                targets: this.cribVisual,
-                x: targetPos.x,
-                y: targetPos.y,
-                duration: TIMINGS.ANIMATIONS.PEGGING_UI_MOVE,
-                ease: 'Power2',
-                overwrite: true
-            });
+            this.animator.moveCrib(this.cribVisual, targetPos.x, targetPos.y);
         } else {
             this.cribVisual.setPosition(targetPos.x, targetPos.y);
         }
@@ -214,9 +201,7 @@ export class CribbageGameView {
             const pos = TableLayout.getPositions(this.scene.scale);
             const targetY = player.id === 'human' ? pos.startingCut.humanRevealY : pos.startingCut.botRevealY;
             visual.baseY = targetY;
-            this.scene.tweens.add({
-                targets: visual,
-                y: targetY,
+            this.animator.moveCard(visual, visual.x, targetY, {
                 duration: TIMINGS.ANIMATIONS.GENERIC_FADE,
                 ease: 'Power2'
             });
@@ -228,13 +213,7 @@ export class CribbageGameView {
             fontSize: '32px', color: typeof color === 'number' ? `#${color.toString(16).padStart(6, '0')}` : color, fontStyle: 'bold', stroke: '#000', strokeThickness: 4
         }).setOrigin(0.5);
 
-        this.scene.tweens.add({
-            targets: floatingText,
-            y: y - 100,
-            alpha: 0,
-            duration: TIMINGS.ANIMATIONS.SCOREBOARD_UPDATE,
-            onComplete: () => floatingText.destroy()
-        });
+        this.animator.showFloatingText(floatingText, y - 100);
     }
 
     showGameOver(winnerName) {

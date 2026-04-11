@@ -6,6 +6,7 @@ export class Phase {
         this.controller = controller;
         this.gameState = controller.gameState;
         this.view = controller.view;
+        this.animator = controller.animator;
         this.humanPlayer = controller.humanPlayer;
         this.botPlayer = controller.botPlayer;
     }

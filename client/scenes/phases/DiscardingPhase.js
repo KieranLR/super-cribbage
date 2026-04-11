@@ -2,22 +2,24 @@ import { PHASES } from '../../../game/Constants.js';
 import { TIMINGS } from '../../utils/flow/timings.js';
 import { TableLayout } from '../../utils/TableLayout.js';
 import { CardInteractionHelper } from '../../utils/CardInteractionHelper.js';
+import { TableAnimator } from '../../utils/TableAnimator.js';
 import { Phase } from './Phase.js';
 
 export class DiscardingPhase extends Phase {
     start() {
         this.activeAnimations = 0;
+        
         // Clear crib visuals from previous round
         this.view.cribVisual.setCards([]);
         const isDealer = this.humanPlayer.isDealer;
         const cribLabel = isDealer ? 'To Your Crib' : 'To Opponents Crib';
         this.view.cribVisual.setLabel(cribLabel);
         this.view.updatePhase(PHASES.DISCARDING, 'Select 2 cards for the crib');
-
         this.interactionHelper = new CardInteractionHelper({
             scene: this.view.scene,
             handVisual: this.view.humanHandVisual,
             dropZoneVisual: this.view.cribVisual,
+            animator: this.animator,
             onValidateMove: () => true, // Any card can be discarded
             onMoveApplied: () => this.updateDiscardButton(),
             config: {
@@ -93,26 +95,17 @@ export class DiscardingPhase extends Phase {
             const targetY = 0 + index * 2;
 
             this.activeAnimations++;
-            this.view.scene.tweens.add({
-                targets: visual,
-                x: targetX,
-                y: targetY,
-                scale: 0.8,
-                duration: TIMINGS.ANIMATIONS.DISCARD_MOVE,
-                ease: 'Cubic.out',
-                delay: index * 100,
-                onComplete: () => {
-                    completedCount++;
-                    this.activeAnimations--;
-                    if (completedCount === toAnimate.length) {
-                        this.view.humanHandVisual.setCards(this.humanPlayer.hand.cards);
-                        this.view.botHandVisual.setCards(this.controller.botPlayer.hand.cards);
-                        
-                        // We do NOT call updateCrib immediately here to avoid destroying 
-                        // the animating visuals while they are visible.
-                        // Instead we just check for phase transition.
-                        this.checkPhaseTransition();
-                    }
+            this.animator.moveCardToCrib(visual, targetX, targetY, index * 100, () => {
+                completedCount++;
+                this.activeAnimations--;
+                if (completedCount === toAnimate.length) {
+                    this.view.humanHandVisual.setCards(this.humanPlayer.hand.cards);
+                    this.view.botHandVisual.setCards(this.controller.botPlayer.hand.cards);
+                    
+                    // We do NOT call updateCrib immediately here to avoid destroying 
+                    // the animating visuals while they are visible.
+                    // Instead we just check for phase transition.
+                    this.checkPhaseTransition();
                 }
             });
         });
@@ -135,23 +128,14 @@ export class DiscardingPhase extends Phase {
             const targetY = 0 + index * 2;
 
             this.activeAnimations++;
-            this.view.scene.tweens.add({
-                targets: visual,
-                x: targetX,
-                y: targetY,
-                scale: 0.8,
-                duration: TIMINGS.ANIMATIONS.DISCARD_MOVE,
-                ease: 'Cubic.out',
-                delay: index * 100,
-                onComplete: () => {
-                    completedCount++;
-                    this.activeAnimations--;
-                    if (completedCount === toAnimate.length) {
-                        this.view.botHandVisual.setCards(this.controller.botPlayer.hand.cards);
-                        this.view.humanHandVisual.setCards(this.humanPlayer.hand.cards);
-                        
-                        this.checkPhaseTransition();
-                    }
+            this.animator.moveCardToCrib(visual, targetX, targetY, index * 100, () => {
+                completedCount++;
+                this.activeAnimations--;
+                if (completedCount === toAnimate.length) {
+                    this.view.botHandVisual.setCards(this.controller.botPlayer.hand.cards);
+                    this.view.humanHandVisual.setCards(this.humanPlayer.hand.cards);
+                    
+                    this.checkPhaseTransition();
                 }
             });
         });

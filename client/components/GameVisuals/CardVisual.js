@@ -106,13 +106,19 @@ export class CardVisual extends Phaser.GameObjects.Container {
             if (this.parentContainer && this.parentContainer.isAnyHovered && this.parentContainer.isAnyHovered()) return;
             this.isHovered = true;
             if (!this.isSelected) this.bg.setStrokeStyle(4, 0x028af8);
-            this.scene.tweens.add({
-                targets: this,
-                y: (this.baseY ?? this.y) - 10,
-                duration: TIMINGS.ANIMATIONS.CARD_FLIP,
-                ease: 'Power2',
-                overwrite: true
-            });
+            
+            const animator = this.scene.animator || (this.parentContainer && this.parentContainer.animator);
+            if (animator) {
+                animator.hoverCard(this, (this.baseY ?? this.y) - 10);
+            } else {
+                this.scene.tweens.add({
+                    targets: this,
+                    y: (this.baseY ?? this.y) - 10,
+                    duration: TIMINGS.ANIMATIONS.CARD_HOVER,
+                    ease: 'Power2',
+                    overwrite: true
+                });
+            }
         });
 
         this.on('pointerout', () => {
@@ -125,13 +131,19 @@ export class CardVisual extends Phaser.GameObjects.Container {
             if (this.isLocked) return;
             if (this.parentContainer && this.parentContainer.isAnyDragging && this.parentContainer.isAnyDragging()) return;
             if (!this.isSelected) this.bg.setStrokeStyle(2, 0x000000);
-            this.scene.tweens.add({
-                targets: this,
-                y: (this.baseY ?? this.y),
-                duration: TIMINGS.ANIMATIONS.CARD_FLIP,
-                ease: 'Power2',
-                overwrite: true
-            });
+
+            const animator = this.scene.animator || (this.parentContainer && this.parentContainer.animator);
+            if (animator) {
+                animator.hoverCard(this, (this.baseY ?? this.y));
+            } else {
+                this.scene.tweens.add({
+                    targets: this,
+                    y: (this.baseY ?? this.y),
+                    duration: TIMINGS.ANIMATIONS.CARD_HOVER,
+                    ease: 'Power2',
+                    overwrite: true
+                });
+            }
         });
 
         scene.add.existing(this);
