@@ -1,0 +1,222 @@
+import { CardVisual } from './CardVisual.js';
+import { TIMINGS } from '../../utils/flow/timings.js';
+import { TableAnimator } from '../../utils/TableAnimator.js';
+import { Suits } from '../../../game/Card.js';
+
+export class HandVisual extends Phaser.GameObjects.Container {
+    /**
+     * @param {Phaser.Scene} scene
+     * @param {number} x
+     * @param {number} y
+     * @param {import('../../../game/Card.js').Card[]} cards
+     * @param {boolean} isBot
+     * @param {TableAnimator} animator
+     */
+    constructor(scene, x, y, cards = [], isBot = false, animator = null, onCardClick = null, onCardDropped = null) {
+        super(scene, x, y);
+        this.animator = animator || new TableAnimator(scene);
+        this.isBot = isBot;
+        this.cardVisuals = [];
+        this.onCardClick = onCardClick;
+        this.onCardDropped = onCardDropped;
+        this.setCards(cards);
+        scene.add.existing(this);
+    }
+
+    setCards(cards) {
+        // Clear existing visuals
+        this.cardVisuals.forEach(v => {
+            // Only destroy if it is still a child of this container
+            // This prevents destroying cards that have been moved to another container
+            // (e.g. to the crib for animation)
+            if (this.exists(v)) {
+                v.destroy();
+            }
+        });
+        this.cardVisuals = [];
+
+        const spacing = 60;
+        const totalWidth = (cards.length - 1) * spacing;
+
+        cards.forEach((card, index) => {
+            const posX = (index * spacing) - (totalWidth / 2);
+            const visual = new CardVisual(this.scene, posX, 0, card, this.isBot);
+            visual.originalParent = this;
+            this.setupCardInteractivity(visual);
+            this.add(visual);
+            this.cardVisuals.push(visual);
+        });
+    }
+
+    /**
+     * Sets up interactivity for a card visual based on this hand's configuration.
+     * @param {CardVisual} visual 
+     */
+    setupCardInteractivity(visual) {
+        visual.isDragging = false;
+        
+        if (this.isBot) {
+            // If it's a bot, and we ARE showing the hand (debug), maybe make it look slightly different
+            if (!visual.isFaceDown) {
+                visual.setAlpha(0.7);
+            }
+            if (visual.input) visual.input.enabled = false;
+        } else {
+            // For human players, make cards interactive if onCardClick is provided
+            visual.setInteractive({ draggable: true });
+            if (visual.input) visual.input.enabled = true;
+            this.scene.input.setDraggable(visual);
+
+            // Pointer/Click Logic
+            visual.off('pointerup');
+            if (this.onCardClick) {
+                visual.on('pointerup', () => {
+                    if (!visual.isDragging && !visual.hasMovedSignificantly) {
+                        this.onCardClick(visual);
+                    }
+                });
+            }
+
+            // Dragging Logic
+            visual.off('dragstart');
+            visual.on('dragstart', (pointer, dragX, dragY) => {
+                this.bringToTop(visual);
+                visual.setAlpha(0.8);
+                visual.isDragging = true;
+                visual.startX = visual.x;
+                visual.startY = visual.y;
+                visual.hasMovedSignificantly = false;
+            });
+
+            visual.off('drag');
+            visual.on('drag', (pointer, dragX, dragY) => {
+                visual.x = dragX;
+                // Keep y near the original position but allow some vertical movement if desired
+                // For now, let's allow free movement as requested "dragged around the screen"
+                visual.y = dragY; 
+                
+                if (!visual.hasMovedSignificantly) {
+                    const dist = Phaser.Math.Distance.Between(visual.startX, visual.startY, visual.x, visual.y);
+                    if (dist > 10) {
+                        visual.hasMovedSignificantly = true;
+                    }
+                }
+                
+                // Live reorder (shifting cards around)
+                this.sortCardVisualsByX();
+                this.arrangeCards(visual);
+            });
+
+            visual.off('dragend');
+            visual.on('dragend', (pointer, dragX, dragY) => {
+                visual.setAlpha(1);
+                visual.isDragging = false;
+                
+                // Force reset visual state (background/highlight) but allow the position to be handled by reflow
+                visual.isHovered = false;
+                if (!visual.isSelected) {
+                    visual.resetVisualState();
+                }
+
+                if (this.onCardDropped) {
+                    const worldX = visual.x + this.x;
+                    const worldY = visual.y + this.y;
+                    const handled = this.onCardDropped(visual, worldX, worldY);
+                    if (handled) {
+                        // The card has been consumed by the drop zone
+                        // The handler should probably call setCards or similar to refresh the hand
+                        return;
+                    }
+                }
+                
+                this.reorderCards();
+            });
+        }
+    }
+
+    isAnyHovered() {
+        return this.cardVisuals.some(v => v.isHovered);
+    }
+
+    isAnyDragging() {
+        return this.cardVisuals.some(v => v.isDragging);
+    }
+
+    sortCardVisualsByX() {
+        this.cardVisuals.sort((a, b) => a.x - b.x);
+    }
+
+    arrangeCards(activeVisual = null) {
+        const spacing = 60;
+        const handCards = this.cardVisuals.filter(v => !v.isSelected || v === activeVisual);
+        const totalWidth = (handCards.length - 1) * spacing;
+
+        handCards.forEach((visual, index) => {
+            if (visual === activeVisual) return;
+
+            const posX = (index * spacing) - (totalWidth / 2);
+            
+            // Only move if the target position is different enough to avoid jitter
+            if (Math.abs(visual.x - posX) > 1) {
+                this.animator.moveCard(visual, posX, (visual.baseY || 0), {
+                    duration: TIMINGS.ANIMATIONS.CARD_HOVER,
+                    ease: 'Power2',
+                    overwrite: true,
+                    onStart: () => {
+                        visual.baseY = 0;
+                    }
+                });
+            }
+        });
+    }
+
+    reorderCards(sortByX = true) {
+        // Sort cardVisuals by their current x position
+        if (sortByX) {
+            this.sortCardVisualsByX();
+        }
+
+        this.cardVisuals.forEach((v, index) => {
+            this.bringToTop(v);
+        });
+
+        const spacing = 60;
+        const handCards = this.cardVisuals.filter(v => !v.isSelected);
+        const totalWidth = (handCards.length - 1) * spacing;
+
+        this.animator.reflowHand(handCards, totalWidth, spacing);
+    }
+
+    /**
+     * @returns {import('../CardVisual.js').CardVisual[]}
+     */
+    getSelectedCards() {
+        return this.cardVisuals.filter(v => v.isSelected);
+    }
+
+    sortByRank() {
+        console.log('Sorting by rank');
+        this.cardVisuals.sort((a, b) => {
+            const rankA = a.cardData.getRank();
+            const rankB = b.cardData.getRank();
+            if (rankA !== rankB) return rankA - rankB;
+            // Secondary sort by suit
+            const suitsOrder = [Suits.HEARTS, Suits.DIAMONDS, Suits.CLUBS, Suits.SPADES];
+            return suitsOrder.indexOf(a.cardData.suit) - suitsOrder.indexOf(b.cardData.suit);
+        });
+        this.reorderCards(false);
+    }
+
+    sortBySuit() {
+        console.log('Sorting by suit');
+        this.cardVisuals.sort((a, b) => {
+            const suitsOrder = [Suits.HEARTS, Suits.DIAMONDS, Suits.CLUBS, Suits.SPADES];
+            const suitA = suitsOrder.indexOf(a.cardData.suit);
+            const suitB = suitsOrder.indexOf(b.cardData.suit);
+            if (suitA !== suitB) return suitA - suitB;
+            // Secondary sort by rank
+            return a.cardData.getRank() - b.cardData.getRank();
+        });
+        this.reorderCards(false);
+    }
+}
