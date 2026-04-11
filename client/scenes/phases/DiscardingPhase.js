@@ -7,14 +7,11 @@ import { Phase } from './Phase.js';
 
 export class DiscardingPhase extends Phase {
     start() {
-        this.activeAnimations = 0;
-        
-        // Clear crib visuals from previous round
-        this.view.cribVisual.setCards([]);
         const isDealer = this.humanPlayer.isDealer;
+        this.view.cribVisual.setCards([]); // Clear cards from previous round/phase
         const cribLabel = isDealer ? 'To Your Crib' : 'To Opponents Crib';
+        this.updatePhaseView(PHASES.DISCARDING, 'Select 2 cards for the crib');
         this.view.cribVisual.setLabel(cribLabel);
-        this.view.updatePhase(PHASES.DISCARDING, 'Select 2 cards for the crib');
         this.interactionHelper = new CardInteractionHelper({
             scene: this.view.scene,
             handVisual: this.view.humanHandVisual,
@@ -62,90 +59,91 @@ export class DiscardingPhase extends Phase {
             v.baseY = 0;
         });
 
-        // If it was the bot who discarded, animate their cards
-        if (data && data.player.id !== this.humanPlayer.id) {
-            this.animateBotDiscard(data.cards);
-        } else {
-            this.animateHumanDiscard(data.cards);
-        }
-    }
+        const isBot = data && data.player.id !== this.humanPlayer.id;
+        const handVisual = isBot ? this.view.botHandVisual : this.view.humanHandVisual;
 
-    animateHumanDiscard(discardedCards) {
-        // Find the selected visuals that are being discarded
-        const toAnimate = this.view.humanHandVisual.cardVisuals.filter(v => 
-            discardedCards.some(c => c.value === v.cardData.value && c.suit === v.cardData.suit)
-        );
-
-        if (toAnimate.length === 0) {
-            toAnimate.push(...this.view.humanHandVisual.cardVisuals.filter(v => v.isSelected));
-        }
-
-        toAnimate.forEach(visual => {
-            visual.setFaceDown(true);
-            
-            // Move from hand to crib container
-            this.view.humanHandVisual.remove(visual);
-            this.view.cribVisual.addForAnimation(visual);
-        });
-
-        let completedCount = 0;
-        toAnimate.forEach((visual, index) => {
-            // Target coordinates are local to the crib container
-            const targetX = TableLayout.REL.CRIB_PARKED_X_OFFSET + index * 2;
-            const targetY = 0 + index * 2;
-
-            this.activeAnimations++;
-            this.animator.moveCardToCrib(visual, targetX, targetY, index * 100, () => {
-                completedCount++;
-                this.activeAnimations--;
-                if (completedCount === toAnimate.length) {
-                    this.view.humanHandVisual.setCards(this.humanPlayer.hand.cards);
-                    this.view.botHandVisual.setCards(this.controller.botPlayer.hand.cards);
-                    
-                    // We do NOT call updateCrib immediately here to avoid destroying 
-                    // the animating visuals while they are visible.
-                    // Instead we just check for phase transition.
-                    this.checkPhaseTransition();
-                }
-            });
+        this.animateDiscard(handVisual, data.cards, isBot, () => {
+            const remainingCards = data.player.hand.cards;
+            handVisual.setCards(remainingCards);
+            this.checkPhaseTransition();
         });
     }
 
-    animateBotDiscard(discardedCards) {
-        const cardVisuals = [...this.view.botHandVisual.cardVisuals];
-        const toAnimate = cardVisuals.slice(-discardedCards.length);
+    animateDiscard(playerHand, cards, isBot, completionCallback) {
+        console.log('animating discard', playerHand, cards, isBot);
+        const toAnimate = this._prepareDiscardVisuals(playerHand, cards, isBot);
+        let completed = 0;
+
+        const spacing = 2; // Matching CribVisual's stack spacing
         
-        toAnimate.forEach(visual => {
-            // Move from bot hand to crib container
-            this.view.botHandVisual.remove(visual);
-            this.view.cribVisual.addForAnimation(visual);
-        });
-
-        let completedCount = 0;
         toAnimate.forEach((visual, index) => {
-            // Target coordinates are local to the crib container
-            const targetX = TableLayout.REL.CRIB_PARKED_X_OFFSET + index * 2;
-            const targetY = 0 + index * 2;
+            console.log(visual.x, visual.y);
+            const targetX = 175 + index * spacing; 
+            const targetY = index * spacing;
 
-            this.activeAnimations++;
+            this.view.flow.startAnimation();
             this.animator.moveCardToCrib(visual, targetX, targetY, index * 100, () => {
-                completedCount++;
-                this.activeAnimations--;
-                if (completedCount === toAnimate.length) {
-                    this.view.botHandVisual.setCards(this.controller.botPlayer.hand.cards);
-                    this.view.humanHandVisual.setCards(this.humanPlayer.hand.cards);
-                    
-                    this.checkPhaseTransition();
+                completed++;
+                this.view.flow.endAnimation();
+                if (completed === toAnimate.length && completionCallback) {
+                    completionCallback();
                 }
             });
         });
+    }
+
+    _prepareDiscardVisuals(playerHand, cards, isBot) {
+        let toAnimate = [];
+        if (isBot) {
+            toAnimate = playerHand.cardVisuals.slice(-cards.length);
+        } else {
+            toAnimate = playerHand.cardVisuals.filter(v =>
+                cards.some(c => c.value === v.cardData.value && c.suit === v.cardData.suit)
+            );
+            if (toAnimate.length === 0) {
+                toAnimate = playerHand.cardVisuals.filter(v => v.isSelected);
+            }
+        }
+
+        toAnimate.forEach(visual => {
+            if (!isBot) visual.setFaceDown(true);
+            console.log("Preparing visual for crib animation, original hand pos:", visual.x, visual.y);
+            
+            // Remove from hand visual tracking
+            const idx = playerHand.cardVisuals.indexOf(visual);
+            if (idx > -1) playerHand.cardVisuals.splice(idx, 1);
+
+            // Transition to crib container
+            this.view.cribVisual.addForAnimation(visual, playerHand);
+            playerHand.remove(visual);
+            
+            console.log("Visual position in crib container:", visual.x, visual.y);
+        });
+
+        return toAnimate;
     }
 
     checkPhaseTransition() {
-        if (this.activeAnimations === 0 && this.gameState.discardedToCrib.every(d => d)) {
-            // ALL discard animations finished. NOW we can safely refresh the crib visual.
-            this.view.updateCrib(this.gameState.crib.cards);
-            this.view.updatePhase(this.gameState.phase, '');
-        }
+        // We wait for allDiscarded event now, instead of checking manually.
+        // This is handled in onAllDiscarded.
+    }
+
+    onAllDiscarded() {
+        this.view.flow.waitForAnimations(() => {
+            const visuals = this.view.cribVisual.cardVisuals.concat(this.view.cribVisual.submittedVisuals);
+            if (visuals.length === 0) {
+                this.gameState.nextPhase();
+                return;
+            }
+
+            // Start the next phase immediately so its transitionCrib runs at the same time
+            this.gameState.nextPhase();
+
+            this.view.flow.startAnimation();
+            this.animator.centerCribCards(visuals, 2, TIMINGS.ANIMATIONS.PEGGING_UI_MOVE, () => {
+                this.view.flow.endAnimation();
+                this.view.updateCrib(this.gameState.crib.cards);
+            });
+        });
     }
 }

@@ -47,7 +47,7 @@ export class PeggingPhase extends Phase {
         if (this.gameState.phase !== PHASES.PEGGING || !this.gameState.pegging) return;
         const currentPlayer = this.gameState.pegging.getCurrentPlayer();
         const instruction = currentPlayer === this.humanPlayer ? 'Your Turn' : 'Bot is thinking...';
-        this.view.updatePhase(PHASES.PEGGING, instruction);
+        this.updatePhaseView(PHASES.PEGGING, instruction);
 
         if (currentPlayer === this.humanPlayer) {
             const canPlay = this.humanPlayer.hand.cards.some(c => 

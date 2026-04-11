@@ -1,3 +1,4 @@
+import { PHASES } from '../../../game/Constants.js';
 import { TIMINGS } from '../../utils/flow/timings.js';
 import { TableLayout } from '../../utils/TableLayout.js';
 
@@ -9,6 +10,57 @@ export class Phase {
         this.animator = controller.animator;
         this.humanPlayer = controller.humanPlayer;
         this.botPlayer = controller.botPlayer;
+    }
+
+    /**
+     * Updates the phase indicator and common UI elements.
+     */
+    updatePhaseView(phase, instruction) {
+        this.view.phaseIndicator.updatePhase(phase, instruction);
+
+        // Visibility of Pegging Area
+        const isPegging = phase === PHASES.PEGGING;
+        this.view.peggingAreaVisual.setVisible(isPegging);
+
+        const targetPos = TableLayout.getCribPosition(this.view.scene.scale, phase, PHASES);
+        this.transitionCrib(phase, targetPos);
+    }
+
+
+
+    /**
+     * Moves the crib based on the phase and ensures it's visible.
+     */
+    transitionCrib(phase, targetPos) {
+        const isVisible = [
+            PHASES.PEGGING, 
+            PHASES.COUNTING, 
+            PHASES.DISCARDING, 
+            PHASES.CUTTING, 
+            PHASES.DEALING
+        ].includes(phase);
+
+        if (isVisible && !this.view.cribVisual.visible) {
+            this.view.cribVisual.setCards([]); // Clear cards from previous round/phase
+            this.view.cribVisual.setVisible(true);
+            this.view.cribVisual.alpha = 0;
+            this.view.flow.startAnimation();
+            this.animator.fade(this.view.cribVisual, 1, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => this.view.flow.endAnimation());
+        } else if (!isVisible && this.view.cribVisual.visible) {
+            this.view.flow.startAnimation();
+            this.animator.fade(this.view.cribVisual, 0, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
+                this.view.cribVisual.setVisible(false);
+                this.view.flow.endAnimation();
+            });
+        }
+
+        if (this.view.cribVisual.visible) {
+            this.view.flow.startAnimation();
+            this.animator.moveCrib(this.view.cribVisual, targetPos.x, targetPos.y)
+                .on('complete', () => this.view.flow.endAnimation());
+        } else {
+            this.view.cribVisual.setPosition(targetPos.x, targetPos.y);
+        }
     }
 
     /**
@@ -73,14 +125,7 @@ export class Phase {
      * @param {Object} data { card }
      */
     onStarterCardCut({ card }) {
-        this.view.updateStarterCard(card);
-        const visual = this.view.starterCardVisual.cardVisual;
-        if (visual) {
-            visual.isLocked = true;
-            this.view.scene.time.delayedCall(TIMINGS.UI.PHASE_INDICATOR_DELAY, () => {
-                visual.isLocked = false;
-            });
-        }
+        this.view.flow.animateStarterCardCut(card);
     }
 
     /**

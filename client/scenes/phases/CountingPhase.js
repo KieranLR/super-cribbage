@@ -19,7 +19,7 @@ export class CountingPhase extends Phase {
 
         switch (this.countingStep) {
             case 1: // Non-dealer's hand
-                this.view.updatePhase(PHASES.COUNTING, `${nonDealer.name}'s Hand`);
+                this.updatePhaseView(PHASES.COUNTING, `${nonDealer.name}'s Hand`);
                 this.view.updateHands(
                     this.humanPlayer === nonDealer ? this.humanPlayer.handForCounting : this.humanPlayer.hand.cards,
                     this.botPlayer === nonDealer ? this.botPlayer.handForCounting : this.botPlayer.hand.cards,
@@ -33,7 +33,7 @@ export class CountingPhase extends Phase {
                 });
                 break;
             case 2: // Dealer's hand
-                this.view.updatePhase(PHASES.COUNTING, `${dealer.name}'s Hand`);
+                this.updatePhaseView(PHASES.COUNTING, `${dealer.name}'s Hand`);
                 this.view.updateHands(
                     this.humanPlayer.handForCounting,
                     this.botPlayer.handForCounting,
@@ -47,7 +47,7 @@ export class CountingPhase extends Phase {
                 });
                 break;
             case 3: // Crib
-                this.view.updatePhase(PHASES.COUNTING, `${dealer.name}'s Crib`);
+                this.updatePhaseView(PHASES.COUNTING, `${dealer.name}'s Crib`);
                 this.view.cribVisual.setLabel('Crib');
                 this.view.updateCrib(this.gameState.crib.cards, true, true);
                 this.gameState.countCrib();
@@ -61,6 +61,7 @@ export class CountingPhase extends Phase {
     }
 
     cleanup() {
+        console.log('cleaning up counting phase');
         this.view.cribVisual.setCards([]);
     }
 }

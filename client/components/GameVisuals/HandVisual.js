@@ -24,7 +24,14 @@ export class HandVisual extends Phaser.GameObjects.Container {
 
     setCards(cards) {
         // Clear existing visuals
-        this.cardVisuals.forEach(v => v.destroy());
+        this.cardVisuals.forEach(v => {
+            // Only destroy if it is still a child of this container
+            // This prevents destroying cards that have been moved to another container
+            // (e.g. to the crib for animation)
+            if (this.exists(v)) {
+                v.destroy();
+            }
+        });
         this.cardVisuals = [];
 
         const spacing = 60;
@@ -55,7 +62,6 @@ export class HandVisual extends Phaser.GameObjects.Container {
 
                 // Dragging Logic
                 visual.on('dragstart', (pointer, dragX, dragY) => {
-                    console.log('dragging');
                     this.bringToTop(visual);
                     visual.setAlpha(0.8);
                     visual.isDragging = true;
@@ -65,7 +71,6 @@ export class HandVisual extends Phaser.GameObjects.Container {
                 });
 
                 visual.on('drag', (pointer, dragX, dragY) => {
-                    console.log('dragging');
                     visual.x = dragX;
                     // Keep y near the original position but allow some vertical movement if desired
                     // For now, let's allow free movement as requested "dragged around the screen"

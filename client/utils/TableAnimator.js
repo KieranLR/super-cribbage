@@ -9,6 +9,10 @@ export class TableAnimator {
      * Animates a card from one position to another.
      */
     moveCard(cardVisual, x, y, options = {}) {
+        console.log('moveCard', cardVisual.x, cardVisual.y, x, y);
+
+
+
         const {
             duration = TIMINGS.ANIMATIONS.GENERIC_MOVE,
             ease = 'Power2',
@@ -156,11 +160,84 @@ export class TableAnimator {
      */
     moveCardToCrib(cardVisual, x, y, delay, onComplete) {
         return this.moveCard(cardVisual, x, y, {
-            scale: 0.8,
+            scale: 1, // Keep scale consistent with HandVisual to avoid jump later
             duration: TIMINGS.ANIMATIONS.DISCARD_MOVE,
             ease: 'Cubic.out',
             delay: delay,
             onComplete: onComplete
+        });
+    }
+
+    /**
+     * Centers the crib cards during phase transition.
+     */
+    centerCribCards(visuals, spacing = 2, duration = TIMINGS.ANIMATIONS.PEGGING_UI_MOVE, onComplete = null) {
+        let completed = 0;
+        visuals.forEach((visual, index) => {
+            const targetX = index * spacing;
+            const targetY = index * spacing;
+
+            this.scene.tweens.add({
+                targets: visual,
+                x: targetX,
+                y: targetY,
+                duration: duration,
+                ease: 'Power2',
+                onComplete: () => {
+                    completed++;
+                    if (onComplete && completed === visuals.length) {
+                        onComplete();
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * Updates positions of all cards in hand, especially selected ones.
+     */
+    updateSelectedCardsPositions(selectedCards, handPos, dropZoneVisual, animationDuration) {
+        selectedCards.forEach((visual, index) => {
+            let targetX, targetY;
+
+            if (dropZoneVisual.getNextCardPosition) {
+                const worldTarget = dropZoneVisual.getNextCardPosition(selectedCards.length, index);
+                targetX = worldTarget.x - handPos.x;
+                targetY = worldTarget.y - handPos.y;
+            } else {
+                // Default fallback: center of zone with slight offset if multiple
+                const spacing = 30;
+                const offset = (index * spacing) - ((selectedCards.length - 1) * spacing / 2);
+                targetX = dropZoneVisual.x - handPos.x + offset;
+                targetY = dropZoneVisual.y - handPos.y;
+            }
+
+            if (visual.parentContainer) {
+                visual.parentContainer.bringToTop(visual);
+            }
+
+            this.moveCard(visual, targetX, targetY, {
+                duration: animationDuration,
+                ease: 'Power2',
+                overwrite: true,
+                onStart: () => {
+                    visual.baseY = targetY;
+                }
+            });
+        });
+    }
+
+    /**
+     * Highlight area for specific events
+     */
+    flashArea(rect, color = 0xffffff, duration = TIMINGS.ANIMATIONS.PEGGING_UI_MOVE) {
+        rect.setFillStyle(color, 0.5);
+        rect.setAlpha(0.5);
+        return this.scene.tweens.add({
+            targets: rect,
+            alpha: 0,
+            duration: duration,
+            onComplete: () => rect.destroy()
         });
     }
 

@@ -1,5 +1,6 @@
 import { PHASES } from '../../game/Constants.js';
 import { TIMINGS } from '../utils/flow/timings.js';
+import { RoundFlow } from '../utils/flow/RoundFlow.js';
 import { TableLayout } from '../utils/TableLayout.js';
 import { HandVisual } from '../components/GameVisuals/HandVisual.js';
 import { CribVisual } from '../components/GameVisuals/CribVisual.js';
@@ -16,6 +17,7 @@ export class CribbageGameView {
     constructor(scene, animator) {
         this.scene = scene;
         this.animator = animator;
+        this.flow = new RoundFlow(scene, animator, this);
         const pos = TableLayout.getPositions(scene.scale);
 
         // Background
@@ -91,36 +93,6 @@ export class CribbageGameView {
 
     updatePhase(phase, instruction) {
         this.phaseIndicator.updatePhase(phase, instruction);
-
-        // Visibility of Pegging Area
-        const isPegging = phase === PHASES.PEGGING;
-        this.peggingAreaVisual.setVisible(isPegging);
-
-        // Visibility and Position of Crib Area
-        const isVisible = phase === PHASES.PEGGING || phase === PHASES.COUNTING || phase === PHASES.DISCARDING || phase === PHASES.CUTTING || phase === PHASES.DEALING;
-        
-        // If it's becoming visible, set it immediately
-        if (isVisible && !this.cribVisual.visible) {
-            this.cribVisual.setVisible(true);
-            this.cribVisual.alpha = 0;
-            this.animator.fade(this.cribVisual, 1, TIMINGS.ANIMATIONS.GENERIC_MOVE);
-        } else if (!isVisible && this.cribVisual.visible) {
-            // If it's becoming invisible, fade it out
-            this.animator.fade(this.cribVisual, 0, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
-                this.cribVisual.setVisible(false);
-            });
-        }
-
-        const targetPos = TableLayout.getCribPosition(this.scene.scale, phase, PHASES);
-
-        if (this.cribVisual.visible) {
-            // Don't move the crib if we are still in discarding phase but both players discarded
-            // wait for the actual phase change to happen in the game state.
-            // Actually, we WANT it to move when the phase changes.
-            this.animator.moveCrib(this.cribVisual, targetPos.x, targetPos.y);
-        } else {
-            this.cribVisual.setPosition(targetPos.x, targetPos.y);
-        }
     }
 
     clearButtons() {
@@ -191,21 +163,7 @@ export class CribbageGameView {
     }
 
     revealStartingCutCard(player, card, cardIndex) {
-        const visual = this.startingCutCards.find(v => v.cutIndex === cardIndex);
-        if (visual) {
-            // Update the visual with real card data
-            visual.cardData = card;
-            visual.setFaceDown(false);
-            
-            // Move it towards the player who cut it
-            const pos = TableLayout.getPositions(this.scene.scale);
-            const targetY = player.id === 'human' ? pos.startingCut.humanRevealY : pos.startingCut.botRevealY;
-            visual.baseY = targetY;
-            this.animator.moveCard(visual, visual.x, targetY, {
-                duration: TIMINGS.ANIMATIONS.GENERIC_FADE,
-                ease: 'Power2'
-            });
-        }
+        // Handled by StartingCutPhase
     }
 
     showFloatingText(x, y, text, color = '#ffff00') {

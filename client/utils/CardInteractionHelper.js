@@ -131,36 +131,13 @@ export class CardInteractionHelper {
     updateCardPositions() {
         const selectedCards = this.handVisual.getSelectedCards();
         const handPos = { x: this.handVisual.x, y: this.handVisual.y };
-        const zonePos = { x: this.dropZoneVisual.x, y: this.dropZoneVisual.y };
 
-        selectedCards.forEach((visual, index) => {
-            let targetX, targetY;
-
-            if (this.dropZoneVisual.getNextCardPosition) {
-                const worldTarget = this.dropZoneVisual.getNextCardPosition(selectedCards.length, index);
-                targetX = worldTarget.x - handPos.x;
-                targetY = worldTarget.y - handPos.y;
-            } else {
-                // Default fallback: center of zone with slight offset if multiple
-                const spacing = 30;
-                const offset = (index * spacing) - ((selectedCards.length - 1) * spacing / 2);
-                targetX = zonePos.x - handPos.x + offset;
-                targetY = zonePos.y - handPos.y;
-            }
-
-            if (visual.parentContainer) {
-                visual.parentContainer.bringToTop(visual);
-            }
-
-            this.animator.moveCard(visual, targetX, targetY, {
-                duration: this.config.animationDuration,
-                ease: 'Power2',
-                overwrite: true,
-                onStart: () => {
-                    visual.baseY = targetY;
-                }
-            });
-        });
+        this.animator.updateSelectedCardsPositions(
+            selectedCards,
+            handPos,
+            this.dropZoneVisual,
+            this.config.animationDuration
+        );
 
         // Ensure non-selected cards return to hand
         this.handVisual.cardVisuals.forEach(visual => {

@@ -86,11 +86,16 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
     flash(color = 0xffffff) {
         const config = TableLayout.REL.PEGGING_AREA;
         const flashRect = this.scene.add.rectangle(this.x, this.y, config.WIDTH, config.HEIGHT, color, 0.5);
-        this.scene.tweens.add({
-            targets: flashRect,
-            alpha: 0,
-            duration: TIMINGS.ANIMATIONS.PEGGING_UI_MOVE,
-            onComplete: () => flashRect.destroy()
-        });
+        const animator = this.scene.animator;
+        if (animator) {
+            animator.flashArea(flashRect, color);
+        } else {
+            this.scene.tweens.add({
+                targets: flashRect,
+                alpha: 0,
+                duration: TIMINGS.ANIMATIONS.PEGGING_UI_MOVE,
+                onComplete: () => flashRect.destroy()
+            });
+        }
     }
 }

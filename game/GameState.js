@@ -161,7 +161,7 @@ export class GameState {
             if (this.phases[this.phase]) {
                 this.phases[this.phase].start();
             }
-            this.emit('phaseChanged', { phase: this.phase });
+            this.emit('phaseChanged', { phase: this.phase, oldPhase: PHASES.COUNTING });
         }
     }
 

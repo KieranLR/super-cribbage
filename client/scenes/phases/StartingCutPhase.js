@@ -1,11 +1,12 @@
 import { PHASES } from '../../../game/Constants.js';
 import { TIMINGS } from '../../utils/flow/timings.js';
+import { TableLayout } from '../../utils/TableLayout.js';
 import { Phase } from './Phase.js';
 
 export class StartingCutPhase extends Phase {
     start() {
         console.log('starting');
-        this.view.updatePhase(PHASES.STARTING_CUT, 'Choose a card to determine the first dealer');
+        this.updatePhaseView(PHASES.STARTING_CUT, 'Choose a card to determine the first dealer');
         this.view.showStartingCutDeck(this.gameState.deck.cards.length);
     }
 
@@ -29,15 +30,32 @@ export class StartingCutPhase extends Phase {
 
     onStartingCardCut({ player, card, cardIndex }) {
         console.log('on starting card clicked');
-        this.view.revealStartingCutCard(player, card, cardIndex);
-        
-        // Lock the card during reveal animation
+        this.revealStartingCutCard(player, card, cardIndex);
+    }
+
+    revealStartingCutCard(player, card, cardIndex, completionCallback) {
         const visual = this.view.startingCutCards.find(v => v.cutIndex === cardIndex);
         if (visual) {
+            visual.cardData = card;
+            visual.setFaceDown(false);
             visual.isLocked = true;
-            this.view.scene.time.delayedCall(TIMINGS.UI.STARTING_CUT_LOCK, () => {
-                visual.isLocked = false;
+
+            const pos = TableLayout.getPositions(this.view.scene.scale);
+            const targetY = player.id === 'human' ? pos.startingCut.humanRevealY : pos.startingCut.botRevealY;
+            visual.baseY = targetY;
+
+            this.view.flow.startAnimation();
+            this.animator.moveCard(visual, visual.x, targetY, {
+                duration: TIMINGS.ANIMATIONS.GENERIC_FADE,
+                ease: 'Power2',
+                onComplete: () => {
+                    visual.isLocked = false;
+                    this.view.flow.endAnimation();
+                    if (completionCallback) completionCallback();
+                }
             });
+        } else if (completionCallback) {
+            completionCallback();
         }
     }
 

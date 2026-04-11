@@ -3,9 +3,8 @@ import { Phase } from './Phase.js';
 
 export class DealingPhase extends Phase {
     start() {
-        // Clear crib visuals from previous round
-        this.view.cribVisual.setCards([]);
+        this.updatePhaseView(PHASES.DEALING, 'Dealing cards...');
+        this.view.cribVisual.setLabel('');
         this.view.updateScores(); // Ensure dealer mark is updated at start of round
-        this.view.updatePhase(PHASES.DEALING, 'Dealing cards...');
     }
 }

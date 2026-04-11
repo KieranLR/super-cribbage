@@ -4,15 +4,30 @@ import { Phase } from './Phase.js';
 
 export class CuttingPhase extends Phase {
     start() {
-        this.view.updatePhase(PHASES.CUTTING, 'Cutting the deck...');
+        this.updatePhaseView(PHASES.CUTTING, 'Cutting the deck...');
     }
 
     onStarterCardCut({ card }) {
-        this.view.updateStarterCard(card);
-        this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.CUT_FOR_DEALER_UI, () => {
+        this.animateStarterCardCut(card, () => {
             if (this.gameState.phase === PHASES.CUTTING) {
                 this.gameState.nextPhase();
             }
         });
+    }
+
+    animateStarterCardCut(card, completionCallback) {
+        this.view.updateStarterCard(card);
+        const visual = this.view.starterCardVisual.cardVisual;
+        if (visual) {
+            visual.isLocked = true;
+            this.view.flow.startAnimation();
+            this.animator.flipCard(visual, false, null, () => {
+                visual.isLocked = false;
+                this.view.flow.endAnimation();
+                if (completionCallback) completionCallback();
+            });
+        } else if (completionCallback) {
+            completionCallback();
+        }
     }
 }

@@ -40,7 +40,7 @@ export class HumanVsBotController {
             firstDealerDetermined: (data) => this.onFirstDealerDetermined(data),
             cardsDealt: (data) => this.onCardsDealt(data),
             cardDiscarded: (data) => this.onCardDiscarded(data),
-            allDiscarded: (data) => this.onAllDiscarded(data),
+            allDiscarded: (data) => this.delegate('onAllDiscarded', data),
             starterCardCut: (data) => this.delegate('onStarterCardCut', data),
             cardPlayed: (data) => this.onCardPlayed(data),
             peggingComplete: (data) => this.onPeggingComplete(data),
@@ -107,7 +107,12 @@ export class HumanVsBotController {
     }
 
     onAllDiscarded(data) {
-        this.gameState.nextPhase();
+        const currentPhase = this.phases[this.gameState.phase];
+        if (currentPhase && currentPhase.onAllDiscarded) {
+            currentPhase.onAllDiscarded(data);
+        } else {
+            this.gameState.nextPhase();
+        }
     }
 
     onPeggingComplete(data) {
