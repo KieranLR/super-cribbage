@@ -116,7 +116,6 @@ export class DiscardingPhase extends Phase {
     }
 
     onCardDiscarded(data) {
-        this.view.cribVisual.setLabel('Crib');
         this.view.humanHandVisual.cardVisuals.forEach(v => {
             v.setSelected(false);
             v.baseY = 0;

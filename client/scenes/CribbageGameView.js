@@ -1,3 +1,4 @@
+import { PHASES } from '../../game/Constants.js';
 import { HandVisual } from '../components/GameVisuals/HandVisual.js';
 import { CribVisual } from '../components/GameVisuals/CribVisual.js';
 import { PeggingAreaVisual } from '../components/GameVisuals/PeggingAreaVisual.js';
@@ -37,7 +38,9 @@ export class CribbageGameView {
 
         // Areas
         this.peggingAreaVisual = new PeggingAreaVisual(this.scene, width / 2, height / 2 - 40);
+        this.peggingAreaVisual.setVisible(false);
         this.cribVisual = new CribVisual(this.scene, width / 2, height / 2 + 100);
+        this.cribVisual.setVisible(false);
         this.starterCardVisual = new StarterCardVisual(this.scene, 100, height / 2);
 
         // HUD
@@ -81,6 +84,52 @@ export class CribbageGameView {
 
     updatePhase(phase, instruction) {
         this.phaseIndicator.updatePhase(phase, instruction);
+
+        const { width, height } = this.scene.scale;
+
+        // Visibility of Pegging Area
+        const isPegging = phase === PHASES.PEGGING;
+        this.peggingAreaVisual.setVisible(isPegging);
+
+        // Visibility and Position of Crib Area
+        const isVisible = phase === PHASES.PEGGING || phase === PHASES.COUNTING || phase === PHASES.DISCARDING || phase === PHASES.CUTTING || phase === PHASES.DEALING;
+        
+        // If it's becoming visible, set it immediately
+        if (isVisible && !this.cribVisual.visible) {
+            this.cribVisual.setVisible(true);
+            this.cribVisual.alpha = 0;
+            this.scene.tweens.add({
+                targets: this.cribVisual,
+                alpha: 1,
+                duration: 200
+            });
+        } else if (!isVisible && this.cribVisual.visible) {
+            // If it's becoming invisible, fade it out
+            this.scene.tweens.add({
+                targets: this.cribVisual,
+                alpha: 0,
+                duration: 200,
+                onComplete: () => {
+                    this.cribVisual.setVisible(false);
+                }
+            });
+        }
+
+        const targetX = (phase === PHASES.PEGGING || phase === PHASES.COUNTING) ? width - 150 : width / 2;
+        const targetY = height / 2 + 100;
+
+        if (this.cribVisual.visible) {
+            this.scene.tweens.add({
+                targets: this.cribVisual,
+                x: targetX,
+                y: targetY,
+                duration: 500,
+                ease: 'Power2',
+                overwrite: true
+            });
+        } else {
+            this.cribVisual.setPosition(targetX, targetY);
+        }
     }
 
     clearButtons() {
