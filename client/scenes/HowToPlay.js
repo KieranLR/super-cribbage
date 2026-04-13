@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { Card, Suits, Values } from '../../game/Card.js';
 import { CardVisual } from '../components/GameVisuals/CardVisual.js';
 import { BackgroundVisual } from '../components/GameVisuals/BackgroundVisual.js';
+import { ScrollComponent } from '../utils/ScrollComponent.js';
 
 export class HowToPlay extends Scene {
     constructor() {
@@ -38,11 +39,35 @@ export class HowToPlay extends Scene {
                 title: 'Stages of a Round',
                 text: 'Cribbage is played in rounds, and each round consists of four stages:\n\n1: Discarding into the crib\n2: Pegging\n3: Counting points in hand\n4: Counting points in the crib',
                 createVisual: (scene, x, y) => {
-                    const stages = ['Discard', 'Pegging', 'Hand', 'Crib'];
-                    stages.forEach((stage, i) => {
-                        scene.add.rectangle(x - 225 + i * 150, y, 130, 60, 0x333333).setStrokeStyle(2, 0xffffff);
-                        scene.add.text(x - 225 + i * 150, y, (i+1) + ': ' + stage, { fontSize: '20px', color: '#ffffff' }).setOrigin(0.5);
-                    });
+                    const stages = [
+                        { name: 'Discard', icons: () => {
+                            const c1 = new CardVisual(scene, x - 225, y, new Card(Suits.HEARTS, Values.TEN));
+                            const c2 = new CardVisual(scene, x - 225 + 15, y + 10, new Card(Suits.DIAMONDS, Values.FIVE));
+                            c1.setScale(0.5);
+                            c2.setScale(0.5);
+                            scene.add.text(x - 225, y + 50, 'Discard', { fontSize: '18px', color: '#ffffff' }).setOrigin(0.5);
+                        }},
+                        { name: 'Pegging', icons: () => {
+                            const c1 = new CardVisual(scene, x - 75, y, new Card(Suits.CLUBS, Values.SEVEN));
+                            const c2 = new CardVisual(scene, x - 75 + 20, y, new Card(Suits.SPADES, Values.EIGHT));
+                            c1.setScale(0.5);
+                            c2.setScale(0.5);
+                            scene.add.text(x - 75, y + 50, 'Pegging', { fontSize: '18px', color: '#ffffff' }).setOrigin(0.5);
+                        }},
+                        { name: 'Hand', icons: () => {
+                            for (let i = 0; i < 4; i++) {
+                                const c = new CardVisual(scene, x + 75 - 30 + i * 20, y, new Card(Suits.HEARTS, Values.ACE));
+                                c.setScale(0.5);
+                            }
+                            scene.add.text(x + 75, y + 50, 'Hand', { fontSize: '18px', color: '#ffffff' }).setOrigin(0.5);
+                        }},
+                        { name: 'Crib', icons: () => {
+                            const rect = scene.add.rectangle(x + 225, y, 60, 80, 0x000000, 0.5).setStrokeStyle(1, 0xffffff);
+                            scene.add.text(x + 225, y, 'Crib', { fontSize: '16px', color: '#ffffff' }).setOrigin(0.5);
+                            scene.add.text(x + 225, y + 50, 'Crib', { fontSize: '18px', color: '#ffffff' }).setOrigin(0.5);
+                        }}
+                    ];
+                    stages.forEach(stage => stage.icons());
                 }
             },
             {
@@ -67,51 +92,70 @@ export class HowToPlay extends Scene {
                 createVisual: (scene, x, y) => {
                     const starter = new Card(Suits.SPADES, Values.JACK);
                     const sv = new CardVisual(scene, x, y, starter);
-                    sv.bg.setStrokeStyle(4, 0xffd700);
+                    sv.drawBackground(0xffffff, 0xffd700, 4);
                     scene.add.text(x, y + 80, 'Jack = 2 points for Dealer!', { fontSize: '20px', color: '#ffd700' }).setOrigin(0.5);
                 }
             },
             {
                 title: 'The Pegging Phase',
-                text: 'Starting with non-dealer, players lay cards until the sum reaches 31. Points are scored for:\n\n• 15 or 31 (2 pts)\n• Last card (1 pt)\n• Pairs (2, 6, 12 pts)\n• Runs of N (N pts)\n\nTo get credit for a run, the cards do not need to be played in order (e.g., 2, 4, 3 is a run of 3).',
+                text: 'Starting with non-dealer, players lay cards until the sum reaches 31. Points are scored for:\n\n• 15 or 31 (2 pts)\n• Last card (1 pt)\n• Pairs (2, 6, 12 pts)\n• Runs of N (N pts)\n\nExample Play: (8) + (7) = 15! (2 points)\nNext: (7) + (7) = Pair! (2 points)',
                 createVisual: (scene, x, y) => {
                     const cards = [
-                        new Card(Suits.CLUBS, Values.TWO),
-                        new Card(Suits.HEARTS, Values.FOUR),
-                        new Card(Suits.SPADES, Values.THREE)
+                        new Card(Suits.CLUBS, Values.EIGHT),
+                        new Card(Suits.HEARTS, Values.SEVEN),
+                        new Card(Suits.SPADES, Values.SEVEN)
                     ];
                     cards.forEach((card, i) => {
-                        new CardVisual(scene, x - 120 + i * 120, y, card);
+                        const cv = new CardVisual(scene, x - 120 + i * 120, y, card);
+                        cv.setScale(0.8);
                     });
-                    scene.add.text(x, y + 85, 'Run of 3! (3 points)', { fontSize: '24px', color: '#ffffff' }).setOrigin(0.5);
+                    scene.add.text(x - 60, y + 80, '15 for 2!', { fontSize: '18px', color: '#ffffff' }).setOrigin(0.5);
+                    scene.add.text(x + 60, y + 80, 'Pair for 2!', { fontSize: '18px', color: '#ffffff' }).setOrigin(0.5);
+                    scene.add.text(x, y + 110, 'Total Pegged: 4 points', { fontSize: '20px', color: '#ffd700', fontStyle: 'bold' }).setOrigin(0.5);
                 }
             },
             {
                 title: 'Counting Your Hand',
-                text: 'Starting with non-dealer, players count points in their 4-card hand using the shared starter card.\n\nPoints awarded for:\n• 15s (2 pts)\n• Runs (1 pt/card)\n• Pairs/Sets (2-12 pts)\n• Flush (4-5 pts)\n• Nobs (Jack in hand matching starter suit - 1 pt)',
+                text: 'Count points in your 4-card hand using the shared starter card. Starting with non-dealer.\n\nExample Hand (with Starter):\n5♥, 5♣, 5♦, 10♠, J♥ (Starter)\n\nScore Breakdown:\n• 15s (5+10, 5+10, 5+10, 5+5+5) = 8 pts\n• Three of a Kind (5-5-5) = 6 pts\n• Nobs (Jack of Hearts matches Starter Hearts) = 1 pt\nTotal Score: 15 points',
                 createVisual: (scene, x, y) => {
                     const hand = [
-                        new Card(Suits.HEARTS, Values.FIVE),
+                        new Card(Suits.HEARTS, Values.JACK),
                         new Card(Suits.CLUBS, Values.FIVE),
                         new Card(Suits.DIAMONDS, Values.FIVE),
                         new Card(Suits.SPADES, Values.TEN)
                     ];
-                    const starter = new Card(Suits.HEARTS, Values.JACK);
+                    const starter = new Card(Suits.HEARTS, Values.FIVE);
                     hand.forEach((card, i) => {
-                        const cv = new CardVisual(scene, x - 180 + i * 90, y, card);
-                        cv.setScale(0.8);
+                        const cv = new CardVisual(scene, x - 180 + i * 80, y, card);
+                        cv.setScale(0.7);
                     });
                     const sv = new CardVisual(scene, x + 180, y, starter);
-                    sv.setScale(0.8).bg.setStrokeStyle(4, 0xffd700);
-                    scene.add.text(x + 180, y + 70, 'Starter', { fontSize: '18px', color: '#ffd700' }).setOrigin(0.5);
+                    sv.setScale(0.7);
+                    sv.drawBackground(0xffffff, 0xffd700, 4);
+                    scene.add.text(x + 180, y + 65, 'Starter', { fontSize: '16px', color: '#ffd700' }).setOrigin(0.5);
+                    scene.add.text(x, y + 100, 'Hand: 14 pts + 1 pt Nobs = 15 Total', { fontSize: '20px', color: '#ffd700', fontStyle: 'bold' }).setOrigin(0.5);
                 }
             },
             {
                 title: 'Counting the Crib',
-                text: 'Finally, the dealer counts the points in the crib using the same rules as the hand.\n\n*The only difference: For a flush in the crib, the starter card MUST also match the suit of the crib cards.',
+                text: 'The dealer counts the crib just like a hand. \n\n*Flush Rule: In the crib, ALL FOUR cards AND the starter must match the suit for points (5 points).\n\nExample Crib:\n2♣, 4♣, 6♣, 8♣ with 10♣ Starter\nFlush (5) + Run (0) + 15s (0) = 5 points',
                 createVisual: (scene, x, y) => {
-                    scene.add.rectangle(x, y, 120, 160, 0x000000, 0.3).setStrokeStyle(2, 0xffffff);
-                    scene.add.text(x, y, 'The Crib', { fontSize: '32px', color: '#ffffff' }).setOrigin(0.5);
+                    const crib = [
+                        new Card(Suits.CLUBS, Values.TWO),
+                        new Card(Suits.CLUBS, Values.FOUR),
+                        new Card(Suits.CLUBS, Values.SIX),
+                        new Card(Suits.CLUBS, Values.EIGHT)
+                    ];
+                    const starter = new Card(Suits.CLUBS, Values.TEN);
+                    crib.forEach((card, i) => {
+                        const cv = new CardVisual(scene, x - 180 + i * 80, y, card);
+                        cv.setScale(0.7);
+                    });
+                    const sv = new CardVisual(scene, x + 180, y, starter);
+                    sv.setScale(0.7);
+                    sv.drawBackground(0xffffff, 0xffd700, 4);
+                    scene.add.text(x + 180, y + 65, 'Starter', { fontSize: '16px', color: '#ffd700' }).setOrigin(0.5);
+                    scene.add.text(x, y + 100, '5-Card Flush = 5 points', { fontSize: '20px', color: '#ffd700', fontStyle: 'bold' }).setOrigin(0.5);
                 }
             }
         ];
@@ -142,14 +186,57 @@ export class HowToPlay extends Scene {
             wordWrap: { width: width * 0.7 }
         }).setOrigin(0.5);
 
-        // Buttons
-        const buttonY = height * 0.85;
+        // Visual Aid Container
+        this.visualContainer = this.add.container(0, 0);
 
-        this.backButton = this.createButton(width * 0.3, buttonY, 'Back', () => this.prevSlide());
-        this.nextButton = this.createButton(width * 0.7, buttonY, 'Next', () => this.nextSlide());
-        this.closeButton = this.createButton(width * 0.5, buttonY, 'Close', () => this.scene.start('MainMenu'));
+        // Content Container for Scrolling
+        this.contentContainer = this.add.container(0, 0);
+        this.contentContainer.add([this.panel, this.titleText, this.contentText, this.visualContainer]);
 
-        this.updateSlide();
+        this.scroller = new ScrollComponent(this, this.contentContainer);
+
+        // Create Buttons container and children
+        this.backButton = this.createButton(0, 0, 'Back', () => this.prevSlide());
+        this.nextButton = this.createButton(0, 0, 'Next', () => this.nextSlide());
+        this.closeButton = this.createButton(0, 0, 'Close', () => this.scene.start('MainMenu'));
+
+        const updateLayout = () => {
+            const { width, height } = this.scale;
+
+            if (this.bg) {
+                this.bg.resize(width, height);
+            }
+
+            this.panel.setPosition(width / 2, height / 2);
+            this.panel.setSize(width * 0.8, height * 0.8);
+
+            this.titleText.setPosition(width / 2, height * 0.2);
+            this.contentText.setPosition(width / 2, height * 0.4);
+            this.contentText.setWordWrapWidth(width * 0.7);
+
+            const buttonY = height * 0.85;
+            this.backButton.setPosition(width * 0.3, buttonY);
+            this.nextButton.setPosition(width * 0.7, buttonY);
+            this.closeButton.setPosition(width * 0.5, buttonY);
+
+            this.updateSlide();
+            
+            // Check if content overflows and needs scrolling
+            // In HowToPlay, the content height is roughly the panel height + some padding
+            const totalContentHeight = height * 0.9; 
+            this.scroller.updateLayout(totalContentHeight, height);
+        };
+
+        updateLayout();
+
+        this.events.on('shutdown', () => {
+            this.scroller.destroy();
+        });
+
+        this.scale.on('resize', (gameSize) => {
+            if (!this.scene.isActive()) return;
+            updateLayout();
+        });
     }
 
     createButton(x, y, label, callback) {
@@ -171,14 +258,30 @@ export class HowToPlay extends Scene {
         this.contentText.setText(slide.text);
 
         // Clear previous visuals
-        this.children.list.filter(child => child.isVisualAid).forEach(child => child.destroy());
+        this.visualContainer.removeAll(true);
 
         if (slide.createVisual) {
-            const visualStartIdx = this.children.list.length;
             slide.createVisual(this, this.scale.width / 2, this.scale.height * 0.65);
-            for (let i = visualStartIdx; i < this.children.list.length; i++) {
-                this.children.list[i].isVisualAid = true;
+            
+            // Move newly created objects into the container
+            // This is slightly tricky because createVisual adds directly to scene
+            // We'll capture them by looking at what was added
+            const children = this.children.list;
+            const newChildren = [];
+            for (let i = children.length - 1; i >= 0; i--) {
+                const child = children[i];
+                if (child === this.visualContainer || child === this.panel || child === this.titleText || 
+                    child === this.contentText || child === this.backButton || child === this.nextButton || 
+                    child === this.closeButton || (this.bg && child === this.bg.bg) || child === this.contentContainer ||
+                    child === this.scroller.scrollbarTrack || child === this.scroller.scrollbarHandle) continue;
+                
+                // If it's not one of our persistent UI elements, it must be part of the visual aid
+                newChildren.push(child);
             }
+            
+            newChildren.forEach(child => {
+                this.visualContainer.add(child);
+            });
         }
 
         // Visibility of buttons

@@ -22,15 +22,22 @@ export class Scoreboard extends Phaser.GameObjects.Container {
     }
 
     updateScores() {
+        if (!this.scoreLabels) return;
         this.scoreLabels.forEach(label => label.destroy());
         this.scoreLabels = [];
 
         const config = this.config;
+        
+        // Update BG size
+        if (this.list && this.list[0] instanceof Phaser.GameObjects.Rectangle) {
+             this.list[0].setSize(config.WIDTH, config.HEIGHT);
+        }
+
         this.players.forEach((player, index) => {
             const posY = (index * config.ROW_SPACING) + config.ROW_Y_START;
             const dealerMark = player.isDealer ? ' (D)' : '';
             const text = this.scene.add.text(config.TEXT_X_OFFSET, posY, `${player.name}: ${player.score}${dealerMark}`, {
-                fontSize: '24px',
+                fontSize: config.WIDTH < 200 ? '18px' : '24px',
                 color: '#ffffff',
                 fontStyle: 'bold'
             });

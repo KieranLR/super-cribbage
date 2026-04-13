@@ -14,17 +14,16 @@ export class SortWidget extends Phaser.GameObjects.Container {
         super(scene, x, y);
 
         this.config = config || TableLayout.REL.SORT_WIDGET;
-        const configLocal = this.config;
         
         // Main background box
-        this.bg = scene.add.rectangle(0, 0, configLocal.WIDTH, configLocal.HEIGHT, 0x000000, 0.6)
+        this.bg = scene.add.rectangle(0, 0, this.config.WIDTH, this.config.HEIGHT, 0x000000, 0.6)
             .setStrokeStyle(2, 0xffffff);
         this.add(this.bg);
 
         // "Sort Hand" Label
-        this.label = scene.add.text(-configLocal.WIDTH / 2 + 15, 0, 'Sort Hand:', {
+        this.label = scene.add.text(-this.config.WIDTH / 2 + 15, 0, 'Sort Hand:', {
             fontFamily: 'Arial',
-            fontSize: '18px',
+            fontSize: this.config.WIDTH < 300 ? '14px' : '18px',
             color: '#ffffff',
             fontStyle: 'bold'
         }).setOrigin(0, 0.5);
@@ -32,22 +31,36 @@ export class SortWidget extends Phaser.GameObjects.Container {
 
         // Rank Button
         this.rankBtn = createMenuButton(scene, 'Rank', onSortRank, {
-            width: configLocal.BUTTON_WIDTH,
-            height: configLocal.BUTTON_HEIGHT,
-            fontSize: '16px'
+            width: this.config.BUTTON_WIDTH,
+            height: this.config.BUTTON_HEIGHT,
+            fontSize: this.config.WIDTH < 300 ? '12px' : '16px'
         });
-        this.rankBtn.setPosition(25, 0);
+        this.rankBtn.setPosition(this.config.WIDTH < 300 ? 5 : 25, 0);
         this.add(this.rankBtn);
 
         // Suit Button
         this.suitBtn = createMenuButton(scene, 'Suit', onSortSuit, {
-            width: configLocal.BUTTON_WIDTH,
-            height: configLocal.BUTTON_HEIGHT,
-            fontSize: '16px'
+            width: this.config.BUTTON_WIDTH,
+            height: this.config.BUTTON_HEIGHT,
+            fontSize: this.config.WIDTH < 300 ? '12px' : '16px'
         });
-        this.suitBtn.setPosition(25 + configLocal.BUTTON_WIDTH + 15, 0);
+        this.suitBtn.setPosition((this.config.WIDTH < 300 ? 5 : 25) + this.config.BUTTON_WIDTH + (this.config.WIDTH < 300 ? 10 : 15), 0);
         this.add(this.suitBtn);
 
         scene.add.existing(this);
+    }
+
+    updateConfig(config) {
+        this.config = config;
+        this.bg.setSize(config.WIDTH, config.HEIGHT);
+        this.label.setX(-config.WIDTH / 2 + 15);
+        this.label.setFontSize(config.WIDTH < 300 ? '14px' : '18px');
+        
+        const btnXStart = config.WIDTH < 300 ? 5 : 25;
+        this.rankBtn.setPosition(btnXStart, 0);
+        this.rankBtn.updateSize(config.BUTTON_WIDTH, config.BUTTON_HEIGHT);
+        
+        this.suitBtn.setPosition(btnXStart + config.BUTTON_WIDTH + (config.WIDTH < 300 ? 10 : 15), 0);
+        this.suitBtn.updateSize(config.BUTTON_WIDTH, config.BUTTON_HEIGHT);
     }
 }

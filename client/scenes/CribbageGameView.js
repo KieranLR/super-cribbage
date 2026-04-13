@@ -51,37 +51,40 @@ export class CribbageGameView {
 
         // Reposition Visuals
         this.humanHandVisual.setPosition(pos.playerHand.x, pos.playerHand.y);
+        this.humanHandVisual.updateConfig({ CARD_SCALE: this.config.CARD_SCALE });
+        
         this.botHandVisual.setPosition(pos.botHand.x, pos.botHand.y);
+        this.botHandVisual.updateConfig({ CARD_SCALE: this.config.CARD_SCALE });
         
         this.peggingAreaVisual.setPosition(pos.peggingArea.x, pos.peggingArea.y);
-        this.peggingAreaVisual.config = this.config.PEGGING_AREA;
+        this.peggingAreaVisual.updateConfig(this.config.PEGGING_AREA);
 
-        // If crib is parked, we need to use getCribPosition
-        // We might need to know the current phase, but for now let's just use current position logic
         const cribPos = this.layout.getCribPosition(this.scene.gameState?.phase, PHASES);
         this.cribVisual.setPosition(cribPos.x, cribPos.y);
-        this.cribVisual.config = this.config.CRIB;
+        this.cribVisual.updateConfig(this.config.CRIB);
 
         this.starterCardVisual.setPosition(pos.starterCard.x, pos.starterCard.y);
-        this.starterCardVisual.config = this.config.STARTER_CARD;
+        this.starterCardVisual.updateConfig(this.config.STARTER_CARD);
 
         this.deckVisual.setPosition(pos.deck.x, pos.deck.y);
+        this.deckVisual.updateConfig({ CARD_SCALE: this.config.CARD_SCALE });
 
         if (this.scoreboard) {
             this.scoreboard.setPosition(pos.scoreboard.x, pos.scoreboard.y);
             this.scoreboard.config = this.config.SCOREBOARD;
-            // Optionally redraw scoreboard if its internal layout depends on config
             this.scoreboard.updateScores();
         }
 
         this.phaseIndicator.setPosition(pos.phaseIndicator.x, pos.phaseIndicator.y);
-        this.phaseIndicator.config = this.config.PHASE_INDICATOR;
+        this.phaseIndicator.updateConfig(this.config.PHASE_INDICATOR);
 
         this.actionButtons.setPosition(pos.actionButtons.x, pos.actionButtons.y);
-        this.actionButtons.config = this.config.ACTION_BUTTONS;
+        this.actionButtons.updateConfig(this.config.ACTION_BUTTONS);
 
-        this.sortWidget.setPosition(pos.sortWidget.x, pos.sortWidget.y);
-        this.sortWidget.config = this.config.SORT_WIDGET;
+        if (this.sortWidget) {
+            this.sortWidget.setPosition(pos.sortWidget.x, pos.sortWidget.y);
+            this.sortWidget.updateConfig(this.config.SORT_WIDGET);
+        }
 
         this.exitButton.setPosition(pos.exitButton.x, pos.exitButton.y);
         
@@ -107,9 +110,10 @@ export class CribbageGameView {
             false, 
             this.animator,
             (v) => this.onCardClicked(v),
-            (v, x, y) => this.onCardDropped(v, x, y)
+            (v, x, y) => this.onCardDropped(v, x, y),
+            { CARD_SCALE: this.config.CARD_SCALE }
         );
-        this.botHandVisual = new HandVisual(this.scene, pos.botHand.x, pos.botHand.y, [], !showBotHand, this.animator);
+        this.botHandVisual = new HandVisual(this.scene, pos.botHand.x, pos.botHand.y, [], !showBotHand, this.animator, null, null, { CARD_SCALE: this.config.CARD_SCALE });
 
         // Areas
         this.peggingAreaVisual = new PeggingAreaVisual(this.scene, pos.peggingArea.x, pos.peggingArea.y, this.config.PEGGING_AREA);
@@ -118,7 +122,7 @@ export class CribbageGameView {
         this.cribVisual.setVisible(false);
         this.starterCardVisual = new StarterCardVisual(this.scene, pos.starterCard.x, pos.starterCard.y, this.config.STARTER_CARD);
         this.starterCardVisual.setVisible(false);
-        this.deckVisual = new DeckVisual(this.scene, pos.deck.x, pos.deck.y);
+        this.deckVisual = new DeckVisual(this.scene, pos.deck.x, pos.deck.y, { CARD_SCALE: this.config.CARD_SCALE });
 
         // HUD
         this.scoreboard = null; // Will be initialized in initializeScoreboard
@@ -468,15 +472,11 @@ export class CribbageGameView {
 
     showStartingCutDeck(count, animate = false, onComplete = null) {
         const pos = this.layout.getPositions();
+        const sc = pos.startingCut;
         
-        // Use the DeckVisual to show the fan
-        // The DeckVisual is positioned at pos.deck.x, pos.deck.y
-        // We want the fan to be centered on the screen and span from startX to endX
-        // So we need to calculate local coordinates relative to deckVisual.x/y
-        
-        const localStartX = pos.startingCut.startX - this.deckVisual.x;
-        const localEndX = pos.startingCut.endX - this.deckVisual.x;
-        const localY = pos.startingCut.y - this.deckVisual.y;
+        const localStartX = sc.startX - this.deckVisual.x;
+        const localEndX = sc.endX - this.deckVisual.x;
+        const localY = sc.y - this.deckVisual.y;
 
         if (animate) {
             this.deckVisual.setAlpha(1);

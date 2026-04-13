@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import {createMenuButton} from "../ui/buttons/menuButton.js";
 import { BackgroundVisual } from '../components/GameVisuals/BackgroundVisual.js';
+import { ScrollComponent } from '../utils/ScrollComponent.js';
 
 export class MainMenu extends Scene {
     constructor() {
@@ -15,7 +16,7 @@ export class MainMenu extends Scene {
 
         // Title
         const titleY = height * 0.22;
-        const title = this.add.text(width * 0.5, titleY + 100, 'Super Gribbage', {
+        const title = this.add.text(width * 0.5, titleY + 100, 'Super Cribbage', {
             fontFamily: 'Arial Black',
             fontSize: '64px',
             color: '#ffffff',
@@ -42,18 +43,53 @@ export class MainMenu extends Scene {
             }),
         ];
 
+        this.menuContainer = this.add.container(0, 0);
+        menuItems.forEach(item => this.menuContainer.add(item));
+
+        this.scroller = new ScrollComponent(this, this.menuContainer);
+
         const updateMenuLayout = () => {
             const { width, height } = this.scale;
-            const startY = height * 0.45;
-            const spacing = 80;
+            const isSmall = width < 600;
+            
+            const startY = height * (isSmall ? 0.4 : 0.45);
+            const spacing = isSmall ? 65 : 80;
+
+            let totalContentHeight = 0;
 
             menuItems.forEach((item, index) => {
-                item.setPosition(width / 2, startY + index * spacing);
+                let scale = 1;
+                if (width < 500) {
+                    scale = Math.max(0.6, width / 550);
+                }
+                item.baseScale = scale;
+                item.setScale(scale);
+                const itemY = startY + index * spacing * scale;
+                item.setPosition(width / 2, itemY);
+
+                totalContentHeight = Math.max(totalContentHeight, itemY + (spacing * scale / 2));
             });
+
+            this.scroller.updateLayout(totalContentHeight + 50, height);
+            
+            // Adjust title for small screens
+            if (isSmall) {
+                title.setFontSize('42px');
+                // title.setStrokeThickness(6);
+                title.setPosition(width * 0.5, height * 0.15 + 50);
+            } else {
+                title.setFontSize('64px');
+                // title.setStrokeThickness(10);
+                title.setPosition(width * 0.5, height * 0.22 + 100);
+            }
         };
 
         updateMenuLayout();
         
+        this.events.on('shutdown', () => {
+            this.scroller.destroy();
+        });
+
         // Handle Resizing
         this.scale.on('resize', (gameSize) => {
             if (!this.scene.isActive()) return;
@@ -62,10 +98,6 @@ export class MainMenu extends Scene {
             if (this.bg) {
                 this.bg.resize(width, height);
             }
-            
-            // Re-center title and menu
-            const titleY = height * 0.22;
-            title.setPosition(width * 0.5, titleY + 100);
             
             updateMenuLayout();
         });

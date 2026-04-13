@@ -60,11 +60,23 @@ export class StarterCardVisual extends Phaser.GameObjects.Container {
 
         if (card) {
             this.cardVisual = new CardVisual(this.scene, 0, 0, card);
+            this.cardVisual.setScale(this.config.CARD_SCALE || 1.0);
             this.cardVisual.originalParent = this;
             this.add(this.cardVisual);
             this.placeholderPattern.setVisible(false);
         } else {
             this.placeholderPattern.setVisible(true);
+        }
+    }
+
+    updateConfig(config) {
+        this.config = config;
+        this.setCard(this.cardVisual ? this.cardVisual.cardData : null);
+        
+        // Re-scale placeholder rectangle
+        const placeholder = this.list.find(c => c instanceof Phaser.GameObjects.Rectangle);
+        if (placeholder) {
+            placeholder.setSize(config.WIDTH, config.HEIGHT);
         }
     }
 }

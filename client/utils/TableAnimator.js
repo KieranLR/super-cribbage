@@ -158,7 +158,7 @@ export class TableAnimator {
     moveCardToCrib(cardVisual, x, y, delay, onComplete) {
         return this.moveCard(cardVisual, x, y, {
             scale: 1, // Keep scale consistent with HandVisual to avoid jump later
-            duration: TIMINGS.ANIMATIONS.DISCARD_MOVE,
+            duration: TIMINGS.ANIMATIONS.DISCARD_MOVE || 600,
             ease: 'Cubic.out',
             delay: delay,
             onComplete: onComplete

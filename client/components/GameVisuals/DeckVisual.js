@@ -6,11 +6,22 @@ export class DeckVisual extends Phaser.GameObjects.Container {
      * @param {Phaser.Scene} scene
      * @param {number} x
      * @param {number} y
+     * @param {Object} config
      */
-    constructor(scene, x, y) {
+    constructor(scene, x, y, config = {}) {
         super(scene, x, y);
         this.cardVisuals = [];
+        this.config = config;
         scene.add.existing(this);
+    }
+
+    /**
+     * Updates the config and refreshes visual layout if needed.
+     * @param {Object} config 
+     */
+    updateConfig(config) {
+        this.config = config;
+        this.setScale(config.CARD_SCALE || 1.0);
     }
 
     /**

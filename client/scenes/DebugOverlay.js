@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import { settingsManager } from '../utils/SettingsManager.js';
+import { TableLayout } from '../utils/TableLayout.js';
 
 export class DebugOverlay extends Scene {
     constructor() {
@@ -9,12 +10,16 @@ export class DebugOverlay extends Scene {
     create() {
         const { width } = this.scale;
         
-        this.fpsText = this.add.text(width - 10, 10, '', {
+        // Initialize layout to detect current screen size category
+        this.layout = new TableLayout(this.scale);
+
+        this.debugText = this.add.text(width - 10, 10, '', {
             fontFamily: 'monospace',
-            fontSize: '16px',
+            fontSize: '14px',
             color: '#00ff00',
             backgroundColor: '#00000088',
-            padding: { x: 4, y: 2 }
+            padding: { x: 4, y: 2 },
+            align: 'right'
         }).setOrigin(1, 0).setDepth(1000).setScrollFactor(0);
 
         // Check initial state
@@ -22,7 +27,8 @@ export class DebugOverlay extends Scene {
 
         // Listen for resize
         this.scale.on('resize', (gameSize) => {
-            this.fpsText.setX(gameSize.width - 10);
+            this.debugText.setX(gameSize.width - 10);
+            this.layout.refresh();
         });
     }
 
@@ -32,15 +38,19 @@ export class DebugOverlay extends Scene {
         // we can check it periodically or every update. Checking every update is cheap.
         this.updateVisibility();
 
-        if (this.fpsText.visible) {
-            this.fpsText.setText(`FPS: ${Math.round(this.game.loop.actualFps)}`);
+        if (this.debugText.visible) {
+            const fps = Math.round(this.game.loop.actualFps);
+            const layout = this.layout.size;
+            const height = Math.round(this.scale.height);
+            const isSmallHeight = height < 500 ? ' (SmallHeight)' : '';
+            this.debugText.setText(`FPS: ${fps}\nLayout: ${layout}${isSmallHeight}\nH: ${height}`);
         }
     }
 
     updateVisibility() {
         const showFPS = settingsManager.get('showFPS');
-        if (this.fpsText.visible !== showFPS) {
-            this.fpsText.setVisible(showFPS);
+        if (this.debugText.visible !== showFPS) {
+            this.debugText.setVisible(showFPS);
         }
     }
 }

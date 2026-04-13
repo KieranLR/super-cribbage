@@ -20,15 +20,27 @@ export class ActionButtons extends Phaser.GameObjects.Container {
             this.buttons[key].destroy();
         }
 
-        const btn = createMenuButton(this.scene, label, callback);
+        const btn = createMenuButton(this.scene, label, callback, {
+            width: this.config.WIDTH,
+            height: this.config.HEIGHT,
+            fontSize: this.config.HEIGHT < 55 ? '20px' : '28px'
+        });
         btn.setPosition(0, 0);
         this.add(btn);
         
-        const config = this.config;
         // Ensure container has a size for interaction if needed
-        this.setSize(config.WIDTH, config.HEIGHT); 
+        this.setSize(this.config.WIDTH, this.config.HEIGHT); 
         this.buttons[key] = btn;
         return btn;
+    }
+
+    updateConfig(config) {
+        this.config = config;
+        this.setSize(config.WIDTH, config.HEIGHT);
+        for (let key in this.buttons) {
+            this.buttons[key].updateSize(config.WIDTH, config.HEIGHT);
+            this.buttons[key].updateFontSize(config.HEIGHT < 55 ? '20px' : '28px');
+        }
     }
 
     showButton(key) {

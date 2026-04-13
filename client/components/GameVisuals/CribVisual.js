@@ -49,13 +49,15 @@ export class CribVisual extends Phaser.GameObjects.Container {
         this.submittedVisuals.forEach(v => v.destroy());
         this.submittedVisuals = [];
 
-        const spacing = spread ? this.config.SPREAD_SPACING : this.config.STACK_SPACING;
+        const cardScale = this.config.CARD_SCALE || 1.0;
+        const spacing = (spread ? this.config.SPREAD_SPACING : this.config.STACK_SPACING) * cardScale;
         const totalWidth = spread ? (cards.length - 1) * spacing : 0;
 
         cards.forEach((card, index) => {
             const posX = spread ? (index * spacing) - (totalWidth / 2) : index * spacing;
             const posY = spread ? 0 : index * spacing;
             const visual = new CardVisual(this.scene, posX, posY, card, !reveal);
+            visual.setScale(cardScale);
             visual.originalParent = this;
             this.add(visual);
             this.cardVisuals.push(visual);
@@ -70,16 +72,31 @@ export class CribVisual extends Phaser.GameObjects.Container {
         this.submittedVisuals = [];
 
         const config = this.config;
+        const cardScale = config.CARD_SCALE || 0.8;
         cards.forEach((card, index) => {
             // Place to the right of the discard zone, centered vertically
             const posX = config.CRIB_PARKED_X_OFFSET + index * 2;
             const posY = 0 + index * 2;
             const visual = new CardVisual(this.scene, posX, posY, card, true);
             visual.originalParent = this;
-            visual.setScale(0.8);
+            visual.setScale(cardScale);
             this.add(visual);
             this.submittedVisuals.push(visual);
         });
+    }
+
+    updateConfig(config) {
+        this.config = config;
+        this.label.setY(config.LABEL_Y);
+        this.dropZoneBg.setSize(config.WIDTH, config.HEIGHT);
+        // Refresh visuals to apply new scale/spacing if needed
+        // For simplicity, we'll just re-set what's there
+        if (this.cardVisuals.length > 0) {
+            this.setCards(this.cardVisuals.map(v => v.cardData), true, !this.cardVisuals[0].isFaceDown);
+        }
+        if (this.submittedVisuals.length > 0) {
+            this.setSubmittedCards(this.submittedVisuals.map(v => v.cardData));
+        }
     }
 
     /**

@@ -77,10 +77,11 @@ export class DiscardingPhase extends Phase {
         const toAnimate = this._prepareDiscardVisuals(playerHand, cards, isBot);
         let completed = 0;
 
-        const spacing = 2; // Matching CribVisual's stack spacing
+        const config = this.view.layout.config.CRIB;
+        const spacing = config.STACK_SPACING || 2;
         
         toAnimate.forEach((visual, index) => {
-            const targetX = 175 + index * spacing; 
+            const targetX = index * spacing; 
             const targetY = index * spacing;
 
             this.view.flow.startAnimation();

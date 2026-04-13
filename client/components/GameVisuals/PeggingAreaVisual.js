@@ -49,12 +49,14 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
         this.label.setText(`Pegging Area: ${total}`);
 
         const config = this.config;
-        const spacing = config.CARD_SPACING;
+        const cardScale = config.CARD_SCALE || 1.0;
+        const spacing = config.CARD_SPACING * cardScale;
         const totalWidth = (cards.length - 1) * spacing;
 
         cards.forEach((card, index) => {
             const posX = (index * spacing) - (totalWidth / 2);
             const visual = new CardVisual(this.scene, posX, 0, card);
+            visual.setScale(cardScale);
             visual.originalParent = this;
             this.add(visual);
             this.cardVisuals.push(visual);
@@ -75,6 +77,7 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
         const localY = pos.y - this.y;
 
         const visual = new CardVisual(this.scene, localX, localY, cardData);
+        visual.setScale(this.config.CARD_SCALE || 1.0);
         visual.originalParent = this;
         this.add(visual);
         this.cardVisuals.push(visual);
@@ -91,12 +94,14 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
         if (count === 0) return;
 
         const config = this.config;
-        const spacing = config.CARD_SPACING;
+        const cardScale = config.CARD_SCALE || 1.0;
+        const spacing = config.CARD_SPACING * cardScale;
         const totalWidth = (count - 1) * spacing;
 
         this.cardVisuals.forEach((visual, index) => {
             const posX = (index * spacing) - (totalWidth / 2);
             visual.setPosition(posX, 0);
+            visual.setScale(cardScale);
         });
     }
 
@@ -108,7 +113,8 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
         if (currentCount <= 0) return { x: this.x, y: this.y };
 
         const config = this.config;
-        const spacing = config.CARD_SPACING;
+        const cardScale = config.CARD_SCALE || 1.0;
+        const spacing = config.CARD_SPACING * cardScale;
         const totalWidth = (currentCount - 1) * spacing;
         const index = currentCount - 1; // Last position
         const posX = (index * spacing) - (totalWidth / 2);
@@ -118,6 +124,13 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
             x: this.x + posX,
             y: this.y
         };
+    }
+
+    updateConfig(config) {
+        this.config = config;
+        this.label.setY(config.LABEL_Y);
+        // Refresh visuals to apply new scale/spacing
+        this.update(this.cardVisuals.map(v => v.cardData), parseInt(this.label.text.split(': ')[1]));
     }
 
     /**

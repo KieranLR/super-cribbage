@@ -39,13 +39,13 @@ describe('TableLayout', () => {
             const layout = new TableLayout({ width: 1200, height: 800 });
             const config = layout.getConfigForSize(LayoutSize.DESKTOP);
             expect(config.PLAYER_HAND_Y).toBe(170);
-            expect(config.SCOREBOARD.WIDTH).toBe(300);
+            expect(config.SCOREBOARD.WIDTH).toBe(220);
         });
 
         test('should apply default config from REL', () => {
             const layout = new TableLayout({ width: 1200, height: 800 });
             expect(layout.config.PLAYER_HAND_Y).toBe(170);
-            expect(layout.config.SCOREBOARD.WIDTH).toBe(300);
+            expect(layout.config.SCOREBOARD.WIDTH).toBe(220);
         });
     });
 
@@ -55,9 +55,25 @@ describe('TableLayout', () => {
             const layout = new TableLayout(scale);
             const positions = layout.getPositions();
 
+            // context.pad = Math.max(16, 600 * 0.04) = 24
+            // 800x600 => maxDim 800 => isLandscape true => MOBILE_LANDSCAPE.
+            
+            // Expected values for 800x600 MOBILE_LANDSCAPE:
+            // topHud: height 90
+            // opponent: height 600 * 0.18 = 108, y = 90
+            // center: height 600 * 0.32 = 192, y = 90 + 108 = 198
+            // controls: height 600 * 0.12 = 72, y = 198 + 192 = 390
+            // player: height 600 * 0.28 = 168, y = 390 + 72 = 462
+
+            // playerHand (zone: player, xAlign: 0.5, yAlign: 0.4):
+            // x = 400, y = 462 + 168 * 0.4 = 462 + 67.2 = 529.2
+            
+            // botHand (zone: opponent, xAlign: 0.5, yAlign: 0.45):
+            // x = 400, y = 90 + 108 * 0.45 = 90 + 48.6 = 138.6
+
             expect(positions.background).toEqual({ x: 400, y: 300 });
-            expect(positions.playerHand.y).toBe(600 - 170);
-            expect(positions.botHand.y).toBe(100);
+            expect(positions.playerHand.y).toBeCloseTo(529.2);
+            expect(positions.botHand.y).toBeCloseTo(138.6);
         });
     });
 });

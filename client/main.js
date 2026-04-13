@@ -47,7 +47,7 @@ import { TestErrorScene } from './scenes/TestScenes/TestErrorScene';
             Game,
             GameOver,
             Settings,
-            // DebugOverlay,
+            DebugOverlay,
             TestListScene,
             TestCardScene,
             TestHandScene,

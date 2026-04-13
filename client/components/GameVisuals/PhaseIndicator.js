@@ -10,25 +10,37 @@ export class PhaseIndicator extends Phaser.GameObjects.Container {
         super(scene, x, y);
         this.config = config || TableLayout.REL.PHASE_INDICATOR;
 
-        const configLocal = this.config;
-        const bg = scene.add.rectangle(0, 0, configLocal.WIDTH, configLocal.HEIGHT, 0x000000, 0.6)
+        this.bg = scene.add.rectangle(0, 0, this.config.WIDTH, this.config.HEIGHT, 0x000000, 0.6)
             .setStrokeStyle(2, 0x028af8, 1);
-        this.add(bg);
+        this.add(this.bg);
 
-        this.phaseText = scene.add.text(0, configLocal.PHASE_Y, 'PHASE', {
-            fontSize: '28px',
+        this.phaseText = scene.add.text(0, this.config.PHASE_Y, 'PHASE', {
+            fontSize: this.config.WIDTH < 350 ? '22px' : '28px',
             color: '#028af8',
             fontStyle: 'bold'
         }).setOrigin(0.5);
         this.add(this.phaseText);
 
-        this.instructionText = scene.add.text(0, configLocal.INSTRUCTION_Y, 'Please wait...', {
-            fontSize: '18px',
+        this.instructionText = scene.add.text(0, this.config.INSTRUCTION_Y, 'Please wait...', {
+            fontSize: this.config.WIDTH < 350 ? '14px' : '18px',
             color: '#ffffff'
         }).setOrigin(0.5);
         this.add(this.instructionText);
 
         scene.add.existing(this);
+    }
+
+    /**
+     * Updates the config and refreshes visual layout.
+     * @param {Object} config 
+     */
+    updateConfig(config) {
+        this.config = config;
+        this.bg.setSize(config.WIDTH, config.HEIGHT);
+        this.phaseText.setY(config.PHASE_Y);
+        this.phaseText.setFontSize(config.WIDTH < 350 ? '22px' : '28px');
+        this.instructionText.setY(config.INSTRUCTION_Y);
+        this.instructionText.setFontSize(config.WIDTH < 350 ? '14px' : '18px');
     }
 
     updatePhase(phase, instruction = '') {

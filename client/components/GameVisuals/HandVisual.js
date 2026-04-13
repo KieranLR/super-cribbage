@@ -12,10 +12,11 @@ export class HandVisual extends Phaser.GameObjects.Container {
      * @param {boolean} isBot
      * @param {TableAnimator} animator
      */
-    constructor(scene, x, y, cards = [], isBot = false, animator = null, onCardClick = null, onCardDropped = null) {
+    constructor(scene, x, y, cards = [], isBot = false, animator = null, onCardClick = null, onCardDropped = null, config = {}) {
         super(scene, x, y);
         this.animator = animator || new TableAnimator(scene);
         this.isBot = isBot;
+        this.config = config;
         this.cardVisuals = [];
         this.onCardClick = onCardClick;
         this.onCardDropped = onCardDropped;
@@ -35,17 +36,24 @@ export class HandVisual extends Phaser.GameObjects.Container {
         });
         this.cardVisuals = [];
 
-        const spacing = 60;
+        const cardScale = this.config.CARD_SCALE || 1.0;
+        const spacing = 60 * cardScale;
         const totalWidth = (cards.length - 1) * spacing;
 
         cards.forEach((card, index) => {
             const posX = (index * spacing) - (totalWidth / 2);
             const visual = new CardVisual(this.scene, posX, 0, card, this.isBot);
+            visual.setScale(cardScale);
             visual.originalParent = this;
             this.setupCardInteractivity(visual);
             this.add(visual);
             this.cardVisuals.push(visual);
         });
+    }
+
+    updateConfig(config) {
+        this.config = config;
+        this.setCards(this.cardVisuals.map(v => v.cardData));
     }
 
     /**
