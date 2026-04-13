@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { CardVisual } from '../../components/GameVisuals/CardVisual.js';
 import { Card, Suits, Values } from '../../../game/Card.js';
+import { TableLayout } from '../../utils/TableLayout.js';
 
 export class TestCardScene extends Scene {
     constructor() {
@@ -8,6 +9,7 @@ export class TestCardScene extends Scene {
     }
 
     create() {
+        this.layout = new TableLayout(this.scale);
         const { width, height } = this.scale;
 
         // Background

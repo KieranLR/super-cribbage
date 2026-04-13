@@ -1,30 +1,18 @@
-import { Scene } from 'phaser';
-import { GameState } from '../../../game/GameState.js';
-import { Player } from '../../../game/Player.js';
-import { BotPlayer } from '../../../game/BotPlayer.js';
+import { CribbageGameScene } from '../CribbageGameScene.js';
 import { Card, Suits, Values } from '../../../game/Card.js';
-import { CribbageGameView } from '../CribbageGameView.js';
-import { HumanVsBotController } from '../HumanVsBotController.js';
-import {TableAnimator} from "../../utils/TableAnimator.js";
 
 /**
  * Test scene specifically designed to trigger and test the "tie" condition 
  * during the starting cut phase where both players cut the same card rank.
  */
-export class TestStartingCutTieScene extends Scene {
+export class TestStartingCutTieScene extends CribbageGameScene {
     constructor() {
         super('TestStartingCutTieScene');
     }
 
     create() {
-        this.animator = new TableAnimator(this);
-        // Initialize Players
-        this.humanPlayer = new Player('human', 'You');
-        this.botPlayer = new BotPlayer('bot', 'Bot');
-        this.players = [this.humanPlayer, this.botPlayer];
-
-        // Initialize GameState
-        this.gameState = new GameState(this.players);
+        this.initializeGame();
+        this.setupResize();
 
         // FORCE A TIE:
         // Fill the deck with only Aces of Spades (or any same-rank card)
@@ -46,14 +34,6 @@ export class TestStartingCutTieScene extends Scene {
             }
         };
 
-        // Initialize View
-        this.view = new CribbageGameView(this, this.animator);
-        this.view.initializeScoreboard(this.players);
-
-        // Initialize Controller
-        this.controller = new HumanVsBotController(this.gameState, this.view, this.humanPlayer, this.botPlayer, this.animator);
-
-        // Start Game - this will start in the STARTING_CUT phase
-        this.controller.onPhaseChanged({ phase: this.gameState.phase, oldPhase: null });
+        this.startNewGame();
     }
 }

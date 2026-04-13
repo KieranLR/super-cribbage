@@ -6,15 +6,17 @@ export class CribVisual extends Phaser.GameObjects.Container {
      * @param {Phaser.Scene} scene
      * @param {number} x
      * @param {number} y
+     * @param {Object} config
      * @param {import('../../../game/Card.js').Card[]} cards
      */
-    constructor(scene, x, y, cards = []) {
+    constructor(scene, x, y, config, cards = []) {
         super(scene, x, y);
         this.cardVisuals = [];
         this.submittedVisuals = [];
+        this.config = config || TableLayout.REL.CRIB;
 
         // Label
-        this.label = scene.add.text(0, -110, 'Crib', {
+        this.label = scene.add.text(0, this.config.LABEL_Y, 'Crib', {
             fontSize: '20px',
             color: '#ffffff',
             backgroundColor: '#000000',
@@ -24,7 +26,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
         this.add(this.label);
 
         // Background Area (Enlarged)
-        this.dropZoneBg = scene.add.rectangle(0, 0, 240, 180, 0x000000, 0.3)
+        this.dropZoneBg = scene.add.rectangle(0, 0, this.config.WIDTH, this.config.HEIGHT, 0x000000, 0.3)
             .setStrokeStyle(2, 0xffffff, 0.5);
         this.add(this.dropZoneBg);
 
@@ -47,7 +49,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
         this.submittedVisuals.forEach(v => v.destroy());
         this.submittedVisuals = [];
 
-        const spacing = spread ? 40 : 2;
+        const spacing = spread ? this.config.SPREAD_SPACING : this.config.STACK_SPACING;
         const totalWidth = spread ? (cards.length - 1) * spacing : 0;
 
         cards.forEach((card, index) => {
@@ -67,9 +69,10 @@ export class CribVisual extends Phaser.GameObjects.Container {
         this.submittedVisuals.forEach(v => v.destroy());
         this.submittedVisuals = [];
 
+        const config = this.config;
         cards.forEach((card, index) => {
             // Place to the right of the discard zone, centered vertically
-            const posX = TableLayout.REL.CRIB_PARKED_X_OFFSET + index * 2;
+            const posX = config.CRIB_PARKED_X_OFFSET + index * 2;
             const posY = 0 + index * 2;
             const visual = new CardVisual(this.scene, posX, posY, card, true);
             visual.originalParent = this;

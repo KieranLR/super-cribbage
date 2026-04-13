@@ -1,9 +1,10 @@
 import { initiateDiscordSDK, discordSdk } from './utils/discordSdk';
-
 import { Boot } from './scenes/Boot';
+import { ErrorHandler } from './scenes/ErrorHandler';
 import { Game } from './scenes/Game';
 import { GameOver } from './scenes/GameOver';
 import { Settings } from './scenes/Settings';
+import { DebugOverlay } from './scenes/DebugOverlay';
 import { MainMenu } from './scenes/MainMenu';
 import { HowToPlay } from './scenes/HowToPlay';
 import { TestListScene } from './scenes/TestScenes/TestListScene';
@@ -19,53 +20,79 @@ import { TestStartingCutTieScene } from './scenes/TestScenes/TestStartingCutTieS
 import { TestDeckScene } from './scenes/TestScenes/TestDeckScene';
 import { TestScoringScene } from './scenes/TestScenes/TestScoringScene';
 import { Preloader } from './scenes/Preloader';
-import UIPlugin from "phaser3-rex-plugins/templates/ui/ui-plugin.js";
+import { TestErrorScene } from './scenes/TestScenes/TestErrorScene';
 
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.80.0/Phaser.Types.Core.GameConfig
 (async () => {
-  initiateDiscordSDK();
-  // You can use discordSdk to access the Discord SDK and make the requests you need
-  
-  const config = {
-      type: Phaser.AUTO,
-      width: window.innerWidth,
-      height: window.innerHeight,
-      parent: 'game-container',
-      backgroundColor: '#028af8',
-      plugins: {
-          scene: [{
-              key: 'rexUI',
-              plugin: UIPlugin,
-              mapping: 'rexUI'
-          }]
-      },
-      scale: {
-          mode: Phaser.Scale.FIT,
-          autoCenter: Phaser.Scale.CENTER_BOTH
-      },
-      scene: [
-        Boot,
-        Preloader,
-        MainMenu,
-        HowToPlay,
-        Game,
-        GameOver,
-        Settings,
-        TestListScene,
-        TestCardScene,
-        TestHandScene,
-        TestCribScene,
-        TestPeggingScene,
-        TestStarterScene,
-        TestButtonScene,
-        TestPeggingSceneComplex,
-        TestGameOverScene,
-        TestStartingCutTieScene,
-        TestDeckScene,
-        TestScoringScene
-      ]
+    initiateDiscordSDK();
+    // You can use discordSdk to access the Discord SDK and make the requests you need
+
+    const config = {
+        type: Phaser.AUTO,
+        parent: 'game-container',
+        backgroundColor: '#028af8',
+        scale: {
+            mode: Phaser.Scale.RESIZE,
+            autoCenter: Phaser.Scale.CENTER_BOTH,
+            width: '100%',
+            height: '100%'
+        },
+        scene: [
+            Boot,
+            Preloader,
+            ErrorHandler,
+            MainMenu,
+            HowToPlay,
+            Game,
+            GameOver,
+            Settings,
+            // DebugOverlay,
+            TestListScene,
+            TestCardScene,
+            TestHandScene,
+            TestCribScene,
+            TestPeggingScene,
+            TestStarterScene,
+            TestButtonScene,
+            TestPeggingSceneComplex,
+            TestGameOverScene,
+            TestStartingCutTieScene,
+            TestDeckScene,
+            TestScoringScene,
+            TestErrorScene
+        ]
     };
 
-  new Phaser.Game(config);
+    const game = new Phaser.Game(config);
+    window.addEventListener('error', (event) => {
+        handleSceneError(event.error, event.filename);
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+        handleSceneError(event.reason, 'Promise');
+    });
+
+    function handleSceneError(error, source) {
+        if (game && game.scene) {
+            const activeScenes = game.scene.getScenes(true);
+            let sceneKey = "";
+            if (activeScenes.length > 0) {
+                const currentScene = activeScenes[0];
+                sceneKey = currentScene.sys.settings.key;
+
+                if (sceneKey !== 'ErrorHandler') {
+                    // Properly shutdown the failed scene
+                    currentScene.sys.shutdown();
+                }
+            }
+
+            // Start the error scene
+            game.scene.start('ErrorHandler', {
+                failedSceneKey: sceneKey,
+                error: error?.message || error?.toString() || 'Unknown error'
+            });
+        }
+    }
+
 })();

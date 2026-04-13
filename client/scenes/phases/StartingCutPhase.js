@@ -49,7 +49,7 @@ export class StartingCutPhase extends Phase {
             visual.setFaceDown(false);
             visual.isLocked = true;
 
-            const pos = TableLayout.getPositions(this.view.scene.scale);
+            const pos = this.view.layout.getPositions();
             const targetY = (player.id === 'human' ? pos.startingCut.humanRevealY : pos.startingCut.botRevealY) - this.view.deckVisual.y;
             visual.baseY = targetY;
             // Disable interactivity on both revealed cards to prevent hover/click issues

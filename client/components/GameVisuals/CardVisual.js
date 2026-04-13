@@ -1,3 +1,5 @@
+import * as phaser from "phaser"
+window.Phaser = phaser;
 import { Suits } from '../../../game/Card.js';
 import { TIMINGS } from '../../utils/flow/timings.js';
 import { settingsManager } from '../../utils/SettingsManager.js';

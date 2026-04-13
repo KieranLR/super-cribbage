@@ -5,14 +5,15 @@ export class Scoreboard extends Phaser.GameObjects.Container {
      * @param {number} x
      * @param {number} y
      * @param {import('../../../game/Player.js').Player[]} players
+     * @param {Object} config
      */
-    constructor(scene, x, y, players) {
+    constructor(scene, x, y, players, config) {
         super(scene, x, y);
         this.players = players;
         this.scoreLabels = [];
+        this.config = config || TableLayout.REL.SCOREBOARD;
 
-        const config = TableLayout.REL.SCOREBOARD;
-        const bg = scene.add.rectangle(0, 0, config.WIDTH, config.HEIGHT, 0x000000, 0.5)
+        const bg = scene.add.rectangle(0, 0, this.config.WIDTH, this.config.HEIGHT, 0x000000, 0.5)
             .setStrokeStyle(2, 0xffffff, 0.8);
         this.add(bg);
 
@@ -24,7 +25,7 @@ export class Scoreboard extends Phaser.GameObjects.Container {
         this.scoreLabels.forEach(label => label.destroy());
         this.scoreLabels = [];
 
-        const config = TableLayout.REL.SCOREBOARD;
+        const config = this.config;
         this.players.forEach((player, index) => {
             const posY = (index * config.ROW_SPACING) + config.ROW_Y_START;
             const dealerMark = player.isDealer ? ' (D)' : '';

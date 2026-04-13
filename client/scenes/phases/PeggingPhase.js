@@ -69,7 +69,7 @@ export class PeggingPhase extends Phase {
         if (result.isGo) {
             const { width, height } = this.view.scene.scale;
             const x = width / 2;
-            const y = height / 2 + TableLayout.REL.FLOATING_TEXT.PEGGING_GO_Y_OFFSET;
+            const y = height / 2 + this.view.layout.config.FLOATING_TEXT.PEGGING_GO_Y_OFFSET;
             this.view.showFloatingText(x, y, "GO!", 0xffffff);
         }
         

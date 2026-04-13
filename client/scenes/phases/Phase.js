@@ -26,7 +26,7 @@ export class Phase {
         const isStarterVisible = [PHASES.CUTTING, PHASES.PEGGING, PHASES.COUNTING].includes(phase);
         this.transitionStarterCard(isStarterVisible);
 
-        const targetPos = TableLayout.getCribPosition(this.view.scene.scale, phase, PHASES);
+        const targetPos = this.view.layout.getCribPosition(phase, PHASES);
         this.transitionCrib(phase, targetPos);
 
         // Visibility of Sort Widget
@@ -139,7 +139,7 @@ export class Phase {
         this.view.updateScores();
         
         const isHuman = player === this.humanPlayer;
-        const { x, y } = TableLayout.getFloatingTextPosition(this.view.scene.scale, isHuman);
+        const { x, y } = this.view.layout.getFloatingTextPosition(isHuman);
         
         const isGoPoint = reason === 'Pegging' && points === 1;
         const is31Point = reason === 'Pegging' && points === 2 && this.gameState.pegging?.currentTotal === 0 && this.gameState.pegging?.playedCards.length === 0;

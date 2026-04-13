@@ -15,7 +15,7 @@ export class GameOver extends Scene
         // Background
         this.bg = new BackgroundVisual(this);
 
-        this.add.text(width * 0.5, 384, 'Game Over', {
+        const title = this.add.text(width * 0.5, 384, 'Game Over', {
             fontFamily: 'Arial Black', fontSize: 64, color: '#ffffff',
             stroke: '#000000', strokeThickness: 8,
             align: 'center'
@@ -25,6 +25,13 @@ export class GameOver extends Scene
 
             this.scene.start('MainMenu');
 
+        });
+
+        this.scale.on('resize', (gameSize) => {
+            if (!this.scene.isActive()) return;
+            const { width, height } = gameSize;
+            this.bg.resize(width, height);
+            title.setPosition(width * 0.5, 384);
         });
     }
 

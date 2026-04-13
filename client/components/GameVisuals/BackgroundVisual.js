@@ -23,6 +23,18 @@ export class BackgroundVisual {
         }
     }
 
+    /**
+     * Resizes the background to match new dimensions.
+     * @param {number} width 
+     * @param {number} height 
+     */
+    resize(width, height) {
+        if (this.bg && this.bg.active) {
+            this.bg.setSize(width, height);
+            this.bg.setPosition(width / 2, height / 2);
+        }
+    }
+
     destroy() {
         if (this.scene) {
             this.scene.events.off('update', this.update, this);

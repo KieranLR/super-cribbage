@@ -6,16 +6,18 @@ export class StarterCardVisual extends Phaser.GameObjects.Container {
      * @param {Phaser.Scene} scene
      * @param {number} x
      * @param {number} y
+     * @param {Object} config
      * @param {import('../../../game/Card.js').Card|null} card
      */
-    constructor(scene, x, y, card = null) {
+    constructor(scene, x, y, config, card = null) {
         super(scene, x, y);
         this.cardVisual = null;
+        this.config = config || TableLayout.REL.STARTER_CARD;
 
-        const config = TableLayout.REL.STARTER_CARD;
+        const configLocal = this.config;
 
         // Label
-        const label = scene.add.text(0, config.LABEL_Y, 'Starter Card', {
+        const label = scene.add.text(0, configLocal.LABEL_Y, 'Starter Card', {
             fontSize: '18px',
             color: '#ffffff',
             backgroundColor: '#000000',
@@ -24,8 +26,8 @@ export class StarterCardVisual extends Phaser.GameObjects.Container {
         this.add(label);
 
         // Placeholder area
-        const width = config.WIDTH;
-        const height = config.HEIGHT;
+        const width = configLocal.WIDTH;
+        const height = configLocal.HEIGHT;
         const placeholder = scene.add.rectangle(0, 0, width, height, 0x3333ff, 0.8)
             .setStrokeStyle(2, 0xffffff, 0.5);
         this.add(placeholder);

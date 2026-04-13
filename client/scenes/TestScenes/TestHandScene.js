@@ -1,6 +1,8 @@
 import { Scene } from 'phaser';
 import { HandVisual } from '../../components/GameVisuals/HandVisual.js';
 import { Card, Suits, Values } from '../../../game/Card.js';
+import { TableLayout } from '../../utils/TableLayout.js';
+import { TableAnimator } from '../../utils/TableAnimator.js';
 
 export class TestHandScene extends Scene {
     constructor() {
@@ -8,6 +10,8 @@ export class TestHandScene extends Scene {
     }
 
     create() {
+        this.layout = new TableLayout(this.scale);
+        this.animator = new TableAnimator(this);
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x028af8);
 
@@ -25,14 +29,14 @@ export class TestHandScene extends Scene {
         ];
 
         this.add.text(width * 0.5, height * 0.25, 'Human Hand (Click to select)', { fontSize: '20px', color: '#ffffff' }).setOrigin(0.5);
-        const humanHand = new HandVisual(this, width * 0.5, height * 0.4, cards, false);
+        const humanHand = new HandVisual(this, width * 0.5, height * 0.4, cards, false, this.animator);
         
         humanHand.cardVisuals.forEach(v => {
             v.on('pointerdown', () => v.setSelected(!v.isSelected));
         });
 
         this.add.text(width * 0.5, height * 0.65, 'Bot Hand (Dimmed for visualization)', { fontSize: '20px', color: '#ffffff' }).setOrigin(0.5);
-        new HandVisual(this, width * 0.5, height * 0.8, cards, true);
+        new HandVisual(this, width * 0.5, height * 0.8, cards, true, this.animator);
 
         const backBtn = this.add.text(width * 0.5, height - 50, 'Back to List', {
             fontSize: '24px', color: '#ffffff', backgroundColor: '#000000', padding: { x: 10, y: 5 }

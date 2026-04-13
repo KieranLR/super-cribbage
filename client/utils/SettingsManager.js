@@ -3,7 +3,8 @@ class SettingsManager {
         this.settings = {
             showBotHand: false,
             fastMode: false,
-            cardDeck: 'default'
+            cardDeck: 'default',
+            showFPS: false
         };
         this.load();
     }

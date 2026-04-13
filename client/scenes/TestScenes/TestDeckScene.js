@@ -8,8 +8,9 @@ export class TestDeckScene extends Scene {
     }
 
     create() {
+        this.layout = new TableLayout(this.scale);
         const { width, height } = this.scale;
-        const pos = TableLayout.getPositions(this.scale);
+        const pos = this.layout.getPositions();
 
         // Background
         this.add.image(pos.background.x, pos.background.y, 'background')

@@ -6,10 +6,12 @@ export class ActionButtons extends Phaser.GameObjects.Container {
      * @param {Phaser.Scene} scene
      * @param {number} x
      * @param {number} y
+     * @param {Object} config
      */
-    constructor(scene, x, y) {
+    constructor(scene, x, y, config) {
         super(scene, x, y);
         this.buttons = {};
+        this.config = config || TableLayout.REL.ACTION_BUTTONS;
         scene.add.existing(this);
     }
 
@@ -22,7 +24,7 @@ export class ActionButtons extends Phaser.GameObjects.Container {
         btn.setPosition(0, 0);
         this.add(btn);
         
-        const config = TableLayout.REL.ACTION_BUTTONS;
+        const config = this.config;
         // Ensure container has a size for interaction if needed
         this.setSize(config.WIDTH, config.HEIGHT); 
         this.buttons[key] = btn;

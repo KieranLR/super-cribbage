@@ -18,11 +18,14 @@ import { BackgroundVisual } from '../components/GameVisuals/BackgroundVisual.js'
 import { SortWidget } from '../components/GameVisuals/SortWidget.js';
 
 export class CribbageGameView {
-    constructor(scene, animator) {
+    constructor(scene, animator, layout) {
         this.scene = scene;
         this.animator = animator;
+        this.layout = layout;
         this.flow = new RoundFlow(scene, animator, this);
-        const pos = TableLayout.getPositions(scene.scale);
+        
+        this.config = layout.config;
+        const pos = layout.getPositions();
 
         // Background
         this.bg = new BackgroundVisual(scene);
@@ -31,8 +34,69 @@ export class CribbageGameView {
     }
 
 
+    /**
+     * Handles window resizing.
+     * @param {number} width 
+     * @param {number} height 
+     */
+    resize(width, height) {
+        this.layout.refresh();
+        this.config = this.layout.config;
+        const pos = this.layout.getPositions();
+
+        // Update Background
+        if (this.bg) {
+            this.bg.resize(width, height);
+        }
+
+        // Reposition Visuals
+        this.humanHandVisual.setPosition(pos.playerHand.x, pos.playerHand.y);
+        this.botHandVisual.setPosition(pos.botHand.x, pos.botHand.y);
+        
+        this.peggingAreaVisual.setPosition(pos.peggingArea.x, pos.peggingArea.y);
+        this.peggingAreaVisual.config = this.config.PEGGING_AREA;
+
+        // If crib is parked, we need to use getCribPosition
+        // We might need to know the current phase, but for now let's just use current position logic
+        const cribPos = this.layout.getCribPosition(this.scene.gameState?.phase, PHASES);
+        this.cribVisual.setPosition(cribPos.x, cribPos.y);
+        this.cribVisual.config = this.config.CRIB;
+
+        this.starterCardVisual.setPosition(pos.starterCard.x, pos.starterCard.y);
+        this.starterCardVisual.config = this.config.STARTER_CARD;
+
+        this.deckVisual.setPosition(pos.deck.x, pos.deck.y);
+
+        if (this.scoreboard) {
+            this.scoreboard.setPosition(pos.scoreboard.x, pos.scoreboard.y);
+            this.scoreboard.config = this.config.SCOREBOARD;
+            // Optionally redraw scoreboard if its internal layout depends on config
+            this.scoreboard.updateScores();
+        }
+
+        this.phaseIndicator.setPosition(pos.phaseIndicator.x, pos.phaseIndicator.y);
+        this.phaseIndicator.config = this.config.PHASE_INDICATOR;
+
+        this.actionButtons.setPosition(pos.actionButtons.x, pos.actionButtons.y);
+        this.actionButtons.config = this.config.ACTION_BUTTONS;
+
+        this.sortWidget.setPosition(pos.sortWidget.x, pos.sortWidget.y);
+        this.sortWidget.config = this.config.SORT_WIDGET;
+
+        this.exitButton.setPosition(pos.exitButton.x, pos.exitButton.y);
+        
+        if (this.exitConfirmContainer) {
+            this.exitConfirmContainer.setPosition(width / 2, height / 2);
+            // Update overlay size
+            const overlay = this.exitConfirmContainer.getAt(0);
+            if (overlay instanceof Phaser.GameObjects.Rectangle) {
+                overlay.setSize(width, height);
+            }
+        }
+    }
+
     setupVisuals() {
-        const pos = TableLayout.getPositions(this.scene.scale);
+        const pos = this.layout.getPositions();
         const showBotHand = settingsManager.get('showBotHand');
         // Hands
         this.humanHandVisual = new HandVisual(
@@ -48,24 +112,25 @@ export class CribbageGameView {
         this.botHandVisual = new HandVisual(this.scene, pos.botHand.x, pos.botHand.y, [], !showBotHand, this.animator);
 
         // Areas
-        this.peggingAreaVisual = new PeggingAreaVisual(this.scene, pos.peggingArea.x, pos.peggingArea.y);
+        this.peggingAreaVisual = new PeggingAreaVisual(this.scene, pos.peggingArea.x, pos.peggingArea.y, this.config.PEGGING_AREA);
         this.peggingAreaVisual.setVisible(false);
-        this.cribVisual = new CribVisual(this.scene, pos.cribCenter.x, pos.cribCenter.y);
+        this.cribVisual = new CribVisual(this.scene, pos.cribCenter.x, pos.cribCenter.y, this.config.CRIB);
         this.cribVisual.setVisible(false);
-        this.starterCardVisual = new StarterCardVisual(this.scene, pos.starterCard.x, pos.starterCard.y);
+        this.starterCardVisual = new StarterCardVisual(this.scene, pos.starterCard.x, pos.starterCard.y, this.config.STARTER_CARD);
         this.starterCardVisual.setVisible(false);
         this.deckVisual = new DeckVisual(this.scene, pos.deck.x, pos.deck.y);
 
         // HUD
         this.scoreboard = null; // Will be initialized in initializeScoreboard
-        this.phaseIndicator = new PhaseIndicator(this.scene, pos.phaseIndicator.x, pos.phaseIndicator.y);
-        this.actionButtons = new ActionButtons(this.scene, pos.actionButtons.x, pos.actionButtons.y);
+        this.phaseIndicator = new PhaseIndicator(this.scene, pos.phaseIndicator.x, pos.phaseIndicator.y, this.config.PHASE_INDICATOR);
+        this.actionButtons = new ActionButtons(this.scene, pos.actionButtons.x, pos.actionButtons.y, this.config.ACTION_BUTTONS);
         this.actionButtons.setDepth(100);
 
         this.sortWidget = new SortWidget(
             this.scene,
             pos.sortWidget.x,
             pos.sortWidget.y,
+            this.config.SORT_WIDGET,
             () => this.humanHandVisual.sortByRank(),
             () => this.humanHandVisual.sortBySuit()
         );
@@ -83,17 +148,17 @@ export class CribbageGameView {
     }
 
     initializeScoreboard(players) {
-        const pos = TableLayout.getPositions(this.scene.scale);
-        this.scoreboard = new Scoreboard(this.scene, pos.scoreboard.x, pos.scoreboard.y, players);
+        const pos = this.layout.getPositions();
+        this.scoreboard = new Scoreboard(this.scene, pos.scoreboard.x, pos.scoreboard.y, players, this.config.SCOREBOARD);
     }
 
     setupExitButton() {
-        const pos = TableLayout.getPositions(this.scene.scale);
-        const config = TableLayout.REL.EXIT_BUTTON;
+        const pos = this.layout.getPositions();
+        const exitConfig = this.config.EXIT_BUTTON;
 
         this.exitButton = createMenuButton(this.scene, 'Main Menu', () => this.onExitClicked(), {
-            width: config.WIDTH,
-            height: config.HEIGHT,
+            width: exitConfig.WIDTH,
+            height: exitConfig.HEIGHT,
             fontSize: '22px'
         });
         this.exitButton.setPosition(pos.exitButton.x, pos.exitButton.y);
@@ -189,7 +254,7 @@ export class CribbageGameView {
      * @param {Function} onComplete 
      */
     animateDeckToPlay(onComplete = null) {
-        const pos = TableLayout.getPositions(this.scene.scale);
+        const pos = this.layout.getPositions();
         
         this.flow.startAnimation();
         this.animator.moveCard(this.deckVisual, pos.deck.x, pos.deck.y, {
@@ -402,7 +467,7 @@ export class CribbageGameView {
     }
 
     showStartingCutDeck(count, animate = false, onComplete = null) {
-        const pos = TableLayout.getPositions(this.scene.scale);
+        const pos = this.layout.getPositions();
         
         // Use the DeckVisual to show the fan
         // The DeckVisual is positioned at pos.deck.x, pos.deck.y

@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { StarterCardVisual } from '../../components/GameVisuals/StarterCardVisual.js';
 import { Card, Suits, Values } from '../../../game/Card.js';
+import { TableLayout } from '../../utils/TableLayout.js';
 
 export class TestStarterScene extends Scene {
     constructor() {
@@ -8,6 +9,7 @@ export class TestStarterScene extends Scene {
     }
 
     create() {
+        this.layout = new TableLayout(this.scale);
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x028af8);
 
@@ -16,7 +18,7 @@ export class TestStarterScene extends Scene {
         }).setOrigin(0.5);
 
         const card = new Card(Suits.HEARTS, Values.ACE);
-        const starterVisual = new StarterCardVisual(this, width * 0.5, height * 0.5, card);
+        const starterVisual = new StarterCardVisual(this, width * 0.5, height * 0.5, this.layout.config.STARTER_CARD, card);
 
         this.add.text(width * 0.5, height * 0.75, 'Click to Clear/Set Card', {
             fontSize: '20px', color: '#ffffff'

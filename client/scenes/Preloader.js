@@ -28,6 +28,10 @@ export class Preloader extends Scene {
     }
 
     create() {
+        // Start the DebugOverlay in parallel
+        console.log('laynching deubage overlay');
+        // this.scene.launch('DebugOverlay');
+        
         //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
         //  For example, you can define global animations here, so we can use them in other scenes.
 

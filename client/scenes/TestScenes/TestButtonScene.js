@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { ActionButtons } from '../../components/GameVisuals/ActionButtons.js';
 import {createMenuButton} from "../../ui/buttons/menuButton.js";
+import { TableLayout } from '../../utils/TableLayout.js';
 
 export class TestButtonScene extends Scene {
     constructor() {
@@ -8,6 +9,7 @@ export class TestButtonScene extends Scene {
     }
 
     create() {
+        this.layout = new TableLayout(this.scale);
         const { width, height } = this.scale;
 
         // Background
@@ -29,7 +31,7 @@ export class TestButtonScene extends Scene {
         }).setOrigin(0.5);
 
         // Action Buttons Container
-        this.actionButtons = new ActionButtons(this, width / 2, height - 200);
+        this.actionButtons = new ActionButtons(this, width / 2, height - 200, this.layout.config.ACTION_BUTTONS);
 
         // Testing Discard Button logic
         this.add.text(width / 2, height / 2 - 100, 'Toggle "Confirm Discard" button', {

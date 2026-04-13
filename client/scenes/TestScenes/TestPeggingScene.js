@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import { PeggingAreaVisual } from '../../components/GameVisuals/PeggingAreaVisual.js';
 import { Card, Suits, Values } from '../../../game/Card.js';
+import { TableLayout } from '../../utils/TableLayout.js';
 
 export class TestPeggingScene extends Scene {
     constructor() {
@@ -8,6 +9,7 @@ export class TestPeggingScene extends Scene {
     }
 
     create() {
+        this.layout = new TableLayout(this.scale);
         const { width, height } = this.scale;
         this.add.rectangle(width / 2, height / 2, width, height, 0x028af8);
 
@@ -15,7 +17,7 @@ export class TestPeggingScene extends Scene {
             fontFamily: 'Arial Black', fontSize: '32px', color: '#ffffff'
         }).setOrigin(0.5);
 
-        const peggingArea = new PeggingAreaVisual(this, width * 0.5, height * 0.5);
+        const peggingArea = new PeggingAreaVisual(this, width * 0.5, height * 0.5, this.layout.config.PEGGING_AREA);
         
         const testCards = [
             new Card(Suits.HEARTS, Values.ACE),

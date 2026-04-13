@@ -21,8 +21,5 @@
   },
   "author": "Phaser Studio Inc <support@phaser.io> (https://www.phaser.io)",
   "license": "MIT",
-  "licenseUrl": "https://www.opensource.org/licenses/mit-license.php",
-  "dependencies": {
-    "phaser3-rex-plugins": "^1.80.20"
-  }
+  "licenseUrl": "https://www.opensource.org/licenses/mit-license.php"
 }

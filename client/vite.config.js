@@ -4,6 +4,11 @@ import { defineConfig } from 'vite';
 
 const tunnelHost = process.env.VITE_TUNNEL_HOST;
 export default defineConfig({
+  optimizeDeps: {
+      include: ['phaser'],
+      force: true
+  },
+  plugins: [],
   envDir: '../',
   server: {
     allowedHosts: tunnelHost

@@ -7,15 +7,15 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
      * @param {Phaser.Scene} scene
      * @param {number} x
      * @param {number} y
+     * @param {Object} config
      */
-    constructor(scene, x, y) {
+    constructor(scene, x, y, config) {
         super(scene, x, y);
         this.cardVisuals = [];
-
-        const config = TableLayout.REL.PEGGING_AREA;
+        this.config = config || TableLayout.REL.PEGGING_AREA;
 
         // Label
-        this.label = scene.add.text(0, config.LABEL_Y, 'Pegging Area: 0', {
+        this.label = scene.add.text(0, this.config.LABEL_Y, 'Pegging Area: 0', {
             fontSize: '20px',
             color: '#ffffff',
             backgroundColor: '#000000',
@@ -24,7 +24,7 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
         this.add(this.label);
 
         // Play Area background
-        const bg = scene.add.rectangle(0, 0, config.WIDTH, config.HEIGHT, 0x000000, 0.2)
+        const bg = scene.add.rectangle(0, 0, this.config.WIDTH, this.config.HEIGHT, 0x000000, 0.2)
             .setStrokeStyle(2, 0xffffff, 0.3);
         this.add(bg);
 
@@ -32,7 +32,7 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
     }
 
     isPointInside(x, y) {
-        const config = TableLayout.REL.PEGGING_AREA;
+        const config = this.config;
         // The play area background is at (0,0) in the container
         // We need to check if the point is within this rectangle
         const bounds = new Phaser.Geom.Rectangle(this.x - config.WIDTH / 2, this.y - config.HEIGHT / 2, config.WIDTH, config.HEIGHT);
@@ -48,7 +48,7 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
         this.cardVisuals = [];
         this.label.setText(`Pegging Area: ${total}`);
 
-        const config = TableLayout.REL.PEGGING_AREA;
+        const config = this.config;
         const spacing = config.CARD_SPACING;
         const totalWidth = (cards.length - 1) * spacing;
 
@@ -90,7 +90,7 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
         const count = this.cardVisuals.length;
         if (count === 0) return;
 
-        const config = TableLayout.REL.PEGGING_AREA;
+        const config = this.config;
         const spacing = config.CARD_SPACING;
         const totalWidth = (count - 1) * spacing;
 
@@ -107,7 +107,7 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
     getNextCardPosition(currentCount) {
         if (currentCount <= 0) return { x: this.x, y: this.y };
 
-        const config = TableLayout.REL.PEGGING_AREA;
+        const config = this.config;
         const spacing = config.CARD_SPACING;
         const totalWidth = (currentCount - 1) * spacing;
         const index = currentCount - 1; // Last position
@@ -124,7 +124,7 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
      * Highlight area for specific events
      */
     flash(color = 0xffffff) {
-        const config = TableLayout.REL.PEGGING_AREA;
+        const config = this.config;
         const flashRect = this.scene.add.rectangle(this.x, this.y, config.WIDTH, config.HEIGHT, color, 0.5);
         const animator = this.scene.animator;
         if (animator) {

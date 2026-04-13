@@ -1,29 +1,14 @@
-import { Scene } from 'phaser';
-import { GameState } from '../../../game/GameState.js';
-import { Player } from '../../../game/Player.js';
-import { BotPlayer } from '../../../game/BotPlayer.js';
-import { CribbageGameView } from '../CribbageGameView.js';
-import { HumanVsBotController } from '../HumanVsBotController.js';
-import { TableAnimator } from '../../utils/TableAnimator.js';
+import { CribbageGameScene } from '../CribbageGameScene.js';
 import { PHASES } from '../../../game/Constants.js';
 
-export class TestScoringScene extends Scene {
+export class TestScoringScene extends CribbageGameScene {
     constructor() {
         super('TestScoringScene');
     }
 
     create() {
+        super.create();
         const { width, height } = this.scale;
-
-        // 1. Setup Game Environment (similar to Game.js)
-        this.animator = new TableAnimator(this);
-        this.humanPlayer = new Player('human', 'You');
-        this.botPlayer = new BotPlayer('bot', 'Stanley');
-        this.players = [this.humanPlayer, this.botPlayer];
-        this.gameState = new GameState(this.players);
-        this.view = new CribbageGameView(this, this.animator);
-        this.view.initializeScoreboard(this.players);
-        this.controller = new HumanVsBotController(this.gameState, this.view, this.humanPlayer, this.botPlayer, this.animator);
 
         // 2. Mock Game State for end of Scoring
         this.setupMockState();

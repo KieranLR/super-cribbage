@@ -6,35 +6,30 @@ import { BackgroundVisual } from '../components/GameVisuals/BackgroundVisual.js'
 
 export class Settings extends Scene {
     constructor() {
+        console.log('Settings Scene Created');
         super('Settings');
     }
 
     create() {
+        console.log('Settings Scene Created');
         const { width, height } = this.scale;
 
         // Background
         this.bg = new BackgroundVisual(this, 0.6);
 
         // Main Panel
-        this.add.rectangle(width / 2, height / 2, width * 0.8, height * 0.8, 0x000000, 0.8)
+        const panel = this.add.rectangle(width / 2, height / 2, width * 0.8, height * 0.8, 0x000000, 0.8)
             .setStrokeStyle(4, 0xffffff);
 
         // Title
-        this.add.text(width / 2, height * 0.2, 'Settings', {
+        const title = this.add.text(width / 2, height * 0.2, 'Settings', {
             fontSize: '48px',
             fontStyle: 'bold',
             color: '#ffffff'
         }).setOrigin(0.5);
 
-        // Vertical Menu Layout (RexUI)
-        const menu = this.rexUI.add.sizer({
-            x: width / 2,
-            y: height * 0.5,
-            orientation: 'y',
-            space: {
-                item: 40
-            }
-        });
+        // Menu items
+        const menuItems = [];
 
         // Debug: Show Bot Hand Toggle
         const showBotHand = settingsManager.get('showBotHand');
@@ -44,7 +39,7 @@ export class Settings extends Scene {
             settingsManager.set('showBotHand', newValue);
             this.updateLabel(this.botHandToggle, this.getBotHandLabel(newValue));
         });
-        menu.add(this.botHandToggle);
+        menuItems.push(this.botHandToggle);
 
         // Fast Mode Toggle
         const fastMode = settingsManager.get('fastMode');
@@ -54,12 +49,29 @@ export class Settings extends Scene {
             settingsManager.set('fastMode', newValue);
             this.updateLabel(this.fastModeToggle, this.getFastModeLabel(newValue));
         });
-        menu.add(this.fastModeToggle);
+        menuItems.push(this.fastModeToggle);
+
+        // FPS Toggle
+        const showFPS = settingsManager.get('showFPS');
+        this.fpsToggle = createMenuButton(this, this.getFPSLabel(showFPS), () => {
+            const current = settingsManager.get('showFPS');
+            const newValue = !current;
+            settingsManager.set('showFPS', newValue);
+            this.updateLabel(this.fpsToggle, this.getFPSLabel(newValue));
+            
+            // Notify the FPSOverlay scene if it exists
+            const fpsScene = this.scene.get('FPSOverlay');
+            if (fpsScene) {
+                fpsScene.updateVisibility();
+            }
+        });
+        menuItems.push(this.fpsToggle);
 
         // Card Deck Selection
         const currentDeckId = settingsManager.get('cardDeck') || 'default';
-        const currentDeck = Object.values(CARD_DECKS).find(d => d.id === currentDeckId) || CARD_DECKS.DEFAULT;
-        this.deckToggle = createMenuButton(this, this.getDeckLabel(currentDeck.name), () => {
+        const currentDeckId_val = settingsManager.get('cardDeck');
+        const currentDeckObj = Object.values(CARD_DECKS).find(d => d.id === currentDeckId_val) || CARD_DECKS.DEFAULT;
+        this.deckToggle = createMenuButton(this, this.getDeckLabel(currentDeckObj.name), () => {
             const allDecks = Object.values(CARD_DECKS);
             const currentIndex = allDecks.findIndex(d => d.id === settingsManager.get('cardDeck'));
             const nextIndex = (currentIndex + 1) % allDecks.length;
@@ -68,14 +80,38 @@ export class Settings extends Scene {
             settingsManager.set('cardDeck', nextDeck.id);
             this.updateLabel(this.deckToggle, this.getDeckLabel(nextDeck.name));
         });
-        menu.add(this.deckToggle);
+        menuItems.push(this.deckToggle);
 
         // Back Button
-        menu.add(createMenuButton(this, 'Back', () => {
+        menuItems.push(createMenuButton(this, 'Back', () => {
             this.scene.start('MainMenu');
         }));
 
-        menu.layout();
+        const updateMenuLayout = () => {
+            const { width, height } = this.scale;
+            const startY = height * 0.4;
+            const spacing = 70;
+
+            menuItems.forEach((item, index) => {
+                item.setPosition(width / 2, startY + index * spacing);
+            });
+        };
+
+        updateMenuLayout();
+
+        this.scale.on('resize', (gameSize) => {
+            if (!this.scene.isActive()) return;
+            
+            const { width, height } = gameSize;
+            this.bg.resize(width, height);
+            
+            panel.setPosition(width / 2, height / 2);
+            panel.setSize(width * 0.8, height * 0.8);
+            
+            title.setPosition(width / 2, height * 0.2);
+            
+            updateMenuLayout();
+        });
     }
 
     getBotHandLabel(value) {
@@ -84,6 +120,10 @@ export class Settings extends Scene {
 
     getFastModeLabel(value) {
         return `Fast Mode: ${value ? 'ON' : 'OFF'}`;
+    }
+
+    getFPSLabel(value) {
+        return `FPS Tracker: ${value ? 'ON' : 'OFF'}`;
     }
 
     getDeckLabel(name) {
