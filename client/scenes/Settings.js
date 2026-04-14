@@ -7,12 +7,10 @@ import { ScrollComponent } from '../utils/ScrollComponent.js';
 
 export class Settings extends Scene {
     constructor() {
-        console.log('Settings Scene Created');
         super('Settings');
     }
 
     create() {
-        console.log('Settings Scene Created');
         const { width, height } = this.scale;
 
         // Background
@@ -72,6 +70,24 @@ export class Settings extends Scene {
         this.menuItems.push(this.fpsToggle);
         this.menuContainer.add(this.fpsToggle);
 
+        // Debug Menu Toggle
+        const showDebugMenu = settingsManager.get('showDebugMenu');
+        this.debugMenuToggle = createMenuButton(this, this.getDebugMenuLabel(showDebugMenu), () => {
+            const current = settingsManager.get('showDebugMenu');
+            const newValue = !current;
+            settingsManager.set('showDebugMenu', newValue);
+            this.updateLabel(this.debugMenuToggle, this.getDebugMenuLabel(newValue));
+            
+            // Notify the DebugOverlay scene if it exists
+            const debugOverlay = this.scene.get('DebugOverlay');
+            if (debugOverlay) {
+                debugOverlay.updateVisibility();
+            }
+        });
+        this.menuItems.push(this.debugMenuToggle);
+        this.menuContainer.add(this.debugMenuToggle);
+
+
         // Card Deck Selection
         const currentDeckId_val = settingsManager.get('cardDeck');
         const currentDeckObj = Object.values(CARD_DECKS).find(d => d.id === currentDeckId_val) || CARD_DECKS.DEFAULT;
@@ -130,13 +146,10 @@ export class Settings extends Scene {
             
             const { width, height } = gameSize;
             this.bg.resize(width, height);
-            
-            console.log(panel)
+
             panel.setPosition(width / 2, height / 2);
-            console.log(panel)
 
             panel.setSize(width * 0.8, height * 0.8);
-            console.log(panel)
 
             title.setPosition(width / 2, height * 0.2);
             
@@ -155,6 +168,11 @@ export class Settings extends Scene {
     getFPSLabel(value) {
         return `FPS Tracker: ${value ? 'ON' : 'OFF'}`;
     }
+
+    getDebugMenuLabel(value) {
+        return `Debug Menu: ${value ? 'ON' : 'OFF'}`;
+    }
+
 
     getDeckLabel(name) {
         return `Card Deck: ${name}`;

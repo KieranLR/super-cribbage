@@ -94,7 +94,7 @@ export class TestScoringScene extends CribbageGameScene {
         // which are populated when cards are played.
         
         peggingCards.forEach((card) => {
-            this.view.peggingAreaVisual.addCard(card);
+            this.view.visuals.table.peggingArea.addCard(card);
         });
     }
 }

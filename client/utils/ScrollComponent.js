@@ -1,3 +1,5 @@
+import { settingsManager } from './SettingsManager.js';
+
 export class ScrollComponent {
     /**
      * @param {Phaser.Scene} scene
@@ -9,6 +11,8 @@ export class ScrollComponent {
         this.contentHeight = 0;
         this.visibleHeight = 0;
         this.isScrollingEnabled = false;
+        this.isVisible = true;
+        this.scrollbarX = 0;
 
         // Visual indicator (Scrollbar)
         this.scrollbarTrack = scene.add.rectangle(0, 0, 8, 0, 0xffffff, 0.2).setOrigin(1, 0).setDepth(100);
@@ -21,13 +25,13 @@ export class ScrollComponent {
 
     setupInput() {
         this.onWheel = (pointer, gameObjects, deltaX, deltaY, deltaZ) => {
-            if (!this.isScrollingEnabled) return;
+            if (!this.isScrollingEnabled || !this.isVisible) return;
             this.container.y -= deltaY;
             this.clampScroll();
         };
 
         this.onPointerMove = (pointer) => {
-            if (!this.isScrollingEnabled || !pointer.isDown) return;
+            if (!this.isScrollingEnabled || !this.isVisible || !pointer.isDown) return;
             this.container.y += pointer.velocity.y * 1.5;
             this.clampScroll();
         };
@@ -43,15 +47,19 @@ export class ScrollComponent {
 
         if (this.isScrollingEnabled) {
             const { width } = this.scene.scale;
-            this.scrollbarTrack.setVisible(true);
-            this.scrollbarHandle.setVisible(true);
+            const side = settingsManager.get('debugMenuSide') || 'left';
+            const menuWidth = this.scene.menuWidth || 450;
+            const scrollbarX = side === 'left' ? menuWidth : width;
+            this.scrollbarX = scrollbarX;
+            this.scrollbarTrack.setVisible(this.isVisible);
+            this.scrollbarHandle.setVisible(this.isVisible);
             
-            this.scrollbarTrack.setPosition(width - 5, 0);
+            this.scrollbarTrack.setPosition(scrollbarX, 0);
             this.scrollbarTrack.height = visibleHeight;
             
             const handleHeight = (visibleHeight / contentHeight) * visibleHeight;
             this.scrollbarHandle.height = Math.max(20, handleHeight);
-            this.scrollbarHandle.setPosition(width - 5, 0);
+            this.scrollbarHandle.setPosition(scrollbarX, 0);
             
             this.updateScrollbarPosition();
         } else {
@@ -73,9 +81,31 @@ export class ScrollComponent {
     updateScrollbarPosition() {
         if (!this.isScrollingEnabled) return;
         
+        const side = settingsManager.get('debugMenuSide') || 'left';
+        const menuWidth = this.scene.menuWidth || 450;
+        const width = this.scene.scale.width;
+        const currentScrollbarX = side === 'left' ? menuWidth : width;
+
+        if (this.scrollbarX !== currentScrollbarX) {
+            this.scrollbarX = currentScrollbarX;
+            this.scrollbarTrack.setX(this.scrollbarX);
+            this.scrollbarHandle.setX(this.scrollbarX);
+        }
+
         const scrollPercent = Math.abs(this.container.y) / (this.contentHeight - this.visibleHeight);
         const maxHandleY = this.visibleHeight - this.scrollbarHandle.height;
         this.scrollbarHandle.y = scrollPercent * maxHandleY;
+    }
+
+    setVisible(visible) {
+        this.isVisible = visible;
+        if (this.isScrollingEnabled) {
+            this.scrollbarTrack.setVisible(visible);
+            this.scrollbarHandle.setVisible(visible);
+        } else {
+            this.scrollbarTrack.setVisible(false);
+            this.scrollbarHandle.setVisible(false);
+        }
     }
 
     destroy() {

@@ -7,7 +7,7 @@ import { settingsManager } from '../SettingsManager.js';
 const NORMAL_TIMINGS = {
     // Bot decision delays
     BOT: {
-        STARTING_CUT: 1000,
+        STARTING_CUT: 2000,
         DISCARDING: 1000,
         PEGGING: 1500,
         PEGGING_NEW_CYCLE: 2000,

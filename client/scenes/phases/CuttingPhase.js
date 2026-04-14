@@ -16,8 +16,9 @@ export class CuttingPhase extends Phase {
     }
 
     animateStarterCardCut(card, completionCallback) {
-        this.view.updateStarterCard(card);
-        const visual = this.view.starterCardVisual.cardVisual;
+        // Only update visuals if it hasn't been updated yet
+        this.view.updateStarterCard(card, true);
+        const visual = this.view.visuals.table.deck.starterCardVisual;
         if (visual) {
             visual.isLocked = true;
             this.view.flow.startAnimation();

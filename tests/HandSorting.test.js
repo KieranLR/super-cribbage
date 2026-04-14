@@ -1,42 +1,5 @@
 import { jest } from '@jest/globals';
 
-// Mock Phaser before importing components that extend it
-global.Phaser = {
-    GameObjects: {
-        Container: class {
-            constructor(scene) {
-                this.scene = scene;
-                this.list = [];
-                this.x = 0;
-                this.y = 0;
-                this.scale = 1;
-                this.alpha = 1;
-                this.visible = true;
-                this.input = { enabled: true };
-            }
-            add(item) { this.list.push(item); }
-            remove(item) {
-                const idx = this.list.indexOf(item);
-                if (idx > -1) this.list.splice(idx, 1);
-            }
-            setSize() {}
-            setInteractive() {}
-            on() {}
-            off() {}
-            setVisible(v) { this.visible = v; }
-            setAlpha(a) { this.alpha = a; }
-            destroy() {}
-            bringToTop() {}
-            exists() { return true; }
-        }
-    },
-    Math: {
-        Distance: {
-            Between: () => 0
-        }
-    }
-};
-
 const { Card, Suits, Values } = await import('../game/Card.js');
 const { HandVisual } = await import('../client/components/GameVisuals/HandVisual.js');
 const { TableAnimator } = await import('../client/utils/TableAnimator.js');

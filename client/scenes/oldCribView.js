@@ -4,14 +4,15 @@ import { RoundFlow } from '../utils/flow/RoundFlow.js';
 import { HandVisual } from '../components/GameVisuals/HandVisual.js';
 import { CribVisual } from '../components/GameVisuals/CribVisual.js';
 import { PeggingAreaVisual } from '../components/GameVisuals/PeggingAreaVisual.js';
+import { StarterCardVisual } from '../components/GameVisuals/StarterCardVisual.js';
+import { Scoreboard } from '../components/GameVisuals/Scoreboard.js';
+import { PhaseIndicator } from '../components/GameVisuals/PhaseIndicator.js';
+import { ActionButtons } from '../components/GameVisuals/ActionButtons.js';
 import { DeckVisual } from '../components/GameVisuals/DeckVisual.js';
 import { settingsManager } from '../utils/SettingsManager.js';
+import { createMenuButton } from '../ui/buttons/menuButton.js';
 import { BackgroundVisual } from '../components/GameVisuals/BackgroundVisual.js';
 import { SortWidget } from '../components/GameVisuals/SortWidget.js';
-import { ExitConfirmation } from '../components/GameVisuals/ExitConfirmation.js';
-import {PhaseIndicator} from "../components/GameVisuals/PhaseIndicator.js";
-import {ActionButtons} from "../components/GameVisuals/ActionButtons.js";
-import {Scoreboard} from "../components/GameVisuals/Scoreboard.js";
 
 export class CribbageGameView {
     constructor(scene, animator, layout) {
@@ -84,6 +85,14 @@ export class CribbageGameView {
         );
         this.visuals.table.crib.setVisible(false);
 
+        this.visuals.table.starterCard = new StarterCardVisual(
+            this.scene,
+            snapshot.slots.starterCard.x,
+            snapshot.slots.starterCard.y,
+            snapshot.styles.starterCard
+        );
+        this.visuals.table.starterCard.setVisible(false);
+
         this.visuals.table.deck = new DeckVisual(
             this.scene,
             snapshot.slots.deck.x,
@@ -119,11 +128,74 @@ export class CribbageGameView {
         this.visuals.hud.sortWidget.setDepth(100);
         this.visuals.hud.sortWidget.setVisible(false);
 
-        this.visuals.hud.exitButton = new ExitConfirmation(this.scene, () => {
-            this.scene.scene.start('MainMenu');
-        });
+        this.setupExitButton(snapshot);
     }
 
+    setupExitButton(snapshot = this.getLayoutSnapshot()) {
+        const exitConfig = snapshot.styles.exitButton;
+
+        this.visuals.hud.exitButton = createMenuButton(
+            this.scene,
+            'Main Menu',
+            () => this.onExitClicked(),
+            {
+                width: exitConfig.WIDTH,
+                height: exitConfig.HEIGHT,
+                fontSize: '22px'
+            }
+        );
+
+        this.visuals.hud.exitButton.setPosition(
+            snapshot.slots.exitButton.x,
+            snapshot.slots.exitButton.y
+        );
+        this.visuals.hud.exitButton.setDepth(1000);
+
+        const container = this.scene.add.container(
+            this.scene.scale.width / 2,
+            this.scene.scale.height / 2
+        );
+        container.setDepth(2000);
+        container.setVisible(false);
+
+        const overlay = this.scene.add.rectangle(
+            0,
+            0,
+            this.scene.scale.width,
+            this.scene.scale.height,
+            0x000000,
+            0.7
+        ).setInteractive();
+
+        const bg = this.scene.add.rectangle(0, 0, 500, 300, 0x222222, 1)
+            .setStrokeStyle(4, 0xffffff);
+
+        const warningText = this.scene.add.text(
+            0,
+            -60,
+            'Return to Main Menu?\\n\\nYour current game will not be saved.',
+            {
+                fontFamily: 'Arial',
+                fontSize: '24px',
+                color: '#ffffff',
+                align: 'center',
+                wordWrap: { width: 450 }
+            }
+        ).setOrigin(0.5);
+
+        const yesBtn = createMenuButton(this.scene, 'Yes, Exit', () => {
+            this.scene.scene.start('MainMenu');
+        }, { width: 200, height: 50, fontSize: '20px' });
+        yesBtn.setPosition(-110, 80);
+
+        const noBtn = createMenuButton(this.scene, 'No, Stay', () => {
+            container.setVisible(false);
+        }, { width: 200, height: 50, fontSize: '20px' });
+        noBtn.setPosition(110, 80);
+
+        container.add([overlay, bg, warningText, yesBtn, noBtn]);
+        this.visuals.overlays.exitConfirm = container;
+    }
 
     applyLayout() {
         const snapshot = this.getLayoutSnapshot();
@@ -141,6 +213,9 @@ export class CribbageGameView {
 
         this.visuals.table.crib?.setPosition(snapshot.slots.crib.x, snapshot.slots.crib.y);
         this.visuals.table.crib?.updateConfig(snapshot.styles.crib);
+
+        this.visuals.table.starterCard?.setPosition(snapshot.slots.starterCard.x, snapshot.slots.starterCard.y);
+        this.visuals.table.starterCard?.updateConfig(snapshot.styles.starterCard);
 
         this.visuals.table.deck?.setPosition(snapshot.slots.deck.x, snapshot.slots.deck.y);
         this.visuals.table.deck?.updateConfig({ CARD_SCALE: snapshot.styles.deck.cardScale });
@@ -161,10 +236,21 @@ export class CribbageGameView {
         this.visuals.hud.sortWidget?.updateConfig(snapshot.styles.sortWidget);
 
         this.visuals.hud.exitButton?.setPosition(snapshot.slots.exitButton.x, snapshot.slots.exitButton.y);
-        this.visuals.hud.exitButton?.updateConfig(snapshot.styles.exitButton);
-        this.visuals.hud.exitButton?.resize(snapshot.context.width, snapshot.context.height);
+
+        this.applyOverlayLayout(snapshot);
     }
 
+    applyOverlayLayout(snapshot) {
+        const exitConfirm = this.visuals.overlays.exitConfirm;
+        if (!exitConfirm) return;
+
+        exitConfirm.setPosition(snapshot.context.width / 2, snapshot.context.height / 2);
+
+        const overlay = exitConfirm.getAt(0);
+        if (overlay instanceof Phaser.GameObjects.Rectangle) {
+            overlay.setSize(snapshot.context.width, snapshot.context.height);
+        }
+    }
 
     resize(width, height) {
         this.layout.refresh();
@@ -183,7 +269,7 @@ export class CribbageGameView {
     }
 
     onExitClicked() {
-        this.visuals.hud.exitButton?.show();
+        this.visuals.overlays.exitConfirm?.setVisible(true);
     }
 
     onCardClicked(cardVisual) {
@@ -238,47 +324,46 @@ export class CribbageGameView {
     }
 
     animateDeckToPlay(onComplete = null) {
-        this.animator.animateDeckToPlay(this, onComplete);
-    }
+        const snapshot = this.getLayoutSnapshot();
+        const deckPos = snapshot.slots.deck;
 
-    dealCardsAnimated(data, onComplete = null) {
-        this.animator.dealCardsAnimated(this, data, onComplete);
-    }
-
-    returnCardsToDeckAnimated(onComplete = null) {
-        this.animator.returnCardsToDeckAnimated(this, onComplete);
-    }
-
-    updateCrib(cards, spread = false, reveal = false) {
-        this.visuals.table.crib.setCards(cards, spread, reveal);
-    }
-
-    updateStarterCard(card, skipFlip = false) {
-        this.visuals.table.deck.setStarterCard(card, skipFlip);
-    }
-
-    updatePegging(playedCards, currentTotal) {
-        this.visuals.table.peggingArea.update(playedCards, currentTotal);
-    }
-
-    updateScores() {
-        if (this.visuals.hud.scoreboard) {
-            this.visuals.hud.scoreboard.updateScores();
-        }
+        this.flow.startAnimation();
+        this.animator.moveCard(this.visuals.table.deck, deckPos.x, deckPos.y, {
+            duration: TIMINGS.ANIMATIONS.GENERIC_MOVE,
+            onComplete: () => {
+                this.visuals.table.deck.animateStack(TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
+                    this.flow.endAnimation();
+                    if (onComplete) onComplete();
+                });
+            }
+        });
     }
 
     showStartingCutDeck(count, animate = false, onComplete = null) {
-        this.animator.showStartingCutDeck(this, count, animate, onComplete);
-    }
+        const snapshot = this.getLayoutSnapshot();
+        const sc = snapshot.slots.startingCut;
+        const deck = this.visuals.table.deck;
 
-    showFloatingText(x, y, text, color = '#ffff00') {
-        this.animator.showFloatingText(x, y, text, color);
-    }
+        const localStartX = sc.startX - deck.x;
+        const localEndX = sc.endX - deck.x;
+        const localY = sc.y - deck.y;
 
-    showGameOver(winnerName) {
-        const { width, height } = this.scene.scale;
-        this.scene.add.text(width / 2, height / 2 + 100, `${winnerName} Wins!`, {
-            fontSize: '48px', color: '#ff0000', stroke: '#000', strokeThickness: 6
-        }).setOrigin(0.5);
+        deck.setAlpha(1);
+
+        if (animate) {
+            deck.animateFan(
+                count,
+                localStartX,
+                localEndX,
+                localY,
+                (v) => this.onCardClicked(v),
+                TIMINGS.ANIMATIONS.DECK_FAN_DURATION,
+                TIMINGS.ANIMATIONS.DECK_FAN_DELAY,
+                onComplete
+            );
+        } else {
+            deck.showFan(count, localStartX, localEndX, localY, (v) => this.onCardClicked(v));
+            if (onComplete) onComplete();
+        }
     }
 }

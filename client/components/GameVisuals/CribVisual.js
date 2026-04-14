@@ -13,7 +13,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
         super(scene, x, y);
         this.cardVisuals = [];
         this.submittedVisuals = [];
-        this.config = config || TableLayout.REL.CRIB;
+        this.config = config;
 
         // Label
         this.label = scene.add.text(0, this.config.LABEL_Y, 'Crib', {
@@ -75,8 +75,8 @@ export class CribVisual extends Phaser.GameObjects.Container {
         const cardScale = config.CARD_SCALE || 0.8;
         cards.forEach((card, index) => {
             // Place to the right of the discard zone, centered vertically
-            const posX = config.CRIB_PARKED_X_OFFSET + index * 2;
-            const posY = 0 + index * 2;
+            const posX = (config.CRIB_PARKED_X_OFFSET + index * 2) * cardScale;
+            const posY = (0 + index * 2) * cardScale;
             const visual = new CardVisual(this.scene, posX, posY, card, true);
             visual.originalParent = this;
             visual.setScale(cardScale);
@@ -87,7 +87,6 @@ export class CribVisual extends Phaser.GameObjects.Container {
 
     updateConfig(config) {
         this.config = config;
-        this.label.setY(config.LABEL_Y);
         this.dropZoneBg.setSize(config.WIDTH, config.HEIGHT);
         // Refresh visuals to apply new scale/spacing if needed
         // For simplicity, we'll just re-set what's there
@@ -95,14 +94,26 @@ export class CribVisual extends Phaser.GameObjects.Container {
             this.setCards(this.cardVisuals.map(v => v.cardData), true, !this.cardVisuals[0].isFaceDown);
         }
         if (this.submittedVisuals.length > 0) {
-            this.setSubmittedCards(this.submittedVisuals.map(v => v.cardData));
+            const cardScale = config.CARD_SCALE || 0.8;
+            this.submittedVisuals.forEach((visual, index) => {
+                visual.setScale(cardScale);
+                // If the card was already positioned (e.g. by animation or setSubmittedCards), 
+                // we might want to keep its relative position, but setSubmittedCards uses a fixed offset.
+                // To keep it simple and consistent with how it's initialized:
+                const posX = (config.CRIB_PARKED_X_OFFSET + index * 2) * cardScale;
+                const posY = (0 + index * 2) * cardScale;
+                visual.setPosition(posX, posY);
+            });
+        }
+        if (this.label) {
+            this.label.setY(config.LABEL_Y);
         }
     }
 
     /**
      * Adds an existing CardVisual to this container while maintaining its world position.
      * Useful for starting animations that end inside this container.
-     * @param {CardVisual} visual 
+     * @param {CardVisual} visual
      * @param {Phaser.GameObjects.Container} [originalParent] - Optional original parent container to help with coordinate calculation
      */
     addForAnimation(visual, originalParent) {
@@ -111,10 +122,10 @@ export class CribVisual extends Phaser.GameObjects.Container {
         // while preserving its current visual position on screen.
 
         const parent = originalParent || visual.originalParent || visual.parentContainer;
-        
+
         let worldX = visual.x;
         let worldY = visual.y;
-        
+
         if (parent) {
             worldX += parent.x;
             worldY += parent.y;
@@ -123,7 +134,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
         // Now calculate what this world position is in terms of THIS container's local space.
         const localX = worldX - this.x;
         const localY = worldY - this.y;
-        
+
         visual.setPosition(localX, localY);
         visual.originalParent = this;
         this.add(visual);

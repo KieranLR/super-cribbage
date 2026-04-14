@@ -8,14 +8,14 @@ import { Phase } from './Phase.js';
 export class DiscardingPhase extends Phase {
     start() {
         const isDealer = this.humanPlayer.isDealer;
-        this.view.cribVisual.setCards([]); // Clear cards from previous round/phase
+        this.view.visuals.table.crib.setCards([]); // Clear cards from previous round/phase
         const cribLabel = isDealer ? 'To Your Crib' : 'To Opponents Crib';
         this.updatePhaseView(PHASES.DISCARDING, 'Select 2 cards for the crib');
-        this.view.cribVisual.setLabel(cribLabel);
+        this.view.visuals.table.crib.setLabel(cribLabel);
         this.interactionHelper = new CardInteractionHelper({
             scene: this.view.scene,
-            handVisual: this.view.humanHandVisual,
-            dropZoneVisual: this.view.cribVisual,
+            handVisual: this.view.visuals.table.humanHand,
+            dropZoneVisual: this.view.visuals.table.crib,
             animator: this.animator,
             onValidateMove: () => true, // Any card can be discarded
             onMoveApplied: () => this.updateDiscardButton(),
@@ -41,10 +41,10 @@ export class DiscardingPhase extends Phase {
     }
 
     updateDiscardButton() {
-        const selectedCount = this.view.humanHandVisual.getSelectedCards().length;
+        const selectedCount = this.view.visuals.table.humanHand.getSelectedCards().length;
         if (selectedCount === 2) {
             this.view.showButton('discard', 'Confirm Discard', () => {
-                const selected = this.view.humanHandVisual.getSelectedCards().map(v => v.cardData);
+                const selected = this.view.visuals.table.humanHand.getSelectedCards().map(v => v.cardData);
                 this.gameState.discardToCrib(this.humanPlayer, selected);
                 this.view.hideButton('discard');
             });
@@ -54,13 +54,13 @@ export class DiscardingPhase extends Phase {
     }
 
     onCardDiscarded(data) {
-        this.view.humanHandVisual.cardVisuals.forEach(v => {
+        this.view.visuals.table.humanHand.cardVisuals.forEach(v => {
             v.setSelected(false);
             v.baseY = 0;
         });
 
         const isBot = data && data.player.id !== this.humanPlayer.id;
-        const handVisual = isBot ? this.view.botHandVisual : this.view.humanHandVisual;
+        const handVisual = isBot ? this.view.visuals.table.botHand : this.view.visuals.table.humanHand;
 
         this.animateDiscard(handVisual, data.cards, isBot, () => {
             const remainingCards = data.player.hand.cards;
@@ -77,12 +77,15 @@ export class DiscardingPhase extends Phase {
         const toAnimate = this._prepareDiscardVisuals(playerHand, cards, isBot);
         let completed = 0;
 
-        const config = this.view.layout.config.CRIB;
-        const spacing = config.STACK_SPACING || 2;
-        
+        const layout = this.view.getLayoutSnapshot();
+        const config = layout.styles.crib;
+        const cardScale = config.CARD_SCALE || 1.0;
+
         toAnimate.forEach((visual, index) => {
-            const targetX = index * spacing; 
-            const targetY = index * spacing;
+            // Use the same coordinate space logic as CribVisual.setSubmittedCards
+            // But we can add it to submittedVisuals and animate it to its parked position
+            const targetX = (config.CRIB_PARKED_X_OFFSET + index * 2) * cardScale;
+            const targetY = index * 2 * cardScale;
 
             this.view.flow.startAnimation();
             this.animator.moveCardToCrib(visual, targetX, targetY, index * 100, () => {
@@ -91,7 +94,7 @@ export class DiscardingPhase extends Phase {
                 if (completed === toAnimate.length && completionCallback) {
                     completionCallback();
                 }
-            });
+            }, cardScale);
         });
     }
 
@@ -116,7 +119,7 @@ export class DiscardingPhase extends Phase {
             if (idx > -1) playerHand.cardVisuals.splice(idx, 1);
 
             // Transition to crib container
-            this.view.cribVisual.addForAnimation(visual, playerHand);
+            this.view.visuals.table.crib.addForAnimation(visual, playerHand);
             playerHand.remove(visual);
         });
 
@@ -130,7 +133,7 @@ export class DiscardingPhase extends Phase {
 
     onAllDiscarded() {
         this.view.flow.waitForAnimations(() => {
-            const visuals = this.view.cribVisual.cardVisuals.concat(this.view.cribVisual.submittedVisuals);
+            const visuals = this.view.visuals.table.crib.cardVisuals.concat(this.view.visuals.table.crib.submittedVisuals);
             if (visuals.length === 0) {
                 this.gameState.nextPhase();
                 return;
@@ -139,11 +142,14 @@ export class DiscardingPhase extends Phase {
             // Start the next phase immediately so its transitionCrib runs at the same time
             this.gameState.nextPhase();
 
+            const layout = this.view.getLayoutSnapshot();
+            const cardScale = layout.styles.crib.CARD_SCALE || 1.0;
+
             this.view.flow.startAnimation();
             this.animator.centerCribCards(visuals, 2, TIMINGS.ANIMATIONS.PEGGING_UI_MOVE, () => {
                 this.view.flow.endAnimation();
                 this.view.updateCrib(this.gameState.crib.cards);
-            });
+            }, cardScale);
         });
     }
 }

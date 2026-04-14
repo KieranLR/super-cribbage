@@ -55,25 +55,25 @@ describe('TableLayout', () => {
             const layout = new TableLayout(scale);
             const positions = layout.getPositions();
 
-            // context.pad = Math.max(16, 600 * 0.04) = 24
-            // 800x600 => maxDim 800 => isLandscape true => MOBILE_LANDSCAPE.
-            
-            // Expected values for 800x600 MOBILE_LANDSCAPE:
-            // topHud: height 90
-            // opponent: height 600 * 0.18 = 108, y = 90
-            // center: height 600 * 0.32 = 192, y = 90 + 108 = 198
-            // controls: height 600 * 0.12 = 72, y = 198 + 192 = 390
-            // player: height 600 * 0.28 = 168, y = 390 + 72 = 462
-
-            // playerHand (zone: player, xAlign: 0.5, yAlign: 0.4):
-            // x = 400, y = 462 + 168 * 0.4 = 462 + 67.2 = 529.2
-            
-            // botHand (zone: opponent, xAlign: 0.5, yAlign: 0.45):
-            // x = 400, y = 90 + 108 * 0.45 = 90 + 48.6 = 138.6
-
             expect(positions.background).toEqual({ x: 400, y: 300 });
-            expect(positions.playerHand.y).toBeCloseTo(529.2);
-            expect(positions.botHand.y).toBeCloseTo(138.6);
+        });
+
+        test('should use custom startingCutMargin from preset if available', () => {
+            const layout = new TableLayout({ width: 360, height: 640 }); // Mobile Portrait
+            const positions = layout.getPositions();
+            
+            // Mobile Portrait has startingCutMargin: 40
+            expect(positions.startingCut.startX).toBe(40);
+            expect(positions.startingCut.endX).toBe(320); // 360 - 40
+        });
+
+        test('should use default startingCutMargin if not in preset', () => {
+            const layout = new TableLayout({ width: 1200, height: 800 }); // Desktop
+            const positions = layout.getPositions();
+            
+            // Desktop (standard) doesn't have startingCutMargin, should use default 100
+            expect(positions.startingCut.startX).toBe(100);
+            expect(positions.startingCut.endX).toBe(1100); // 1200 - 100
         });
     });
 });

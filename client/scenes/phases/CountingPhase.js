@@ -48,7 +48,7 @@ export class CountingPhase extends Phase {
                 break;
             case 3: // Crib
                 this.updatePhaseView(PHASES.COUNTING, `${dealer.name}'s Crib`);
-                this.view.cribVisual.setLabel('Crib');
+                this.view.visuals.table.crib.setLabel('Crib');
                 this.view.updateCrib(this.gameState.crib.cards, true, true);
                 this.gameState.countCrib();
                 if (this.gameState.winner) return;

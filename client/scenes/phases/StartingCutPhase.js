@@ -5,7 +5,6 @@ import { Phase } from './Phase.js';
 
 export class StartingCutPhase extends Phase {
     start(onReady = null) {
-        console.log('starting');
         // If onReady is provided, we keep isTransitioning true until the fan is ready
         this.isTransitioning = onReady ? true : false;
         this.updatePhaseView(PHASES.STARTING_CUT, 'Choose a card to determine the first dealer');
@@ -13,12 +12,11 @@ export class StartingCutPhase extends Phase {
     }
 
     cleanup(onComplete = null) {
-        console.log('cleanup for STarting cut phase');
         // Keep transitioning true if we are in a tie reset flow
         if (!onComplete) {
             this.isTransitioning = false;
         }
-        if (this.view.deckVisual) {
+        if (this.view.visuals.table.deck) {
             this.view.animateDeckToPlay(onComplete);
         } else if (onComplete) {
             onComplete();
@@ -26,7 +24,6 @@ export class StartingCutPhase extends Phase {
     }
 
     onCardClicked(cardVisual) {
-        console.log('on card clicked');
         if (this.gameState.phase !== PHASES.STARTING_CUT) return;
         if (this.isTransitioning) return;
         if (this.gameState.startingCuts[this.gameState.players.indexOf(this.humanPlayer)]) return;
@@ -38,19 +35,19 @@ export class StartingCutPhase extends Phase {
     }
 
     onStartingCardCut({ player, card, cardIndex }) {
-        console.log('on starting card clicked');
         this.revealStartingCutCard(player, card, cardIndex);
     }
 
     revealStartingCutCard(player, card, cardIndex, completionCallback) {
-        const visual = this.view.deckVisual.getCardByCutIndex(cardIndex);
+        const visual = this.view.visuals.table.deck.getCardByCutIndex(cardIndex);
         if (visual) {
             visual.cardData = card;
             visual.setFaceDown(false);
             visual.isLocked = true;
 
-            const pos = this.view.layout.getPositions();
-            const targetY = (player.id === 'human' ? pos.startingCut.humanRevealY : pos.startingCut.botRevealY) - this.view.deckVisual.y;
+            const snapshot = this.view.getLayoutSnapshot();
+            const sc = snapshot.slots.startingCut;
+            const targetY = (player.id === 'human' ? sc.humanRevealY : sc.botRevealY) - this.view.visuals.table.deck.y;
             visual.baseY = targetY;
             // Disable interactivity on both revealed cards to prevent hover/click issues
             visual.disableInteractive();
@@ -71,12 +68,11 @@ export class StartingCutPhase extends Phase {
     }
 
     onStartingCutTie() {
-        console.log('on card tie clicked');
         this.isTransitioning = true;
         this.view.showFloatingText(this.view.scene.scale.width / 2, this.view.scene.scale.height / 2, 'Tie! Cut again.', 0xffffff);
         
         // Disable interaction during the tie animation
-        const cards = this.view.deckVisual.getCards();
+        const cards = this.view.visuals.table.deck.getCards();
         if (cards) {
             cards.forEach(c => {
                 if (c.disableInteractive) c.disableInteractive();
@@ -96,7 +92,6 @@ export class StartingCutPhase extends Phase {
     }
 
     onFirstDealerDetermined({ dealer }) {
-        console.log('dealer determined. card clicked');
         this.view.showFloatingText(this.view.scene.scale.width / 2, this.view.scene.scale.height / 2, `${dealer.name} deals first!`, 0xffffff);
     }
 }

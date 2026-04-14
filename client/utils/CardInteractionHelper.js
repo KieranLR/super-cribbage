@@ -154,11 +154,17 @@ export class CardInteractionHelper {
     animateToZone(cardVisual, onComplete) {
         const handPos = { x: this.handVisual.x, y: this.handVisual.y };
         let targetWorldPos;
+        let targetScale = cardVisual.scale;
 
         if (this.dropZoneVisual.getNextCardPosition) {
             // PeggingAreaVisual uses this
             const currentCount = (this.dropZoneVisual.cardVisuals?.length || 0) + 1;
             targetWorldPos = this.dropZoneVisual.getNextCardPosition(currentCount);
+            
+            // Apply scale if provided by drop zone configuration
+            if (this.dropZoneVisual.config && this.dropZoneVisual.config.CARD_SCALE) {
+                targetScale = this.dropZoneVisual.config.CARD_SCALE;
+            }
         } else {
             targetWorldPos = { x: this.dropZoneVisual.x, y: this.dropZoneVisual.y };
         }
@@ -173,6 +179,7 @@ export class CardInteractionHelper {
         this.animator.moveCard(cardVisual, targetX, targetY, {
             duration: this.config.animationDuration,
             ease: 'Power2',
+            scale: targetScale,
             onComplete: () => {
                 if (onComplete) onComplete();
             }

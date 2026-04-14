@@ -4,7 +4,9 @@ class SettingsManager {
             showBotHand: false,
             fastMode: false,
             cardDeck: 'default',
-            showFPS: false
+            showFPS: false,
+            showDebugMenu: false,
+            debugMenuSide: 'left'
         };
         this.load();
     }

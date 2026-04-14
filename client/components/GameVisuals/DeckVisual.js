@@ -21,7 +21,8 @@ export class DeckVisual extends Phaser.GameObjects.Container {
      */
     updateConfig(config) {
         this.config = config;
-        this.setScale(config.CARD_SCALE || 1.0);
+        const scale = config.CARD_SCALE || config.cardScale || 1.0;
+        this.setScale(scale);
     }
 
     /**
@@ -58,6 +59,7 @@ export class DeckVisual extends Phaser.GameObjects.Container {
             cardVisual.cutIndex = i;
             cardVisual.baseY = posY;
             
+            cardVisual.setInteractive();
             if (onCardClicked) {
                 cardVisual.on('pointerdown', () => onCardClicked(cardVisual));
             }
@@ -93,11 +95,7 @@ export class DeckVisual extends Phaser.GameObjects.Container {
             
             card.isStartingCutCard = true;
             card.cutIndex = i;
-            card.setInteractive();
-            
-            if (onCardClicked) {
-                card.on('pointerdown', () => onCardClicked(card));
-            }
+            if (card.input) card.input.enabled = false;
 
             this.scene.tweens.add({
                 targets: card,
@@ -108,6 +106,13 @@ export class DeckVisual extends Phaser.GameObjects.Container {
                 delay: delay + ((count - 1 - i) * 5), // Global delay + ripple from top card
                 onComplete: () => {
                     card.baseY = posY;
+
+                    card.setInteractive();
+                    if (card.input) card.input.enabled = true;
+                    if (onCardClicked) {
+                        card.on('pointerdown', () => onCardClicked(card));
+                    }
+
                     if (i === 0 && onComplete) {
                         onComplete();
                     }
@@ -228,5 +233,39 @@ export class DeckVisual extends Phaser.GameObjects.Container {
         
         this.add(card);
         this.cardVisuals.push(card);
+    }
+
+    /**
+     * Sets a card as the starter card, flipped on top of the deck.
+     * @param {import('../../../game/Card.js').Card|null} cardData
+     */
+    setStarterCard(cardData, skipFlip = false) {
+        if (!cardData) {
+            // If we have a starter card, flip it back down and keep it in the stack
+            if (this.starterCardVisual) {
+                this.starterCardVisual.setFaceDown(true);
+                this.starterCardVisual = null;
+            }
+            return;
+        }
+
+        // If we already have the top card as starter, just update its data
+        if (this.starterCardVisual) {
+            this.starterCardVisual.cardData = cardData;
+            if (!skipFlip) {
+                this.starterCardVisual.setFaceDown(false);
+            }
+            return;
+        }
+
+        // Otherwise, take the top card from the stack and use it
+        const topCard = this.cardVisuals[this.cardVisuals.length - 1];
+        if (topCard) {
+            topCard.cardData = cardData;
+            if (!skipFlip) {
+                topCard.setFaceDown(false);
+            }
+            this.starterCardVisual = topCard;
+        }
     }
 }

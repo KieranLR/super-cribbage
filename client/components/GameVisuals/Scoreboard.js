@@ -11,7 +11,7 @@ export class Scoreboard extends Phaser.GameObjects.Container {
         super(scene, x, y);
         this.players = players;
         this.scoreLabels = [];
-        this.config = config || TableLayout.REL.SCOREBOARD;
+        this.config = config;
 
         const bg = scene.add.rectangle(0, 0, this.config.WIDTH, this.config.HEIGHT, 0x000000, 0.5)
             .setStrokeStyle(2, 0xffffff, 0.8);
@@ -36,11 +36,20 @@ export class Scoreboard extends Phaser.GameObjects.Container {
         this.players.forEach((player, index) => {
             const posY = (index * config.ROW_SPACING) + config.ROW_Y_START;
             const dealerMark = player.isDealer ? ' (D)' : '';
-            const text = this.scene.add.text(config.TEXT_X_OFFSET, posY, `${player.name}: ${player.score}${dealerMark}`, {
-                fontSize: config.WIDTH < 200 ? '18px' : '24px',
-                color: '#ffffff',
+            const textColor = player.id === 'human' ? '#add8e6' : '#ff4d4d'; // Light blue and light red
+            
+            let fontSize = '24px';
+            if (config.WIDTH < 180) {
+                fontSize = '16px';
+            } else if (config.WIDTH < 200) {
+                fontSize = '18px';
+            }
+
+            const text = this.scene.add.text(0, posY, `${player.name}: ${player.score}${dealerMark}`, {
+                fontSize: fontSize,
+                color: textColor,
                 fontStyle: 'bold'
-            });
+            }).setOrigin(0.5, 0.5);
             this.add(text);
             this.scoreLabels.push(text);
         });

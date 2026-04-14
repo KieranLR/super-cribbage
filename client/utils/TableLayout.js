@@ -1,5 +1,4 @@
-import { TOKENS } from './layout/tokens.js';
-import { PRESETS } from './layout/presets.js';
+import { layoutConfigManager } from './layout/LayoutConfigManager.js';
 import { getAnchors, resolveAnchor, resolveInZone } from './layout/anchors.js';
 import { deriveLegacyConfig } from './LegacyTableLayoutAdapter.js';
 
@@ -12,11 +11,6 @@ export const LayoutSize = {
 };
 
 export class TableLayout {
-    static get REL() {
-        // Static property for legacy components that access TableLayout.REL directly
-        return PRESETS.Desktop ? new TableLayout({ width: 1200, height: 800 }).config : {};
-    }
-
     /**
      * @param {Phaser.Scale.ScaleManager} scale 
      */
@@ -32,7 +26,7 @@ export class TableLayout {
         const { width, height } = this.scale;
         this.context = this.createLayoutContext(width, height);
         this.size = this.getScreenSize(width, height);
-        this.preset = PRESETS[this.size];
+        this.preset = layoutConfigManager.getPresets()[this.size];
         
         // Legacy compatibility: some components might expect this.config
         this.config = this.deriveConfig();
@@ -72,7 +66,7 @@ export class TableLayout {
         const isLandscape = width > height;
         const maxDim = Math.max(width, height);
 
-        if (maxDim < 900) {
+        if (maxDim < 900 || height < 600 || width < 500) {
             return isLandscape ? LayoutSize.MOBILE_LANDSCAPE : LayoutSize.MOBILE_PORTRAIT;
         } else if (maxDim < 1200) {
             return isLandscape ? LayoutSize.TABLET_LANDSCAPE : LayoutSize.TABLET_PORTRAIT;
@@ -89,6 +83,7 @@ export class TableLayout {
         const anchors = getAnchors(ctx);
         const preset = this.preset;
         const zones = this.getZones();
+        const tokens = layoutConfigManager.getTokens();
 
         // Helper to resolve either from zone or anchor
         const resolve = (def) => {
@@ -110,16 +105,18 @@ export class TableLayout {
             phaseIndicator: resolve(preset.phaseIndicator),
             actionButtons: resolve(preset.actionButtons),
             sortWidget: preset.sortWidget ? resolve(preset.sortWidget) : { x: ctx.width / 2, y: ctx.height - 50 },
-            exitButton: resolveAnchor(anchors, 'topRight', -TOKENS.PANEL.EXIT_BUTTON.WIDTH / 2 - TOKENS.LAYOUT.EXIT_MARGIN, TOKENS.LAYOUT.EXIT_MARGIN + TOKENS.PANEL.EXIT_BUTTON.HEIGHT / 2),
+            exitButton: preset.exitButton 
+                ? resolveAnchor(anchors, preset.exitButton.anchor, preset.exitButton.offsetX, preset.exitButton.offsetY)
+                : resolveAnchor(anchors, 'topRight', -tokens.PANEL.EXIT_BUTTON.WIDTH / 2 - tokens.LAYOUT.EXIT_MARGIN, tokens.LAYOUT.EXIT_MARGIN + tokens.PANEL.EXIT_BUTTON.HEIGHT / 2),
             deck: resolve(preset.deck),
             
             // Starting Cut Phase
             startingCut: {
-                startX: TOKENS.LAYOUT.STARTING_CUT_MARGIN,
-                endX: ctx.width - TOKENS.LAYOUT.STARTING_CUT_MARGIN,
-                y: ctx.height / 2 + TOKENS.LAYOUT.STARTING_CUT_Y_OFFSET,
-                botRevealY: TOKENS.LAYOUT.BOT_REVEAL_Y,
-                humanRevealY: ctx.height + TOKENS.LAYOUT.HUMAN_REVEAL_OFFSET_Y
+                startX: preset.startingCutMargin !== undefined ? preset.startingCutMargin : tokens.LAYOUT.STARTING_CUT_MARGIN,
+                endX: ctx.width - (preset.startingCutMargin !== undefined ? preset.startingCutMargin : tokens.LAYOUT.STARTING_CUT_MARGIN),
+                y: ctx.height / 2 + tokens.LAYOUT.STARTING_CUT_Y_OFFSET,
+                botRevealY: tokens.LAYOUT.BOT_REVEAL_Y,
+                humanRevealY: ctx.height + tokens.LAYOUT.HUMAN_REVEAL_OFFSET_Y
             },
             zones
         };
@@ -130,7 +127,7 @@ export class TableLayout {
      */
     getZones() {
         const { width, height } = this.context;
-        const z = TOKENS.ZONES;
+        const z = layoutConfigManager.getTokens().ZONES;
 
         const topHudHeight = z.TOP_HUD_HEIGHT;
         const opponentHeight = height * z.OPPONENT_HEIGHT_PERCENT;
@@ -166,11 +163,11 @@ export class TableLayout {
         // Compatibility shim for tests
         const oldSize = this.size;
         this.size = size;
-        this.preset = PRESETS[size] || PRESETS.Desktop;
+        this.preset = layoutConfigManager.getPresets()[size] || layoutConfigManager.getPresets().Desktop;
         const config = this.deriveConfig();
         // Restore
         this.size = oldSize;
-        this.preset = PRESETS[oldSize];
+        this.preset = layoutConfigManager.getPresets()[oldSize];
         return config;
     }
 
@@ -220,15 +217,25 @@ export class TableLayout {
                 hand: {
                     cardScale: this.preset.cardScale ?? this.context.scale
                 },
-                peggingArea: this.config?.PEGGING_AREA,
-                crib: this.config?.CRIB,
-                starterCard: this.config?.STARTER_CARD,
+                peggingArea: {
+                    ...this.config?.PEGGING_AREA,
+                    CARD_SCALE: this.preset.cardScale ?? this.context.scale
+                },
+                crib: {
+                    ...this.config?.CRIB,
+                    CARD_SCALE: this.preset.cardScale ?? this.context.scale
+                },
+                starterCard: {
+                    ...this.config?.STARTER_CARD,
+                    CARD_SCALE: this.preset.cardScale ?? this.context.scale
+                },
                 scoreboard: this.config?.SCOREBOARD,
                 phaseIndicator: this.config?.PHASE_INDICATOR,
                 actionButtons: this.config?.ACTION_BUTTONS,
                 sortWidget: this.config?.SORT_WIDGET,
                 exitButton: this.config?.EXIT_BUTTON,
                 deck: {
+                    ...this.config?.DECK,
                     cardScale: this.preset.cardScale ?? this.context.scale
                 }
             }

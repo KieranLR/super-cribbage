@@ -8,7 +8,7 @@ export class PhaseIndicator extends Phaser.GameObjects.Container {
      */
     constructor(scene, x, y, config) {
         super(scene, x, y);
-        this.config = config || TableLayout.REL.PHASE_INDICATOR;
+        this.config = config;
 
         this.bg = scene.add.rectangle(0, 0, this.config.WIDTH, this.config.HEIGHT, 0x000000, 0.6)
             .setStrokeStyle(2, 0x028af8, 1);
@@ -23,10 +23,13 @@ export class PhaseIndicator extends Phaser.GameObjects.Container {
 
         this.instructionText = scene.add.text(0, this.config.INSTRUCTION_Y, 'Please wait...', {
             fontSize: this.config.WIDTH < 350 ? '14px' : '18px',
-            color: '#ffffff'
+            color: '#ffffff',
+            align: 'center',
+            wordWrap: { width: this.config.WIDTH - 20 }
         }).setOrigin(0.5);
         this.add(this.instructionText);
 
+        this.updateLayout();
         scene.add.existing(this);
     }
 
@@ -36,11 +39,21 @@ export class PhaseIndicator extends Phaser.GameObjects.Container {
      */
     updateConfig(config) {
         this.config = config;
+        this.updateLayout();
+    }
+
+    updateLayout() {
+        const config = this.config;
+        const isSmall = config.WIDTH < 350;
+
         this.bg.setSize(config.WIDTH, config.HEIGHT);
+        
         this.phaseText.setY(config.PHASE_Y);
-        this.phaseText.setFontSize(config.WIDTH < 350 ? '22px' : '28px');
+        this.phaseText.setFontSize(isSmall ? '22px' : '28px');
+        
         this.instructionText.setY(config.INSTRUCTION_Y);
-        this.instructionText.setFontSize(config.WIDTH < 350 ? '14px' : '18px');
+        this.instructionText.setFontSize(isSmall ? '14px' : '18px');
+        this.instructionText.setWordWrapWidth(config.WIDTH - 20);
     }
 
     updatePhase(phase, instruction = '') {

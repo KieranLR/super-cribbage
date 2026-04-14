@@ -50,17 +50,17 @@ export class MainMenu extends Scene {
 
         const updateMenuLayout = () => {
             const { width, height } = this.scale;
-            const isSmall = width < 600;
+            const isSmall = width < 600 || height < 600;
             
-            const startY = height * (isSmall ? 0.4 : 0.45);
+            const startY = height * (isSmall ? 0.3 : 0.45);
             const spacing = isSmall ? 65 : 80;
 
             let totalContentHeight = 0;
 
             menuItems.forEach((item, index) => {
                 let scale = 1;
-                if (width < 500) {
-                    scale = Math.max(0.6, width / 550);
+                if (width < 500 || height < 600) {
+                    scale = Math.min(0.8, Math.max(0.5, width / 600));
                 }
                 item.baseScale = scale;
                 item.setScale(scale);
@@ -76,7 +76,7 @@ export class MainMenu extends Scene {
             if (isSmall) {
                 title.setFontSize('42px');
                 // title.setStrokeThickness(6);
-                title.setPosition(width * 0.5, height * 0.15 + 50);
+                title.setPosition(width * 0.5, height * 0.15);
             } else {
                 title.setFontSize('64px');
                 // title.setStrokeThickness(10);

@@ -37,6 +37,9 @@ export class HandVisual extends Phaser.GameObjects.Container {
         this.cardVisuals = [];
 
         const cardScale = this.config.CARD_SCALE || 1.0;
+
+        console.log(cardScale, this.config.CARD_SCALE, )
+
         const spacing = 60 * cardScale;
         const totalWidth = (cards.length - 1) * spacing;
 
@@ -155,7 +158,8 @@ export class HandVisual extends Phaser.GameObjects.Container {
     }
 
     arrangeCards(activeVisual = null) {
-        const spacing = 60;
+        const cardScale = this.config.CARD_SCALE || 1.0;
+        const spacing = 60 * cardScale;
         const handCards = this.cardVisuals.filter(v => !v.isSelected || v === activeVisual);
         const totalWidth = (handCards.length - 1) * spacing;
 
@@ -188,11 +192,12 @@ export class HandVisual extends Phaser.GameObjects.Container {
             this.bringToTop(v);
         });
 
-        const spacing = 60;
+        const cardScale = this.config.CARD_SCALE || 1.0;
+        const spacing = 60 * cardScale;
         const handCards = this.cardVisuals.filter(v => !v.isSelected);
         const totalWidth = (handCards.length - 1) * spacing;
 
-        this.animator.reflowHand(handCards, totalWidth, spacing);
+        this.animator.reflowHand(handCards, totalWidth, spacing, 0, cardScale);
     }
 
     /**

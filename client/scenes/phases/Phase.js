@@ -16,15 +16,11 @@ export class Phase {
      * Updates the phase indicator and common UI elements.
      */
     updatePhaseView(phase, instruction) {
-        this.view.phaseIndicator.updatePhase(phase, instruction);
+        this.view.visuals.hud.phaseIndicator.updatePhase(phase, instruction);
 
         // Visibility of Pegging Area
         const isPegging = phase === PHASES.PEGGING;
-        this.view.peggingAreaVisual.setVisible(isPegging);
-
-        // Visibility of Starter Card
-        const isStarterVisible = [PHASES.CUTTING, PHASES.PEGGING, PHASES.COUNTING].includes(phase);
-        this.transitionStarterCard(isStarterVisible);
+        this.view.visuals.table.peggingArea.setVisible(isPegging);
 
         const targetPos = this.view.layout.getCribPosition(phase, PHASES);
         this.transitionCrib(phase, targetPos);
@@ -38,39 +34,22 @@ export class Phase {
      * Fades the sort widget based on visibility.
      */
     transitionSortWidget(isVisible) {
-        if (!this.view.sortWidget) return;
+        if (!this.view.visuals.hud.sortWidget) return;
 
-        if (isVisible && !this.view.sortWidget.visible) {
-            this.view.sortWidget.setVisible(true);
-            this.view.sortWidget.alpha = 0;
+        if (isVisible && !this.view.visuals.hud.sortWidget.visible) {
+            this.view.visuals.hud.sortWidget.setVisible(true);
+            this.view.visuals.hud.sortWidget.alpha = 0;
             this.view.flow.startAnimation();
-            this.animator.fade(this.view.sortWidget, 1, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => this.view.flow.endAnimation());
-        } else if (!isVisible && this.view.sortWidget.visible) {
+            this.animator.fade(this.view.visuals.hud.sortWidget, 1, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => this.view.flow.endAnimation());
+        } else if (!isVisible && this.view.visuals.hud.sortWidget.visible) {
             this.view.flow.startAnimation();
-            this.animator.fade(this.view.sortWidget, 0, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
-                this.view.sortWidget.setVisible(false);
+            this.animator.fade(this.view.visuals.hud.sortWidget, 0, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
+                this.view.visuals.hud.sortWidget.setVisible(false);
                 this.view.flow.endAnimation();
             });
         }
     }
 
-    /**
-     * Fades the starter card placeholder based on visibility.
-     */
-    transitionStarterCard(isVisible) {
-        if (isVisible && !this.view.starterCardVisual.visible) {
-            this.view.starterCardVisual.setVisible(true);
-            this.view.starterCardVisual.alpha = 0;
-            this.view.flow.startAnimation();
-            this.animator.fade(this.view.starterCardVisual, 1, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => this.view.flow.endAnimation());
-        } else if (!isVisible && this.view.starterCardVisual.visible) {
-            this.view.flow.startAnimation();
-            this.animator.fade(this.view.starterCardVisual, 0, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
-                this.view.starterCardVisual.setVisible(false);
-                this.view.flow.endAnimation();
-            });
-        }
-    }
 
 
 
@@ -86,26 +65,26 @@ export class Phase {
             PHASES.DEALING
         ].includes(phase);
 
-        if (isVisible && !this.view.cribVisual.visible) {
-            this.view.cribVisual.setCards([]); // Clear cards from previous round/phase
-            this.view.cribVisual.setVisible(true);
-            this.view.cribVisual.alpha = 0;
+        if (isVisible && !this.view.visuals.table.crib.visible) {
+            this.view.visuals.table.crib.setCards([]); // Clear cards from previous round/phase
+            this.view.visuals.table.crib.setVisible(true);
+            this.view.visuals.table.crib.alpha = 0;
             this.view.flow.startAnimation();
-            this.animator.fade(this.view.cribVisual, 1, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => this.view.flow.endAnimation());
-        } else if (!isVisible && this.view.cribVisual.visible) {
+            this.animator.fade(this.view.visuals.table.crib, 1, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => this.view.flow.endAnimation());
+        } else if (!isVisible && this.view.visuals.table.crib.visible) {
             this.view.flow.startAnimation();
-            this.animator.fade(this.view.cribVisual, 0, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
-                this.view.cribVisual.setVisible(false);
+            this.animator.fade(this.view.visuals.table.crib, 0, TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
+                this.view.visuals.table.crib.setVisible(false);
                 this.view.flow.endAnimation();
             });
         }
 
-        if (this.view.cribVisual.visible) {
+        if (this.view.visuals.table.crib.visible) {
             this.view.flow.startAnimation();
-            this.animator.moveCrib(this.view.cribVisual, targetPos.x, targetPos.y)
+            this.animator.moveCrib(this.view.visuals.table.crib, targetPos.x, targetPos.y)
                 .on('complete', () => this.view.flow.endAnimation());
         } else {
-            this.view.cribVisual.setPosition(targetPos.x, targetPos.y);
+            this.view.visuals.table.crib.setPosition(targetPos.x, targetPos.y);
         }
     }
 
@@ -171,7 +150,7 @@ export class Phase {
      * @param {Object} data { card }
      */
     onStarterCardCut({ card }) {
-        this.view.flow.animateStarterCardCut(card);
+        this.view.updateStarterCard(card);
     }
 
     /**

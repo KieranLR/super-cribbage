@@ -13,8 +13,8 @@ export class PeggingPhase extends Phase {
 
         this.interactionHelper = new CardInteractionHelper({
             scene: this.view.scene,
-            handVisual: this.view.humanHandVisual,
-            dropZoneVisual: this.view.peggingAreaVisual,
+            handVisual: this.view.visuals.table.humanHand,
+            dropZoneVisual: this.view.visuals.table.peggingArea,
             animator: this.animator,
             onValidateMove: (cardVisual) => {
                 const pegging = this.gameState.pegging;
@@ -67,9 +67,7 @@ export class PeggingPhase extends Phase {
 
     onCardPlayed(result) {
         if (result.isGo) {
-            const { width, height } = this.view.scene.scale;
-            const x = width / 2;
-            const y = height / 2 + this.view.layout.config.FLOATING_TEXT.PEGGING_GO_Y_OFFSET;
+            const {x, y} = this.view.layout.getFloatingTextPosition(result.player === this.humanPlayer);
             this.view.showFloatingText(x, y, "GO!", 0xffffff);
         }
         
@@ -80,14 +78,14 @@ export class PeggingPhase extends Phase {
             if (result.player === this.humanPlayer) {
                 // If the player played it, it's already animated in or handled by HandVisual.
                 // We refresh the hand visuals after the logic
-                this.view.humanHandVisual.setCards(this.humanPlayer.hand.cards);
+                this.view.visuals.table.humanHand.setCards(this.humanPlayer.hand.cards);
                 this.view.updatePegging(result.cardsAtPlay, result.total);
             } else {
                 // For the bot, we animate from its hand position
-                this.view.humanHandVisual.cardVisuals.forEach(v => v.isLocked = true);
+                this.view.visuals.table.humanHand.cardVisuals.forEach(v => v.isLocked = true);
                 this.animateBotCardToPeggingArea(result.card, () => {
-                    this.view.humanHandVisual.cardVisuals.forEach(v => v.isLocked = false);
-                    this.view.botHandVisual.setCards(this.botPlayer.hand.cards);
+                    this.view.visuals.table.humanHand.cardVisuals.forEach(v => v.isLocked = false);
+                    this.view.visuals.table.botHand.setCards(this.botPlayer.hand.cards);
                     this.view.updatePegging(result.cardsAtPlay, result.total);
                     this.finalizeCardPlayed(isCycleEnd, isPhaseEnd);
                 });
@@ -103,15 +101,18 @@ export class PeggingPhase extends Phase {
 
     animateBotCardToPeggingArea(card, onComplete) {
         // Create a temporary visual at the bot's hand position
-        const botHandPos = { x: this.view.botHandVisual.x, y: this.view.botHandVisual.y };
+        const botHandPos = { x: this.view.visuals.table.botHand.x, y: this.view.visuals.table.botHand.y };
         
         // Calculate target world position for the bot's card
         const currentCount = (this.gameState.pegging?.playedCards.length || 0);
-        const targetWorldPos = this.view.peggingAreaVisual.getNextCardPosition(currentCount);
+        const targetWorldPos = this.view.visuals.table.peggingArea.getNextCardPosition(currentCount);
+
+        const layout = this.view.getLayoutSnapshot();
+        const cardScale = layout.styles.peggingArea.CARD_SCALE || 0.8;
 
         // Bot cards are usually hidden, so let's show this one as it plays
         const visual = new CardVisual(this.view.scene, botHandPos.x, botHandPos.y, card);
-        visual.setScale(0.8);
+        visual.setScale(cardScale);
         visual.setDepth(1000); // Ensure it's on top of everything
 
         this.animator.playCardToPegging(visual, targetWorldPos.x, targetWorldPos.y, () => {
@@ -123,10 +124,10 @@ export class PeggingPhase extends Phase {
     finalizeCardPlayed(isCycleEnd, isPhaseEnd) {
         if (isCycleEnd || isPhaseEnd) {
             this.controller.isProcessingMove = true;
-            this.view.humanHandVisual.cardVisuals.forEach(v => v.isLocked = true);
+            this.view.visuals.table.humanHand.cardVisuals.forEach(v => v.isLocked = true);
             this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.PEGGING_COMPLETE, () => {
                 this.controller.isProcessingMove = false;
-                this.view.humanHandVisual.cardVisuals.forEach(v => v.isLocked = false);
+                this.view.visuals.table.humanHand.cardVisuals.forEach(v => v.isLocked = false);
                 
                 if (this.gameState.pegging) {
                     this.view.updatePegging(this.gameState.pegging.playedCards, this.gameState.pegging.currentTotal);

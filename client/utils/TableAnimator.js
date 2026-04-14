@@ -1,4 +1,5 @@
 import { TIMINGS } from './flow/timings.js';
+import { settingsManager } from './SettingsManager.js';
 
 export class TableAnimator {
     constructor(scene) {
@@ -68,9 +69,241 @@ export class TableAnimator {
     }
 
     /**
-     * Animates floating text for scores or messages.
+     * Animates the deck stack moving to a specific play position.
      */
-    showFloatingText(textVisual, targetY, duration = TIMINGS.ANIMATIONS.SCOREBOARD_UPDATE) {
+    animateDeckToPlay(view, onComplete = null) {
+        const snapshot = view.getLayoutSnapshot();
+        const deckPos = snapshot.slots.deck;
+
+        view.flow.startAnimation();
+        this.moveCard(view.visuals.table.deck, deckPos.x, deckPos.y, {
+            duration: TIMINGS.ANIMATIONS.GENERIC_MOVE,
+            onComplete: () => {
+                view.visuals.table.deck.animateStack(TIMINGS.ANIMATIONS.GENERIC_MOVE, () => {
+                    view.flow.endAnimation();
+                    if (onComplete) onComplete();
+                });
+            }
+        });
+    }
+
+    /**
+     * Animates dealing cards to players.
+     */
+    dealCardsAnimated(view, data, onComplete = null) {
+        const { players } = data;
+        const cardsToDeal = [];
+        
+        const showBotHand = settingsManager.get('showBotHand');
+        view.visuals.table.botHand.isBot = !showBotHand;
+        
+        const maxHandSize = Math.max(...players.map(p => p.hand.cards.length));
+        
+        for (let i = 0; i < maxHandSize; i++) {
+            players.forEach(player => {
+                if (player.hand.cards[i]) {
+                    cardsToDeal.push({
+                        player: player,
+                        cardData: player.hand.cards[i],
+                        cardIndexInHand: i
+                    });
+                }
+            });
+        }
+
+        let dealIndex = 0;
+        const dealNextCard = () => {
+            if (dealIndex >= cardsToDeal.length) {
+                if (onComplete) onComplete();
+                return;
+            }
+
+            const { player, cardData, cardIndexInHand } = cardsToDeal[dealIndex];
+            const isHuman = player.id === 'human';
+            const handVisual = isHuman ? view.visuals.table.humanHand : view.visuals.table.botHand;
+            
+            const cardVisual = view.visuals.table.deck.popCard();
+            if (!cardVisual) {
+                console.warn('DeckVisual ran out of cards during deal! Fallback to immediate update.');
+                view.updateHands(view.visuals.table.humanHand.isBot ? [] : view.visuals.table.humanHand.cardVisuals.map(v => v.cardData), 
+                                view.visuals.table.botHand.isBot ? [] : view.visuals.table.botHand.cardVisuals.map(v => v.cardData));
+                if (onComplete) onComplete();
+                return;
+            }
+
+            const worldX = cardVisual.x + view.visuals.table.deck.x;
+            const worldY = cardVisual.y + view.visuals.table.deck.y;
+            
+            cardVisual.x = worldX - handVisual.x;
+            cardVisual.y = worldY - handVisual.y;
+            handVisual.add(cardVisual);
+            handVisual.cardVisuals.push(cardVisual);
+            
+            cardVisual.cardData = cardData;
+            handVisual.setupCardInteractivity(cardVisual);
+            
+            const shouldBeFaceDown = !isHuman && view.visuals.table.botHand.isBot;
+            
+            if (shouldBeFaceDown) {
+                cardVisual.setFaceDown(true);
+            }
+
+            const layout = view.getLayoutSnapshot();
+            const handScale = layout.styles.hand.cardScale;
+            const spacing = 60 * handScale;
+            const totalCardsForThisPlayer = player.hand.handSize || player.hand.cards.length;
+            const totalWidth = (totalCardsForThisPlayer - 1) * spacing;
+            const targetX = (cardIndexInHand * spacing) - (totalWidth / 2);
+            const targetY = 0;
+
+            view.flow.startAnimation();
+            this.moveCard(cardVisual, targetX, targetY, {
+                duration: TIMINGS.ANIMATIONS.CARD_MOVE_DEFAULT,
+                ease: 'Cubic.out',
+                scale: handScale,
+                onComplete: () => {
+                    if (!shouldBeFaceDown) {
+                        this.flipCard(cardVisual, false);
+                    }
+                    view.flow.endAnimation();
+                }
+            });
+
+            dealIndex++;
+            this.scene.time.delayedCall(TIMINGS.ANIMATIONS.DEAL_INTERVAL || 150, dealNextCard);
+        };
+
+        dealNextCard();
+    }
+
+    /**
+     * Animates returning all cards on the table to the deck.
+     */
+    returnCardsToDeckAnimated(view, onComplete = null) {
+        console.log('Returning cards to deck');
+        const cardsToReturn = [];
+        
+        view.visuals.table.humanHand.cardVisuals.forEach(v => {
+            cardsToReturn.push(v);
+        });
+        view.visuals.table.humanHand.cardVisuals = [];
+
+        view.visuals.table.botHand.cardVisuals.forEach(v => {
+            cardsToReturn.push(v);
+        });
+        view.visuals.table.botHand.cardVisuals = [];
+
+        view.visuals.table.crib.cardVisuals.forEach(v => {
+            cardsToReturn.push(v);
+        });
+        view.visuals.table.crib.cardVisuals = [];
+        view.visuals.table.crib.submittedVisuals.forEach(v => {
+            cardsToReturn.push(v);
+        });
+        view.visuals.table.crib.submittedVisuals = [];
+
+        view.visuals.table.peggingArea.cardVisuals.forEach(v => {
+            cardsToReturn.push(v);
+        });
+        view.visuals.table.peggingArea.cardVisuals = [];
+        view.visuals.table.peggingArea.label.setText('Pegging Area: 0');
+
+        // Reset starter card state on deck - it's already in the deck visual's cardVisuals
+        view.visuals.table.deck.setStarterCard(null);
+
+        if (cardsToReturn.length === 0) {
+            if (onComplete) onComplete();
+            return;
+        }
+
+        view.flow.startAnimation();
+        let finishedCount = 0;
+
+        cardsToReturn.forEach((card, index) => {
+            const matrix = card.getWorldTransformMatrix();
+            const worldX = matrix.tx;
+            const worldY = matrix.ty;
+
+            if (card.parentContainer) {
+                card.parentContainer.remove(card, false);
+            }
+
+            this.scene.add.existing(card);
+            card.setPosition(worldX, worldY);
+
+            const delay = index * 30;
+            if (!card.isFaceDown) {
+                this.flipCard(card, true, null, null, delay - 30);
+            }
+            card.setDepth(100 + index);
+
+            this.moveCard(card, view.visuals.table.deck.x, view.visuals.table.deck.y, {
+                duration: TIMINGS.ANIMATIONS.GENERIC_MOVE,
+                delay: delay,
+                onComplete: () => {
+                    card.setFaceDown(true);
+                    view.visuals.table.deck.addCard(card);
+                    finishedCount++;
+                    if (finishedCount === cardsToReturn.length) {
+                        view.flow.endAnimation();
+                        if (onComplete) onComplete();
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * Shows and optionally animates the deck fanning out for the starting cut.
+     */
+    showStartingCutDeck(view, count, animate = false, onComplete = null) {
+        const snapshot = view.getLayoutSnapshot();
+        const sc = snapshot.slots.startingCut;
+        const deck = view.visuals.table.deck;
+
+        const localStartX = (sc.startX - deck.x) / deck.scaleX;
+        const localEndX = (sc.endX - deck.x) / deck.scaleX;
+        const localY = (sc.y - deck.y) / deck.scaleY;
+
+        deck.setAlpha(1);
+
+        if (animate) {
+            deck.animateFan(
+                count,
+                localStartX,
+                localEndX,
+                localY,
+                (v) => view.onCardClicked(v),
+                TIMINGS.ANIMATIONS.DECK_FAN_DURATION,
+                TIMINGS.ANIMATIONS.DECK_FAN_DELAY,
+                onComplete
+            );
+        } else {
+            deck.showFan(count, localStartX, localEndX, localY, (v) => view.onCardClicked(v));
+            if (onComplete) onComplete();
+        }
+    }
+
+    /**
+     * Shows floating text at a given position.
+     */
+    showFloatingText(x, y, text, color = '#ffff00') {
+        const textColor = typeof color === 'number' ? `#${color.toString(16).padStart(6, '0')}` : color;
+        const floatingText = this.scene.add.text(x, y, text, {
+            fontSize: '32px',
+            color: textColor,
+            fontStyle: 'bold',
+            stroke: '#000',
+            strokeThickness: 4
+        }).setOrigin(0.5);
+
+        this.showFloatingTextVisual(floatingText, y - 100);
+    }
+
+    /**
+     * Animates a given text visual as floating text.
+     */
+    showFloatingTextVisual(textVisual, targetY, duration = TIMINGS.ANIMATIONS.SCOREBOARD_UPDATE) {
         return this.scene.tweens.add({
             targets: textVisual,
             y: targetY,
@@ -138,12 +371,13 @@ export class TableAnimator {
     /**
      * Reflows hand cards to their new positions.
      */
-    reflowHand(cardVisuals, totalWidth, spacing, baseY = 0) {
+    reflowHand(cardVisuals, totalWidth, spacing, baseY = 0, scale = null) {
         cardVisuals.forEach((visual, index) => {
             const posX = (index * spacing) - (totalWidth / 2);
             this.moveCard(visual, posX, baseY, {
                 duration: TIMINGS.ANIMATIONS.GENERIC_MOVE,
                 ease: 'Power2',
+                scale: scale !== null ? scale : visual.scale,
                 overwrite: true,
                 onStart: () => {
                     visual.baseY = baseY;
@@ -155,9 +389,9 @@ export class TableAnimator {
     /**
      * Animates cards being moved to the crib.
      */
-    moveCardToCrib(cardVisual, x, y, delay, onComplete) {
+    moveCardToCrib(cardVisual, x, y, delay, onComplete, scale = 1) {
         return this.moveCard(cardVisual, x, y, {
-            scale: 1, // Keep scale consistent with HandVisual to avoid jump later
+            scale: scale, // Use provided scale, defaults to 1 for backward compatibility
             duration: TIMINGS.ANIMATIONS.DISCARD_MOVE || 600,
             ease: 'Cubic.out',
             delay: delay,
@@ -168,16 +402,17 @@ export class TableAnimator {
     /**
      * Centers the crib cards during phase transition.
      */
-    centerCribCards(visuals, spacing = 2, duration = TIMINGS.ANIMATIONS.PEGGING_UI_MOVE, onComplete = null) {
+    centerCribCards(visuals, spacing = 2, duration = TIMINGS.ANIMATIONS.PEGGING_UI_MOVE, onComplete = null, scale = 1) {
         let completed = 0;
         visuals.forEach((visual, index) => {
-            const targetX = index * spacing;
-            const targetY = index * spacing;
+            const targetX = index * spacing * scale;
+            const targetY = index * spacing * scale;
 
             this.scene.tweens.add({
                 targets: visual,
                 x: targetX,
                 y: targetY,
+                scale: scale,
                 duration: duration,
                 ease: 'Power2',
                 onComplete: () => {
@@ -194,6 +429,9 @@ export class TableAnimator {
      * Updates positions of all cards in hand, especially selected ones.
      */
     updateSelectedCardsPositions(selectedCards, handPos, dropZoneVisual, animationDuration) {
+        const layout = this.scene.view?.getLayoutSnapshot(); // Access layout if available through scene
+        const targetScale = dropZoneVisual?.config?.CARD_SCALE || (layout?.styles?.hand?.cardScale ?? 1.0);
+
         selectedCards.forEach((visual, index) => {
             let targetX, targetY;
 
@@ -203,7 +441,7 @@ export class TableAnimator {
                 targetY = worldTarget.y - handPos.y;
             } else {
                 // Default fallback: center of zone with slight offset if multiple
-                const spacing = 30;
+                const spacing = 30 * targetScale;
                 const offset = (index * spacing) - ((selectedCards.length - 1) * spacing / 2);
                 targetX = dropZoneVisual.x - handPos.x + offset;
                 targetY = dropZoneVisual.y - handPos.y;
@@ -216,6 +454,7 @@ export class TableAnimator {
             this.moveCard(visual, targetX, targetY, {
                 duration: animationDuration,
                 ease: 'Power2',
+                scale: targetScale,
                 overwrite: true,
                 onStart: () => {
                     visual.baseY = targetY;

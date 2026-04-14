@@ -11,7 +11,7 @@ export class ActionButtons extends Phaser.GameObjects.Container {
     constructor(scene, x, y, config) {
         super(scene, x, y);
         this.buttons = {};
-        this.config = config || TableLayout.REL.ACTION_BUTTONS;
+        this.config = config;
         scene.add.existing(this);
     }
 
