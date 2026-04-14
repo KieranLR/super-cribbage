@@ -156,7 +156,7 @@ export class DeckVisual extends Phaser.GameObjects.Container {
             card.cutIndex = undefined;
 
             // Reset visual state and flip face down
-            card.resetVisualState();
+            card.resetVisualState(true);
             card.setFaceDown(true);
 
             // Disable interaction while in stack
@@ -215,7 +215,7 @@ export class DeckVisual extends Phaser.GameObjects.Container {
      */
     addCard(card) {
         // Reset visual state and flip face down
-        card.resetVisualState();
+        card.resetVisualState(true);
         card.setFaceDown(true);
         
         // Disable interaction while in stack

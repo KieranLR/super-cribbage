@@ -110,7 +110,7 @@ export class Settings extends Scene {
         this.menuItems.push(backBtn);
         this.menuContainer.add(backBtn);
 
-        this.scroller = new ScrollComponent(this, this.menuContainer);
+        this.scroller = new ScrollComponent(this, this.menuContainer, { padding: 10 });
 
         const updateMenuLayout = () => {
             const { width, height } = this.scale;

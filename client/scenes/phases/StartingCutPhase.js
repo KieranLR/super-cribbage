@@ -47,7 +47,7 @@ export class StartingCutPhase extends Phase {
 
             const snapshot = this.view.getLayoutSnapshot();
             const sc = snapshot.slots.startingCut;
-            const targetY = (player.id === 'human' ? sc.humanRevealY : sc.botRevealY) - this.view.visuals.table.deck.y;
+            const targetY = -1 * sc.botRevealY;
             visual.baseY = targetY;
             // Disable interactivity on both revealed cards to prevent hover/click issues
             visual.disableInteractive();

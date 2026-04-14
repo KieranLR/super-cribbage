@@ -149,7 +149,7 @@ export class TableLayout {
      */
     getCribPosition(phase, PHASES) {
         const pos = this.getPositions();
-        const isParked = (phase === PHASES?.PEGGING || phase === PHASES?.CUTTING || phase === PHASES?.DEALING);
+        const isParked = (phase === PHASES?.PEGGING || phase === PHASES?.CUTTING);
         return isParked ? pos.cribParked : pos.cribCenter;
     }
 

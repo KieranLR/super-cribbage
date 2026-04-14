@@ -16,7 +16,7 @@ export class DebugOverlay extends Scene {
         this.layout = new TableLayout(this.scale);
 
         this.currentTab = 'Tokens'; // 'Tokens' or 'Presets'
-        this.isMenuCollapsed = false; // Internal toggle state
+        this.isMenuCollapsed = settingsManager.get('debugMenuCollapsed') ?? true; 
 
         this.debugText = this.add.text(width - 10, 10, '', {
             fontFamily: 'monospace',
@@ -40,7 +40,7 @@ export class DebugOverlay extends Scene {
         this.menuContent = this.add.container(0, 0);
         this.menuContainer.add(this.menuContent);
 
-        this.scroller = new ScrollComponent(this, this.menuContent);
+        this.scroller = new ScrollComponent(this, this.menuContent, { followDebugMenu: true });
         this.scroller.setVisible(false);
 
         this.createDebugMenu();
@@ -76,6 +76,7 @@ export class DebugOverlay extends Scene {
         
         bg.on('pointerdown', () => {
             this.isMenuCollapsed = !this.isMenuCollapsed;
+            settingsManager.set('debugMenuCollapsed', this.isMenuCollapsed);
             this.updateVisibility();
         });
 

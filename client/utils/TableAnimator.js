@@ -248,9 +248,20 @@ export class TableAnimator {
             }
             card.setDepth(100 + index);
 
-            this.moveCard(card, view.visuals.table.deck.x, view.visuals.table.deck.y, {
+            // Calculate target world position within the deck stack
+            const currentDeckCount = view.visuals.table.deck.cardVisuals.length + index;
+            const targetLocalX = currentDeckCount * 0.5;
+            const targetLocalY = -currentDeckCount * 0.5;
+
+            // Simple world coordinate calculation (assuming no rotation)
+            const deckScale = view.visuals.table.deck.scale;
+            const targetWorldX = view.visuals.table.deck.x + (targetLocalX * deckScale);
+            const targetWorldY = view.visuals.table.deck.y + (targetLocalY * deckScale);
+
+            this.moveCard(card, targetWorldX, targetWorldY, {
                 duration: TIMINGS.ANIMATIONS.GENERIC_MOVE,
                 delay: delay,
+                scale: deckScale,
                 onComplete: () => {
                     card.setFaceDown(true);
                     view.visuals.table.deck.addCard(card);

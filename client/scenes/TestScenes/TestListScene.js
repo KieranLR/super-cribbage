@@ -35,7 +35,7 @@ export class TestListScene extends Scene {
             { name: 'Button Interaction', scene: 'TestButtonScene' },
             { name: 'Game Over Screen', scene: 'TestGameOverScene' },
             { name: 'Starting Cut Tie', scene: 'TestStartingCutTieScene' },
-            { name: 'Deck Visual', scene: 'TestDeckScene' },
+            // { name: 'Deck Visual', scene: 'TestDeckScene' },
             { name: 'Scoring End Animation', scene: 'TestScoringScene' },
             { name: 'Error Handler', scene: 'TestErrorScene' }
         ];
@@ -57,7 +57,7 @@ export class TestListScene extends Scene {
         this.menuItems.push(backBtn);
         this.menuContainer.add(backBtn);
 
-        this.scroller = new ScrollComponent(this, this.menuContainer);
+        this.scroller = new ScrollComponent(this, this.menuContainer, { padding: 10 });
 
         const updateMenuLayout = () => {
             const { width, height } = this.scale;

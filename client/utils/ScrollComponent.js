@@ -4,10 +4,20 @@ export class ScrollComponent {
     /**
      * @param {Phaser.Scene} scene
      * @param {Phaser.GameObjects.Container} container
+     * @param {Object} [options]
+     * @param {boolean} [options.followDebugMenu=false] - If true, scrollbar will follow debug menu settings (side, visibility).
+     * @param {number} [options.width=8] - Width of the scrollbar.
+     * @param {number} [options.padding=0] - Padding from the edge.
      */
-    constructor(scene, container) {
+    constructor(scene, container, options = {}) {
         this.scene = scene;
         this.container = container;
+        this.options = {
+            followDebugMenu: false,
+            width: 8,
+            padding: 0,
+            ...options
+        };
         this.contentHeight = 0;
         this.visibleHeight = 0;
         this.isScrollingEnabled = false;
@@ -15,8 +25,9 @@ export class ScrollComponent {
         this.scrollbarX = 0;
 
         // Visual indicator (Scrollbar)
-        this.scrollbarTrack = scene.add.rectangle(0, 0, 8, 0, 0xffffff, 0.2).setOrigin(1, 0).setDepth(100);
-        this.scrollbarHandle = scene.add.rectangle(0, 0, 8, 0, 0xffffff, 0.5).setOrigin(1, 0).setDepth(101);
+        const sbWidth = this.options.width;
+        this.scrollbarTrack = scene.add.rectangle(0, 0, sbWidth, 0, 0xffffff, 0.2).setOrigin(1, 0).setDepth(100);
+        this.scrollbarHandle = scene.add.rectangle(0, 0, sbWidth, 0, 0xffffff, 0.5).setOrigin(1, 0).setDepth(101);
         this.scrollbarTrack.setVisible(false);
         this.scrollbarHandle.setVisible(false);
 
@@ -47,9 +58,14 @@ export class ScrollComponent {
 
         if (this.isScrollingEnabled) {
             const { width } = this.scene.scale;
-            const side = settingsManager.get('debugMenuSide') || 'left';
-            const menuWidth = this.scene.menuWidth || 450;
-            const scrollbarX = side === 'left' ? menuWidth : width;
+            let scrollbarX = width - this.options.padding;
+
+            if (this.options.followDebugMenu) {
+                const side = settingsManager.get('debugMenuSide') || 'left';
+                const menuWidth = this.scene.menuWidth || 450;
+                scrollbarX = side === 'left' ? menuWidth : width;
+            }
+
             this.scrollbarX = scrollbarX;
             this.scrollbarTrack.setVisible(this.isVisible);
             this.scrollbarHandle.setVisible(this.isVisible);
@@ -81,10 +97,14 @@ export class ScrollComponent {
     updateScrollbarPosition() {
         if (!this.isScrollingEnabled) return;
         
-        const side = settingsManager.get('debugMenuSide') || 'left';
-        const menuWidth = this.scene.menuWidth || 450;
-        const width = this.scene.scale.width;
-        const currentScrollbarX = side === 'left' ? menuWidth : width;
+        const { width } = this.scene.scale;
+        let currentScrollbarX = width - this.options.padding;
+
+        if (this.options.followDebugMenu) {
+            const side = settingsManager.get('debugMenuSide') || 'left';
+            const menuWidth = this.scene.menuWidth || 450;
+            currentScrollbarX = side === 'left' ? menuWidth : width;
+        }
 
         if (this.scrollbarX !== currentScrollbarX) {
             this.scrollbarX = currentScrollbarX;

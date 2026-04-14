@@ -23,6 +23,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
             padding: { x: 8, y: 4 },
             fontStyle: 'bold'
         }).setOrigin(0.5);
+        this.label.setVisible(this.label.text !== '');
         this.add(this.label);
 
         // Background Area (Enlarged)
@@ -36,6 +37,7 @@ export class CribVisual extends Phaser.GameObjects.Container {
 
     setLabel(text) {
         this.label.setText(text);
+        this.label.setVisible(text !== '');
     }
 
     isPointInside(x, y) {

@@ -139,6 +139,11 @@ export class DiscardingPhase extends Phase {
                 return;
             }
 
+            // Update label to "Your Crib" or "Opponents Crib" now that it's parked
+            const isDealer = this.humanPlayer.isDealer;
+            const parkedLabel = isDealer ? 'Your Crib' : 'Opponents Crib';
+            this.view.visuals.table.crib.setLabel(parkedLabel);
+
             // Start the next phase immediately so its transitionCrib runs at the same time
             this.gameState.nextPhase();
 

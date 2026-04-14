@@ -22,22 +22,43 @@ import { TestScoringScene } from './scenes/TestScenes/TestScoringScene';
 import { Preloader } from './scenes/Preloader';
 import { TestErrorScene } from './scenes/TestScenes/TestErrorScene';
 
+function getCappedDPR() {
+    const raw = window.devicePixelRatio || 1;
+    const isMobile = window.innerWidth < 800;
+
+    return Math.min(raw, isMobile ? 2 : 1.25);
+}
+
+function getScale() {
+    // return {
+    //     mode: Phaser.Scale.FIT,
+    //     autoCenter: Phaser.Scale.CENTER_BOTH,
+    //     width: 1280,
+    //     height: 720
+    // }
+    //
+
+    return {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: '100%',
+        height: '100%'
+    }
+}
+
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.80.0/Phaser.Types.Core.GameConfig
 (async () => {
     initiateDiscordSDK();
     // You can use discordSdk to access the Discord SDK and make the requests you need
+    console.log(getCappedDPR());
 
     const config = {
         type: Phaser.AUTO,
         parent: 'game-container',
         backgroundColor: '#028af8',
-        scale: {
-            mode: Phaser.Scale.RESIZE,
-            autoCenter: Phaser.Scale.CENTER_BOTH,
-            width: '100%',
-            height: '100%'
-        },
+        resolution: 1,
+        scale: getScale(),
         scene: [
             Boot,
             Preloader,

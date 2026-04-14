@@ -6,7 +6,8 @@ class SettingsManager {
             cardDeck: 'default',
             showFPS: false,
             showDebugMenu: false,
-            debugMenuSide: 'left'
+            debugMenuSide: 'left',
+            debugMenuCollapsed: true
         };
         this.load();
     }
