@@ -124,7 +124,6 @@ export class CardVisual extends Phaser.GameObjects.Container {
         this.setInteractive();
 
         this.on('pointerover', () => {
-            console.log('bointer over');
             if (this.isLocked) return;
             if (!this.input || !this.input.enabled) return;
 
@@ -256,9 +255,6 @@ export class CardVisual extends Phaser.GameObjects.Container {
      */
     resetVisualState(instant = false) {
         this.isHovered = false;
-
-        console.log(CARD_COLORS);
-
         if (!this.isSelected) {
             const strokeColor = this.isFaceDown ? CARD_COLORS.FACE_DOWN_STROKE : CARD_COLORS.FACE_UP_STROKE;
             const strokeWidth = this.isFaceDown ? CARD_STYLE.STROKE_WIDTH_FACE_DOWN : CARD_STYLE.STROKE_WIDTH_FACE_UP;

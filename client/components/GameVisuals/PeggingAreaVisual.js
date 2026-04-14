@@ -49,8 +49,6 @@ export class PeggingAreaVisual extends Phaser.GameObjects.Container {
         this.label.setText(`Pegging Area: ${total}`);
 
         const config = this.config;
-
-        console.log(config);
         const cardScale = config.CARD_SCALE || 1.0;
         const spacing = config.CARD_SPACING * cardScale;
         const totalWidth = (cards.length - 1) * spacing;

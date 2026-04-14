@@ -208,10 +208,6 @@ export class DebugOverlay extends Scene {
         const spacing = 30;
         const margin = 15;
 
-        console.log("currentSize", currentSize);
-        console.log("preset", preset);
-        console.log("layoutConfigManager.getPresets()", layoutConfigManager.getPresets())
-
         const titleText = this.add.text(margin, currentY, `Editing: ${currentSize}`, {
             fontSize: '16px',
             fontStyle: 'italic',

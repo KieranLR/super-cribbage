@@ -1,5 +1,6 @@
 import { TIMINGS } from './flow/timings.js';
 import { settingsManager } from './SettingsManager.js';
+import { Suits } from '../../game/Card.js';
 
 export class TableAnimator {
     constructor(scene) {
@@ -99,6 +100,17 @@ export class TableAnimator {
         
         const maxHandSize = Math.max(...players.map(p => p.hand.cards.length));
         
+        // Pre-sort player hands by rank before generating deal order
+        players.forEach(player => {
+            player.hand.cards.sort((a, b) => {
+                const rankA = a.getRank();
+                const rankB = b.getRank();
+                if (rankA !== rankB) return rankA - rankB;
+                const suitsOrder = [Suits.HEARTS, Suits.DIAMONDS, Suits.CLUBS, Suits.SPADES];
+                return suitsOrder.indexOf(a.suit) - suitsOrder.indexOf(b.suit);
+            });
+        });
+        
         for (let i = 0; i < maxHandSize; i++) {
             players.forEach(player => {
                 if (player.hand.cards[i]) {
@@ -180,7 +192,6 @@ export class TableAnimator {
      * Animates returning all cards on the table to the deck.
      */
     returnCardsToDeckAnimated(view, onComplete = null) {
-        console.log('Returning cards to deck');
         const cardsToReturn = [];
         
         view.visuals.table.humanHand.cardVisuals.forEach(v => {

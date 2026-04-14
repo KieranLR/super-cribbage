@@ -38,8 +38,6 @@ export class HandVisual extends Phaser.GameObjects.Container {
 
         const cardScale = this.config.CARD_SCALE || 1.0;
 
-        console.log(cardScale, this.config.CARD_SCALE, )
-
         const spacing = 60 * cardScale;
         const totalWidth = (cards.length - 1) * spacing;
 
@@ -208,7 +206,6 @@ export class HandVisual extends Phaser.GameObjects.Container {
     }
 
     sortByRank() {
-        console.log('Sorting by rank');
         this.cardVisuals.sort((a, b) => {
             const rankA = a.cardData.getRank();
             const rankB = b.cardData.getRank();
@@ -221,7 +218,6 @@ export class HandVisual extends Phaser.GameObjects.Container {
     }
 
     sortBySuit() {
-        console.log('Sorting by suit');
         this.cardVisuals.sort((a, b) => {
             const suitsOrder = [Suits.HEARTS, Suits.DIAMONDS, Suits.CLUBS, Suits.SPADES];
             const suitA = suitsOrder.indexOf(a.cardData.suit);

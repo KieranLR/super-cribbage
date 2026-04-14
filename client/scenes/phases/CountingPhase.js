@@ -63,7 +63,6 @@ export class CountingPhase extends Phase {
     }
 
     cleanup() {
-        console.log('cleaning up counting phase');
         // Animation is now handled before startNewRound is called
     }
 }
