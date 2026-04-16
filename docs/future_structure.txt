@@ -1,0 +1,476 @@
+res://
+├── project/
+│   ├── autoload/
+│   │   ├── App.gd
+│   │   ├── SceneRouter.gd
+│   │   ├── SaveManager.gd
+│   │   ├── SettingsManager.gd
+│   │   ├── AudioManager.gd
+│   │   ├── InputManager.gd
+│   │   ├── NotificationManager.gd
+│   │   ├── ModalManager.gd
+│   │   ├── NetworkManager.gd
+│   │   ├── ReplayManager.gd
+│   │   ├── AnalyticsManager.gd
+│   │   └── DebugManager.gd
+│   │
+│   ├── config/
+│   │   ├── game_constants.gd
+│   │   ├── ui_constants.gd
+│   │   ├── animation_constants.gd
+│   │   ├── audio_constants.gd
+│   │   ├── network_constants.gd
+│   │   └── feature_flags.gd
+│   │
+│   ├── bootstrap/
+│   │   ├── game_boot.gd
+│   │   ├── dependency_container.gd
+│   │   └── environment.gd
+│   │
+│   └── utilities/
+│       ├── math_utils.gd
+│       ├── array_utils.gd
+│       ├── card_utils.gd
+│       ├── async_utils.gd
+│       ├── signal_utils.gd
+│       ├── rng_utils.gd
+│       └── validation_utils.gd
+│
+├── scenes/
+│   ├── app/
+│   │   ├── AppRoot.tscn
+│   │   ├── LoadingScreen.tscn
+│   │   ├── SplashScreen.tscn
+│   │   └── ErrorScreen.tscn
+│   │
+│   ├── menus/
+│   │   ├── MainMenu.tscn
+│   │   ├── PlayMenu.tscn
+│   │   ├── ModeSelect.tscn
+│   │   ├── DeckSelect.tscn
+│   │   ├── SettingsMenu.tscn
+│   │   ├── ProfileMenu.tscn
+│   │   ├── StatsMenu.tscn
+│   │   ├── CollectionMenu.tscn
+│   │   ├── ShopMenu.tscn
+│   │   ├── BattlePassMenu.tscn
+│   │   ├── TutorialMenu.tscn
+│   │   ├── CreditsMenu.tscn
+│   │   └── NewsMenu.tscn
+│   │
+│   ├── matchmaking/
+│   │   ├── Lobby.tscn
+│   │   ├── InviteFriends.tscn
+│   │   ├── QueueScreen.tscn
+│   │   ├── RoomBrowser.tscn
+│   │   └── ReconnectPrompt.tscn
+│   │
+│   ├── game/
+│   │   ├── GameRoot.tscn
+│   │   ├── GameBoard.tscn
+│   │   ├── TableBackground.tscn
+│   │   ├── PeggingLane.tscn
+│   │   ├── Scoreboard.tscn
+│   │   ├── DeckArea.tscn
+│   │   ├── CribArea.tscn
+│   │   ├── StarterCardArea.tscn
+│   │   ├── HandAreaPlayer.tscn
+│   │   ├── HandAreaOpponent.tscn
+│   │   ├── RoundSummary.tscn
+│   │   ├── MatchSummary.tscn
+│   │   ├── PauseOverlay.tscn
+│   │   └── EmoteWheel.tscn
+│   │
+│   ├── overlays/
+│   │   ├── ConfirmDialog.tscn
+│   │   ├── AlertDialog.tscn
+│   │   ├── ToastNotification.tscn
+│   │   ├── Tooltip.tscn
+│   │   ├── CardZoomOverlay.tscn
+│   │   ├── SettingsOverlay.tscn
+│   │   ├── HelpOverlay.tscn
+│   │   └── ConnectionStatusOverlay.tscn
+│   │
+│   └── transitions/
+│       ├── FadeTransition.tscn
+│       ├── SwipeTransition.tscn
+│       └── MatchStartIntro.tscn
+│
+├── src/
+│   ├── core/
+│   │   ├── app_state/
+│   │   │   ├── app_state.gd
+│   │   │   ├── session_state.gd
+│   │   │   ├── player_profile_state.gd
+│   │   │   ├── settings_state.gd
+│   │   │   └── connectivity_state.gd
+│   │   │
+│   │   ├── scene_management/
+│   │   │   ├── scene_router.gd
+│   │   │   ├── scene_stack.gd
+│   │   │   └── route_definitions.gd
+│   │   │
+│   │   ├── save/
+│   │   │   ├── save_manager.gd
+│   │   │   ├── save_repository.gd
+│   │   │   ├── settings_repository.gd
+│   │   │   └── profile_repository.gd
+│   │   │
+│   │   ├── audio/
+│   │   │   ├── audio_manager.gd
+│   │   │   ├── music_controller.gd
+│   │   │   ├── sfx_controller.gd
+│   │   │   └── audio_bus_setup.gd
+│   │   │
+│   │   ├── input/
+│   │   │   ├── input_manager.gd
+│   │   │   ├── input_action_map.gd
+│   │   │   ├── gamepad_support.gd
+│   │   │   └── rebinding.gd
+│   │   │
+│   │   ├── network/
+│   │   │   ├── network_manager.gd
+│   │   │   ├── websocket_client.gd
+│   │   │   ├── request_queue.gd
+│   │   │   ├── reconnect_handler.gd
+│   │   │   └── latency_tracker.gd
+│   │   │
+│   │   ├── errors/
+│   │   │   ├── error_handler.gd
+│   │   │   ├── crash_recovery.gd
+│   │   │   └── user_facing_error_mapper.gd
+│   │   │
+│   │   ├── debug/
+│   │   │   ├── debug_console.gd
+│   │   │   ├── debug_overlay.gd
+│   │   │   ├── fps_monitor.gd
+│   │   │   └── dev_commands.gd
+│   │   │
+│   │   └── services/
+│   │       ├── notification_service.gd
+│   │       ├── localization_service.gd
+│   │       ├── achievement_service.gd
+│   │       ├── stats_service.gd
+│   │       └── platform_service.gd
+│   │
+│   ├── cribbage/
+│   │   ├── domain/
+│   │   │   ├── enums/
+│   │   │   │   ├── suit.gd
+│   │   │   │   ├── rank.gd
+│   │   │   │   ├── phase.gd
+│   │   │   │   ├── player_side.gd
+│   │   │   │   ├── move_type.gd
+│   │   │   │   └── match_result.gd
+│   │   │   │
+│   │   │   ├── models/
+│   │   │   │   ├── card.gd
+│   │   │   │   ├── deck.gd
+│   │   │   │   ├── hand.gd
+│   │   │   │   ├── crib.gd
+│   │   │   │   ├── starter_card.gd
+│   │   │   │   ├── player_state.gd
+│   │   │   │   ├── round_state.gd
+│   │   │   │   ├── match_state.gd
+│   │   │   │   ├── score_event.gd
+│   │   │   │   ├── move.gd
+│   │   │   │   └── turn_state.gd
+│   │   │   │
+│   │   │   └── value_objects/
+│   │   │       ├── score_breakdown.gd
+│   │   │       ├── legal_move_result.gd
+│   │   │       ├── pegging_result.gd
+│   │   │       └── hand_score_result.gd
+│   │   │
+│   │   ├── rules/
+│   │   │   ├── rule_engine.gd
+│   │   │   ├── deal_rules.gd
+│   │   │   ├── crib_rules.gd
+│   │   │   ├── pegging_rules.gd
+│   │   │   ├── counting_rules.gd
+│   │   │   ├── win_condition_rules.gd
+│   │   │   ├── legal_move_validator.gd
+│   │   │   └── scoring/
+│   │   │       ├── score_hand.gd
+│   │   │       ├── score_pegging.gd
+│   │   │       ├── score_flush.gd
+│   │   │       ├── score_pairs.gd
+│   │   │       ├── score_runs.gd
+│   │   │       ├── score_fifteens.gd
+│   │   │       └── score_nobs.gd
+│   │   │
+│   │   ├── flow/
+│   │   │   ├── match_flow_controller.gd
+│   │   │   ├── round_flow_controller.gd
+│   │   │   ├── phase_flow_controller.gd
+│   │   │   ├── turn_manager.gd
+│   │   │   ├── action_resolver.gd
+│   │   │   └── timers/
+│   │   │       ├── bot_delay_timer.gd
+│   │   │       ├── animation_gate.gd
+│   │   │       └── phase_delay_scheduler.gd
+│   │   │
+│   │   ├── commands/
+│   │   │   ├── play_card_command.gd
+│   │   │   ├── discard_to_crib_command.gd
+│   │   │   ├── cut_starter_command.gd
+│   │   │   ├── say_go_command.gd
+│   │   │   ├── count_hand_command.gd
+│   │   │   └── concede_match_command.gd
+│   │   │
+│   │   ├── events/
+│   │   │   ├── match_started_event.gd
+│   │   │   ├── card_played_event.gd
+│   │   │   ├── score_awarded_event.gd
+│   │   │   ├── phase_changed_event.gd
+│   │   │   ├── hand_revealed_event.gd
+│   │   │   └── round_ended_event.gd
+│   │   │
+│   │   ├── ai/
+│   │   │   ├── bot_controller.gd
+│   │   │   ├── bot_profiles/
+│   │   │   │   ├── easy_bot.gd
+│   │   │   │   ├── medium_bot.gd
+│   │   │   │   ├── hard_bot.gd
+│   │   │   │   └── personality_bot.gd
+│   │   │   ├── evaluators/
+│   │   │   │   ├── discard_evaluator.gd
+│   │   │   │   ├── pegging_evaluator.gd
+│   │   │   │   └── hand_value_estimator.gd
+│   │   │   └── simulation/
+│   │   │       ├── rollout_engine.gd
+│   │   │       └── probability_estimator.gd
+│   │   │
+│   │   ├── multiplayer/
+│   │   │   ├── protocol/
+│   │   │   │   ├── client_message.gd
+│   │   │   │   ├── server_message.gd
+│   │   │   │   ├── message_codec.gd
+│   │   │   │   └── sync_snapshot.gd
+│   │   │   ├── client/
+│   │   │   │   ├── multiplayer_session.gd
+│   │   │   │   ├── turn_submission.gd
+│   │   │   │   └── state_reconciliation.gd
+│   │   │   └── lobby/
+│   │   │       ├── room_state.gd
+│   │   │       ├── invite_code.gd
+│   │   │       └── rematch_flow.gd
+│   │   │
+│   │   └── replay/
+│   │       ├── replay_recorder.gd
+│   │       ├── replay_frame.gd
+│   │       ├── replay_player.gd
+│   │       └── move_history.gd
+│   │
+│   ├── ui/
+│   │   ├── menus/
+│   │   │   ├── main_menu.gd
+│   │   │   ├── play_menu.gd
+│   │   │   ├── mode_select.gd
+│   │   │   ├── settings_menu.gd
+│   │   │   ├── profile_menu.gd
+│   │   │   └── collection_menu.gd
+│   │   │
+│   │   ├── game/
+│   │   │   ├── game_root.gd
+│   │   │   ├── scoreboard_ui.gd
+│   │   │   ├── phase_indicator.gd
+│   │   │   ├── player_hand_ui.gd
+│   │   │   ├── opponent_hand_ui.gd
+│   │   │   ├── crib_ui.gd
+│   │   │   ├── starter_card_ui.gd
+│   │   │   ├── pegging_track_ui.gd
+│   │   │   ├── action_buttons_ui.gd
+│   │   │   ├── match_summary_ui.gd
+│   │   │   └── round_summary_ui.gd
+│   │   │
+│   │   ├── overlays/
+│   │   │   ├── modal_base.gd
+│   │   │   ├── toast_notification.gd
+│   │   │   ├── tooltip.gd
+│   │   │   ├── card_zoom_overlay.gd
+│   │   │   ├── connection_status.gd
+│   │   │   └── pause_overlay.gd
+│   │   │
+│   │   ├── components/
+│   │   │   ├── buttons/
+│   │   │   │   ├── primary_button.gd
+│   │   │   │   ├── secondary_button.gd
+│   │   │   │   ├── icon_button.gd
+│   │   │   │   └── toggle_button.gd
+│   │   │   ├── cards/
+│   │   │   │   ├── card_view.gd
+│   │   │   │   ├── card_fan_layout.gd
+│   │   │   │   ├── deck_view.gd
+│   │   │   │   ├── card_back_view.gd
+│   │   │   │   └── card_drag_controller.gd
+│   │   │   ├── profile/
+│   │   │   │   ├── avatar_view.gd
+│   │   │   │   ├── rank_badge.gd
+│   │   │   │   └── username_plate.gd
+│   │   │   ├── chat/
+│   │   │   │   ├── emote_button.gd
+│   │   │   │   ├── chat_bubble.gd
+│   │   │   │   └── quick_chat_panel.gd
+│   │   │   └── common/
+│   │   │       ├── loading_spinner.gd
+│   │   │       ├── timer_bar.gd
+│   │   │       ├── tab_bar.gd
+│   │   │       └── stat_row.gd
+│   │   │
+│   │   └── themes/
+│   │       ├── theme_loader.gd
+│   │       ├── ui_theme_registry.gd
+│   │       └── deck_skin_registry.gd
+│   │
+│   └── presentation/
+│       ├── animation/
+│       │   ├── animation_coordinator.gd
+│       │   ├── tween_factory.gd
+│       │   ├── sequence_player.gd
+│       │   ├── match_intro_sequence.gd
+│       │   ├── deal_sequence.gd
+│       │   ├── discard_sequence.gd
+│       │   ├── pegging_sequence.gd
+│       │   ├── count_sequence.gd
+│       │   └── score_pop_sequence.gd
+│       │
+│       ├── effects/
+│       │   ├── particle_controller.gd
+│       │   ├── glow_effect.gd
+│       │   ├── confetti_effect.gd
+│       │   ├── card_trail_effect.gd
+│       │   └── highlight_effect.gd
+│       │
+│       ├── audio/
+│       │   ├── sfx_triggers.gd
+│       │   ├── music_state_machine.gd
+│       │   └── voice_line_triggers.gd
+│       │
+│       └── camera/
+│           ├── menu_camera.gd
+│           ├── game_camera.gd
+│           └── camera_shake.gd
+│
+├── assets/
+│   ├── art/
+│   │   ├── cards/
+│   │   │   ├── faces/
+│   │   │   ├── backs/
+│   │   │   ├── jokers_unused/
+│   │   │   └── atlases/
+│   │   ├── boards/
+│   │   ├── backgrounds/
+│   │   ├── ui/
+│   │   │   ├── buttons/
+│   │   │   ├── icons/
+│   │   │   ├── frames/
+│   │   │   └── panels/
+│   │   ├── avatars/
+│   │   ├── cosmetics/
+│   │   │   ├── table_skins/
+│   │   │   ├── peg_skins/
+│   │   │   ├── card_back_skins/
+│   │   │   └── emotes/
+│   │   └── vfx/
+│   │
+│   ├── audio/
+│   │   ├── music/
+│   │   ├── sfx/
+│   │   │   ├── ui/
+│   │   │   ├── cards/
+│   │   │   ├── scoring/
+│   │   │   └── ambient/
+│   │   └── voice/
+│   │
+│   ├── fonts/
+│   ├── shaders/
+│   └── localization/
+│       ├── en/
+│       ├── es/
+│       └── templates/
+│
+├── data/
+│   ├── cards/
+│   │   ├── standard_52_cards.tres
+│   │   ├── deck_definitions/
+│   │   └── card_metadata/
+│   │
+│   ├── cribbage/
+│   │   ├── scoring_tables/
+│   │   ├── tutorial_steps/
+│   │   ├── bot_profiles/
+│   │   ├── difficulty_presets/
+│   │   └── match_rulesets/
+│   │
+│   ├── ui/
+│   │   ├── theme_definitions/
+│   │   ├── menu_layouts/
+│   │   └── animation_presets/
+│   │
+│   ├── cosmetics/
+│   │   ├── card_backs/
+│   │   ├── table_skins/
+│   │   ├── peg_skins/
+│   │   └── emotes/
+│   │
+│   └── economy/
+│       ├── currencies/
+│       ├── shop_catalog/
+│       └── reward_tracks/
+│
+├── tests/
+│   ├── unit/
+│   │   ├── cribbage/
+│   │   │   ├── scoring/
+│   │   │   ├── rules/
+│   │   │   ├── ai/
+│   │   │   └── flow/
+│   │   ├── core/
+│   │   └── ui/
+│   │
+│   ├── integration/
+│   │   ├── local_match/
+│   │   ├── multiplayer_sync/
+│   │   ├── save_load/
+│   │   └── scene_transitions/
+│   │
+│   ├── fixtures/
+│   │   ├── sample_hands/
+│   │   ├── sample_match_states/
+│   │   └── replay_samples/
+│   │
+│   └── helpers/
+│       ├── test_builders.gd
+│       ├── fake_network.gd
+│       └── mock_players.gd
+│
+├── docs/
+│   ├── architecture/
+│   │   ├── gameplay_flow.md
+│   │   ├── state_management.md
+│   │   ├── networking.md
+│   │   ├── animation_system.md
+│   │   └── save_format.md
+│   │
+│   ├── design/
+│   │   ├── ui_wireframes.md
+│   │   ├── feature_list.md
+│   │   ├── monetization.md
+│   │   ├── progression.md
+│   │   └── tutorial_plan.md
+│   │
+│   └── cribbage/
+│       ├── rules_reference.md
+│       ├── scoring_reference.md
+│       └── variant_rules.md
+│
+├── tools/
+│   ├── importers/
+│   ├── debug_tools/
+│   ├── content_pipeline/
+│   └── build_scripts/
+│
+└── third_party/
+    ├── addons/
+    └── licenses/

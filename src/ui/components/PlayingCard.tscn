@@ -1,0 +1,49 @@
+[gd_scene load_steps=3 format=3 uid="uid://b8v8d3r4s5t6u"]
+
+[ext_resource type="Script" path="res://src/ui/components/playing_card.gd" id="1_c2d3e"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_card"]
+bg_color = Color(1, 1, 1, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="PlayingCard" type="PanelContainer"]
+custom_minimum_size = Vector2(80, 120)
+offset_right = 80.0
+offset_bottom = 120.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_card")
+script = ExtResource("1_c2d3e")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="RankLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+text = "A"
+
+[node name="SuitLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 48
+text = "♥"
+horizontal_alignment = 1
+vertical_alignment = 1
