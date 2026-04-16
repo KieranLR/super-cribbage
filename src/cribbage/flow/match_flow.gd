@@ -54,7 +54,7 @@ func play_card(state: MatchState, side: String, card: Card) -> bool:
 		_reset_pegging_sequence(state)
 	
 	if _is_pegging_complete(state):
-		_finish_pegging_and_score_hands(state)
+		_start_counting_phase(state)
 	else:
 		var opponent_hand := state.opponent.hand if side == "player" else state.player.hand
 		var can_opponent_play := not LegalMoves.get_legal_pegging_cards(opponent_hand, state.pegging_total).is_empty()
@@ -145,21 +145,39 @@ func _deal_hands(state: MatchState) -> void:
 func _is_pegging_complete(state: MatchState) -> bool:
 	return state.player.hand.is_empty() and state.opponent.hand.is_empty()
 
-func _finish_pegging_and_score_hands(state: MatchState) -> void:
-	state.current_phase = MatchState.PHASE_COUNT_HANDS
-	state.player.score += Scoring.score_hand(state.player.played_cards, state.starter_card, false)
-	state.opponent.score += Scoring.score_hand(state.opponent.played_cards, state.starter_card, false)
+func _start_counting_phase(state: MatchState) -> void:
+	state.current_phase = MatchState.PHASE_COUNT_PONE
 
-	state.current_phase = MatchState.PHASE_COUNT_CRIB
-	state.opponent.score += Scoring.score_hand(state.crib, state.starter_card, true)
+func advance_scoring(state: MatchState) -> void:
+	var non_dealer := state.player if not state.player.is_dealer else state.opponent
+	var dealer := state.opponent if not state.player.is_dealer else state.player
 
+	match state.current_phase:
+		MatchState.PHASE_COUNT_PONE:
+			non_dealer.score += Scoring.score_hand(non_dealer.played_cards, state.starter_card, false)
+			if _check_for_winner(state): return
+			state.current_phase = MatchState.PHASE_COUNT_DEALER
+		MatchState.PHASE_COUNT_DEALER:
+			dealer.score += Scoring.score_hand(dealer.played_cards, state.starter_card, false)
+			if _check_for_winner(state): return
+			state.current_phase = MatchState.PHASE_COUNT_CRIB
+		MatchState.PHASE_COUNT_CRIB:
+			dealer.score += Scoring.score_hand(state.crib, state.starter_card, true)
+			if _check_for_winner(state): return
+			state.current_phase = MatchState.PHASE_ROUND_OVER
+		MatchState.PHASE_ROUND_OVER:
+			# Swap dealer for next round
+			state.player.is_dealer = not state.player.is_dealer
+			state.opponent.is_dealer = not state.opponent.is_dealer
+			start_new_round(state)
+
+func _check_for_winner(state: MatchState) -> bool:
 	if state.player.score >= 121:
 		state.current_phase = MatchState.PHASE_MATCH_OVER
 		state.winner = state.player.name
-		return
+		return true
 	if state.opponent.score >= 121:
 		state.current_phase = MatchState.PHASE_MATCH_OVER
 		state.winner = state.opponent.name
-		return
-
-	state.current_phase = MatchState.PHASE_ROUND_OVER
+		return true
+	return false
