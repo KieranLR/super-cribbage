@@ -1,5 +1,6 @@
 import { Player } from '../game/Player.js';
 import { GameState } from '../game/GameState.js';
+import { GameFlow } from '../game/GameFlow.js';
 import { PHASES } from '../game/Constants.js';
 import { Card, Suits, Values } from '../game/Card.js';
 import { jest } from '@jest/globals';
@@ -7,6 +8,7 @@ import { jest } from '@jest/globals';
 describe('GameState Counting Integration', () => {
     let players;
     let gameState;
+    let gameFlow;
 
     beforeEach(() => {
         players = [
@@ -14,6 +16,7 @@ describe('GameState Counting Integration', () => {
             new Player('2', 'Bob')
         ];
         gameState = new GameState(players, { isHeadless: true });
+        gameFlow = new GameFlow(gameState);
         // Alice is dealer (index 0)
         gameState.dealerIndex = 0;
         gameState.updateDealer();
@@ -44,7 +47,7 @@ describe('GameState Counting Integration', () => {
         const initialScoreAlice = players[0].score;
         const initialScoreBob = players[1].score;
 
-        gameState.nextPhase();
+        gameFlow.nextPhase();
 
         expect(gameState.phase).toBe(PHASES.COUNTING);
         expect(players[0].score).toBe(initialScoreAlice);
@@ -68,7 +71,7 @@ describe('GameState Counting Integration', () => {
             new Card(Suits.SPADES, Values.JACK)
         ];
         gameState.starterCard = new Card(Suits.SPADES, Values.FIVE);
-        gameState.countPlayerHand(players[1]);
+        gameFlow.countPlayerHand(players[1]);
 
         expect(players[1].score).toBe(29);
 

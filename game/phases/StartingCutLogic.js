@@ -26,7 +26,7 @@ export class StartingCutLogic extends GameLogicPhase {
         const card = this.gameState.deck.cards.splice(cardIndex % this.gameState.deck.cards.length, 1)[0];
         this.gameState.startingCuts[playerIndex] = card;
 
-        this.gameState.emit('startingCardCut', { player, card, cardIndex });
+        this.emit('startingCardCut', { player, card, cardIndex });
 
         // If everyone has cut, determine the dealer
         if (this.gameState.startingCuts.every(c => c !== null)) {
@@ -56,11 +56,12 @@ export class StartingCutLogic extends GameLogicPhase {
             this.gameState.startingCuts = this.gameState.players.map(() => null);
             this.gameState.deck.reset();
             this.gameState.deck.shuffle();
-            this.gameState.emit('startingCutTie', {});
+            this.emit('startingCutTie', {});
         } else {
             this.gameState.dealerIndex = dealerIdx;
             this.gameState.updateDealer();
-            this.gameState.emit('firstDealerDetermined', { dealer: this.gameState.players[this.gameState.dealerIndex] });
+            this.emit('dealerChanged', { dealerIndex: this.gameState.dealerIndex, dealer: this.gameState.players[this.gameState.dealerIndex] });
+            this.emit('firstDealerDetermined', { dealer: this.gameState.players[this.gameState.dealerIndex] });
         }
     }
 }

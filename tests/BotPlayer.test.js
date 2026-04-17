@@ -1,6 +1,7 @@
 import { BotPlayer } from '../game/BotPlayer.js';
 import { Player } from '../game/Player.js';
 import { GameState } from '../game/GameState.js';
+import { GameFlow } from '../game/GameFlow.js';
 import { PHASES } from '../game/Constants.js';
 import { Card, Suits, Values } from '../game/Card.js';
 import { jest } from '@jest/globals';
@@ -49,6 +50,7 @@ describe('GameState with Bot', () => {
         const human = new Player('human', 'Human');
         const bot = new BotPlayer('bot', 'Bot');
         const gameState = new GameState([human, bot], { isHeadless: true });
+        const gameFlow = new GameFlow(gameState);
         
         // Skip Starting Cut for this test
         gameState.dealerIndex = 0;
@@ -56,13 +58,13 @@ describe('GameState with Bot', () => {
         gameState.phase = PHASES.DEALING;
         
         // Phase is currently DEALING. Calling dealCards will deal, then we must manually move to DISCARDING.
-        gameState.dealCards();
-        gameState.nextPhase();
+        gameFlow.dealCards();
+        gameFlow.nextPhase();
         
         expect(gameState.phase).toBe(PHASES.DISCARDING);
 
         // Manually trigger bot turn since GameState no longer does it automatically
-        gameState.checkBotTurns();
+        gameFlow.checkBotTurns();
 
         // The bot should have already discarded
         expect(gameState.discardedToCrib[1]).toBe(true);
@@ -75,6 +77,7 @@ describe('GameState with Bot', () => {
         const bot = new BotPlayer('bot', 'Bot');
         // Dealer is human (index 0). Bot (index 1) starts pegging.
         const gameState = new GameState([human, bot], { isHeadless: true });
+        const gameFlow = new GameFlow(gameState);
         gameState.dealerIndex = 0;
         gameState.updateDealer();
         
@@ -83,11 +86,11 @@ describe('GameState with Bot', () => {
         human.hand.addCard(new Card(Suits.HEARTS, Values.FIVE));
         bot.hand.addCard(new Card(Suits.CLUBS, Values.FIVE));
 
-        gameState.nextPhase();
+        gameFlow.nextPhase();
         // gameState.startPegging(); // nextPhase already calls start() on the phase logic
         
         // Manually trigger bot turn
-        gameState.checkBotTurns();
+        gameFlow.checkBotTurns();
 
         // Fast-forward timers for bot to play
         jest.runAllTimers();
@@ -101,24 +104,25 @@ describe('GameState with Bot', () => {
         const human = new Player('human', 'Human');
         const bot = new BotPlayer('bot', 'Bot');
         const events = [];
-        const callbacks = {
-            phaseChanged: (data) => events.push({ name: 'phaseChanged', data }),
-            cardsDealt: (data) => events.push({ name: 'cardsDealt', data }),
-            cardDiscarded: (data) => events.push({ name: 'cardDiscarded', data }),
-        };
         
-        const gameState = new GameState([human, bot], { callbacks });
+        const gameState = new GameState([human, bot]);
+        const gameFlow = new GameFlow(gameState);
+        const ee = gameFlow.eventEmitter;
+        
+        ee.on('phaseChanged', (data) => events.push({ name: 'phaseChanged', data }));
+        ee.on('cardsDealt', (data) => events.push({ name: 'cardsDealt', data }));
+        ee.on('cardDiscarded', (data) => events.push({ name: 'cardDiscarded', data }));
 
         // Skip Starting Cut for this test
         gameState.dealerIndex = 0;
         gameState.updateDealer();
         gameState.phase = PHASES.DEALING;
         
-        gameState.dealCards();
-        gameState.nextPhase();
+        gameFlow.dealCards();
+        gameFlow.nextPhase();
 
         // Manually trigger bot turn
-        gameState.checkBotTurns();
+        gameFlow.checkBotTurns();
 
         // Fast-forward timers for bot discard events
         jest.runAllTimers();

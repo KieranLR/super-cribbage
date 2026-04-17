@@ -5,6 +5,7 @@ import { TableLayout } from '../../utils/TableLayout.js';
 export class Phase {
     constructor(controller) {
         this.controller = controller;
+        this.gameFlow = controller.gameFlow;
         this.gameState = controller.gameState;
         this.view = controller.view;
         this.animator = controller.animator;

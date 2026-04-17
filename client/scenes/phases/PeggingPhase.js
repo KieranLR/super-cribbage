@@ -24,7 +24,7 @@ export class PeggingPhase extends Phase {
             onMoveApplied: (cardVisual) => {
                 this.controller.isProcessingMove = true;
                 this.interactionHelper.animateToZone(cardVisual, () => {
-                    this.gameState.playPeggingCard(this.humanPlayer, cardVisual.cardData);
+                    this.gameFlow.playPeggingCard(this.humanPlayer, cardVisual.cardData);
                 });
             },
             config: {
@@ -56,7 +56,7 @@ export class PeggingPhase extends Phase {
             if (!canPlay && this.humanPlayer.hand.cards.length > 0) {
                 this.view.showButton('go', 'Say Go', () => {
                     this.controller.isProcessingMove = true;
-                    this.gameState.playPeggingCard(this.humanPlayer, null);
+                    this.gameFlow.playPeggingCard(this.humanPlayer, null);
                     this.view.hideButton('go');
                 });
             } else {

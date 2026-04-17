@@ -31,6 +31,6 @@ export class DealingLogic extends GameLogicPhase {
             }
         });
 
-        this.gameState.emit('cardsDealt', { players: this.gameState.players });
+        this.emit('cardsDealt', { players: this.gameState.players });
     }
 }

@@ -1,11 +1,13 @@
 import { Player } from '../game/Player.js';
 import { GameState } from '../game/GameState.js';
+import { GameFlow } from '../game/GameFlow.js';
 import { PHASES } from '../game/Constants.js';
 import { jest } from '@jest/globals';
 
 describe('GameState Scoring Reproduction', () => {
     let players;
     let gameState;
+    let gameFlow;
 
     beforeEach(() => {
         players = [
@@ -13,6 +15,7 @@ describe('GameState Scoring Reproduction', () => {
             new Player('2', 'Bob')
         ];
         gameState = new GameState(players, { isHeadless: true });
+        gameFlow = new GameFlow(gameState);
     });
 
     test('reproduce crib is null when manually setting phase to COUNTING', () => {
@@ -25,7 +28,7 @@ describe('GameState Scoring Reproduction', () => {
 
         // If we try to call countCrib now, it should fail
         expect(() => {
-            gameState.countCrib();
+            gameFlow.countCrib();
         }).toThrow();
     });
 
@@ -49,7 +52,7 @@ describe('GameState Scoring Reproduction', () => {
 
         // Should not throw
         expect(() => {
-            gameState.countCrib();
+            gameFlow.countCrib();
         }).not.toThrow();
     });
 });

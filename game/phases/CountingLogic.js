@@ -30,7 +30,7 @@ export class CountingLogic extends GameLogicPhase {
 
         // 3. Dealer counts the crib
         this.countCrib();
-        this.gameState.checkWin();
+        this.checkWin();
     }
 
     /**
@@ -41,8 +41,8 @@ export class CountingLogic extends GameLogicPhase {
         // Use handForCounting which was stored during DiscardingLogic
         const score = Scoring.countHand(player.handForCounting, this.gameState.starterCard, false);
         player.addPoints(score.total);
-        this.gameState.emit('pointsEarned', { player, points: score.total, reason: 'Hand Count', breakdown: score });
-        this.gameState.checkWin();
+        this.emit('pointsEarned', { player, points: score.total, reason: 'Hand Count', breakdown: score });
+        this.checkWin();
     }
 
     /**
@@ -52,7 +52,7 @@ export class CountingLogic extends GameLogicPhase {
         const dealer = this.gameState.players[this.gameState.dealerIndex];
         const cribScore = Scoring.countHand(this.gameState.crib.cards, this.gameState.starterCard, true);
         dealer.addPoints(cribScore.total);
-        this.gameState.emit('pointsEarned', { player: dealer, points: cribScore.total, reason: 'Crib Count', breakdown: cribScore });
-        this.gameState.checkWin();
+        this.emit('pointsEarned', { player: dealer, points: cribScore.total, reason: 'Crib Count', breakdown: cribScore });
+        this.checkWin();
     }
 }

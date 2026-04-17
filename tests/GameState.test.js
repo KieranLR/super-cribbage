@@ -1,11 +1,13 @@
 import { Player } from '../game/Player.js';
 import { GameState } from '../game/GameState.js';
+import { GameFlow } from '../game/GameFlow.js';
 import { PHASES } from '../game/Constants.js';
 import { jest } from '@jest/globals';
 
 describe('GameState', () => {
     let players;
     let gameState;
+    let gameFlow;
 
     beforeEach(() => {
         jest.useFakeTimers();
@@ -14,6 +16,7 @@ describe('GameState', () => {
             new Player('2', 'Bob')
         ];
         gameState = new GameState(players, { isHeadless: true });
+        gameFlow = new GameFlow(gameState);
     });
 
     afterEach(() => {
@@ -32,11 +35,11 @@ describe('GameState', () => {
         gameState.updateDealer();
         gameState.phase = PHASES.DEALING;
         
-        gameState.dealCards();
+        gameFlow.dealCards();
         expect(players[0].hand.cards.length).toBe(6);
         expect(players[1].hand.cards.length).toBe(6);
         // Transition to DISCARDING
-        gameState.nextPhase();
+        gameFlow.nextPhase();
         expect(gameState.phase).toBe(PHASES.DISCARDING);
     });
 
@@ -46,23 +49,23 @@ describe('GameState', () => {
         gameState.updateDealer();
         gameState.phase = PHASES.DEALING;
         
-        gameState.dealCards(); 
-        gameState.nextPhase(); // Now in DISCARDING phase
+        gameFlow.dealCards(); 
+        gameFlow.nextPhase(); // Now in DISCARDING phase
         
         const aliceCards = [players[0].hand.cards[0], players[0].hand.cards[1]];
         const bobCards = [players[1].hand.cards[0], players[1].hand.cards[1]];
 
-        gameState.discardToCrib(players[0], aliceCards);
+        gameFlow.discardToCrib(players[0], aliceCards);
         console.log(gameState.discardedToCrib);
         console.log(gameState.getPublicState());
         expect(gameState.discardedToCrib[0]).toBe(true);
         expect(gameState.crib.cards.length).toBe(2);
         expect(gameState.phase).toBe(PHASES.DISCARDING);
 
-        gameState.discardToCrib(players[1], bobCards);
+        gameFlow.discardToCrib(players[1], bobCards);
         expect(gameState.discardedToCrib[1]).toBe(true);
         expect(gameState.crib.cards.length).toBe(4);
-        gameState.nextPhase();
+        gameFlow.nextPhase();
         expect(gameState.phase).toBe(PHASES.CUTTING); // nextPhase for DISCARDING sets phase to CUTTING
     });
 
@@ -71,7 +74,7 @@ describe('GameState', () => {
         gameState.updateDealer();
         gameState.phase = PHASES.DISCARDING;
         gameState.discardedToCrib = [true, true];
-        gameState.nextPhase(); // Should go to CUTTING, then CUTTING logic calls nextPhase if automated? 
+        gameFlow.nextPhase(); // Should go to CUTTING, then CUTTING logic calls nextPhase if automated? 
         // Wait, my nextPhase for DISCARDING sets phase to CUTTING and calls cutStarterCard.
         // But cutStarterCard doesn't call nextPhase.
         
@@ -83,7 +86,7 @@ describe('GameState', () => {
         gameState.dealerIndex = 0;
         gameState.updateDealer();
         gameState.phase = PHASES.CUTTING;
-        gameState.nextPhase(); // Move to PEGGING
+        gameFlow.nextPhase(); // Move to PEGGING
         
         expect(gameState.phase).toBe(PHASES.PEGGING);
         expect(gameState.pegging).not.toBeNull();
@@ -107,7 +110,7 @@ describe('GameState', () => {
             { getRank: () => 10 } // Bob cuts 10
         ];
         
-        gameState.phases[PHASES.STARTING_CUT].determineFirstDealer();
+        gameFlow.phases[PHASES.STARTING_CUT].determineFirstDealer();
         
         // Wait for 2000ms timeout in determineFirstDealer
         jest.advanceTimersByTime(2000);
@@ -115,7 +118,7 @@ describe('GameState', () => {
         expect(gameState.dealerIndex).toBe(0); // Alice has lower card
         expect(players[0].isDealer).toBe(true);
         // Start DEALING phase
-        gameState.nextPhase();
+        gameFlow.nextPhase();
         expect(gameState.phase).toBe(PHASES.DEALING); 
         expect(players[0].hand.cards.length).toBe(6);
     });
@@ -127,9 +130,9 @@ describe('GameState', () => {
             { getRank: () => 7 }
         ];
         
-        const emitSpy = jest.spyOn(gameState, 'emit');
+        const emitSpy = jest.spyOn(gameFlow.eventEmitter, 'emit');
         
-        gameState.phases[PHASES.STARTING_CUT].determineFirstDealer();
+        gameFlow.phases[PHASES.STARTING_CUT].determineFirstDealer();
         
         // Advance timers by the new 1000ms delay in determineFirstDealer
         jest.advanceTimersByTime(1000);
@@ -141,15 +144,13 @@ describe('GameState', () => {
         // Ensure bots aren't triggered immediately after the tie event
         // (Wait another 1500ms for the bot delay)
         jest.advanceTimersByTime(1500);
-        // If it was a bot turn, it would have called cutForDealer or similar. 
-        // We can check if something was called or just that time has passed.
     });
 
     test('New round rotation', () => {
         gameState.dealerIndex = 0;
         gameState.updateDealer();
         gameState.phase = PHASES.COUNTING; // Set to COUNTING so startNewRound rotates
-        gameState.startNewRound();
+        gameFlow.startNewRound();
         expect(gameState.dealerIndex).toBe(1);
         expect(players[1].isDealer).toBe(true);
         expect(players[0].isDealer).toBe(false);

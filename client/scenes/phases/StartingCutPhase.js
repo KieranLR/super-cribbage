@@ -30,7 +30,7 @@ export class StartingCutPhase extends Phase {
 
         // In the UI, cardVisual might be one of the cards in the spread
         if (cardVisual.isStartingCutCard) {
-            this.gameState.cutForDealer(this.humanPlayer, cardVisual.cutIndex);
+            this.gameFlow.cutForDealer(this.humanPlayer, cardVisual.cutIndex);
         }
     }
 

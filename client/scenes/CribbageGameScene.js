@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import { GameState } from '../../game/GameState.js';
+import { GameFlow } from '../../game/GameFlow.js';
 import { Player } from '../../game/Player.js';
 import { BotPlayer } from '../../game/BotPlayer.js';
 import { CribbageGameView } from './CribbageGameView.js';
@@ -32,12 +33,15 @@ export class CribbageGameScene extends Scene {
         // Initialize GameState
         this.gameState = new GameState(this.players);
 
+        // Initialize GameFlow
+        this.gameFlow = new GameFlow(this.gameState);
+
         // Initialize View
         this.view = new CribbageGameView(this, this.animator, this.layout);
         this.view.initializeScoreboard(this.players);
 
         // Initialize Controller
-        this.controller = new HumanVsBotController(this.gameState, this.view, this.humanPlayer, this.botPlayer, this.animator);
+        this.controller = new HumanVsBotController(this.gameState, this.gameFlow, this.view, this.humanPlayer, this.botPlayer, this.animator);
     }
 
     setupResize() {

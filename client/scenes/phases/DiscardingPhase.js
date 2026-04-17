@@ -45,7 +45,7 @@ export class DiscardingPhase extends Phase {
         if (selectedCount === 2) {
             this.view.showButton('discard', 'Confirm Discard', () => {
                 const selected = this.view.visuals.table.humanHand.getSelectedCards().map(v => v.cardData);
-                this.gameState.discardToCrib(this.humanPlayer, selected);
+                this.gameFlow.discardToCrib(this.humanPlayer, selected);
                 this.view.hideButton('discard');
             });
         } else {
@@ -135,7 +135,7 @@ export class DiscardingPhase extends Phase {
         this.view.flow.waitForAnimations(() => {
             const visuals = this.view.visuals.table.crib.cardVisuals.concat(this.view.visuals.table.crib.submittedVisuals);
             if (visuals.length === 0) {
-                this.gameState.nextPhase();
+                this.gameFlow.nextPhase();
                 return;
             }
 
@@ -145,7 +145,7 @@ export class DiscardingPhase extends Phase {
             this.view.visuals.table.crib.setLabel(parkedLabel);
 
             // Start the next phase immediately so its transitionCrib runs at the same time
-            this.gameState.nextPhase();
+            this.gameFlow.nextPhase();
 
             const layout = this.view.getLayoutSnapshot();
             const cardScale = layout.styles.crib.CARD_SCALE || 1.0;

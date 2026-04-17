@@ -10,7 +10,7 @@ export class CuttingPhase extends Phase {
     onStarterCardCut({ card }) {
         this.animateStarterCardCut(card, () => {
             if (this.gameState.phase === PHASES.CUTTING) {
-                this.gameState.nextPhase();
+                this.gameFlow.nextPhase();
             }
         });
     }

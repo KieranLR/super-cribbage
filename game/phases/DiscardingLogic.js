@@ -33,11 +33,11 @@ export class DiscardingLogic extends GameLogicPhase {
         player.handForCounting = [...player.hand.cards];
 
         this.gameState.discardedToCrib[playerIndex] = true;
-        this.gameState.emit('cardDiscarded', { player, cards });
+        this.emit('cardDiscarded', { player, cards });
 
         // If everyone has discarded, move to next phase
         if (this.gameState.discardedToCrib.every(d => d)) {
-            this.gameState.emit('allDiscarded', {});
+            this.emit('allDiscarded', {});
         }
     }
 }

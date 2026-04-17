@@ -25,7 +25,7 @@ export class CountingPhase extends Phase {
                     this.botPlayer === nonDealer ? this.botPlayer.handForCounting : this.botPlayer.hand.cards,
                     this.botPlayer === nonDealer
                 );
-                this.gameState.countPlayerHand(nonDealer);
+                this.gameFlow.countPlayerHand(nonDealer);
                 if (this.gameState.winner) return;
                 this.view.showButton('continue', 'Continue', () => {
                     this.view.hideButton('continue');
@@ -39,7 +39,7 @@ export class CountingPhase extends Phase {
                     this.botPlayer.handForCounting,
                     this.botPlayer === dealer
                 );
-                this.gameState.countPlayerHand(dealer);
+                this.gameFlow.countPlayerHand(dealer);
                 if (this.gameState.winner) return;
                 this.view.showButton('continue', 'Continue', () => {
                     this.view.hideButton('continue');
@@ -51,12 +51,12 @@ export class CountingPhase extends Phase {
                 this.updatePhaseView(PHASES.COUNTING, `${dealerName} Crib`);
                 this.view.visuals.table.crib.setLabel(dealerName === 'Your' ? 'Your Crib' : 'Opponents Crib');
                 this.view.updateCrib(this.gameState.crib.cards, true, true);
-                this.gameState.countCrib();
+                this.gameFlow.countCrib();
                 if (this.gameState.winner) return;
                 this.view.showButton('next', 'Next Round', () => {
                     this.view.hideButton('next');
                     this.view.returnCardsToDeckAnimated(() => {
-                        this.gameState.startNewRound();
+                        this.gameFlow.startNewRound();
                     });
                 });
                 break;

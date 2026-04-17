@@ -1,4 +1,4 @@
-import { PHASES } from '../../game/Constants.js';
+ import { PHASES } from '../../game/Constants.js';
 import { TIMINGS } from '../utils/flow/timings.js';
 import { StartingCutPhase } from './phases/StartingCutPhase.js';
 import { DealingPhase } from './phases/DealingPhase.js';
@@ -9,8 +9,9 @@ import { CountingPhase } from './phases/CountingPhase.js';
 import { GameOverPhase } from './phases/GameOverPhase.js';
 
 export class HumanVsBotController {
-    constructor(gameState, view, humanPlayer, botPlayer, animator) {
+    constructor(gameState, gameFlow, view, humanPlayer, botPlayer, animator) {
         this.gameState = gameState;
+        this.gameFlow = gameFlow;
         this.view = view;
         this.humanPlayer = humanPlayer;
         this.botPlayer = botPlayer;
@@ -33,20 +34,19 @@ export class HumanVsBotController {
     }
 
     subscribeToEvents() {
-        this.gameState.callbacks = {
-            phaseChanged: (data) => this.onPhaseChanged(data),
-            startingCardCut: (data) => this.onStartingCardCut(data),
-            startingCutTie: (data) => this.onStartingCutTie(data),
-            firstDealerDetermined: (data) => this.onFirstDealerDetermined(data),
-            cardsDealt: (data) => this.onCardsDealt(data),
-            cardDiscarded: (data) => this.onCardDiscarded(data),
-            allDiscarded: (data) => this.delegate('onAllDiscarded', data),
-            starterCardCut: (data) => this.delegate('onStarterCardCut', data),
-            cardPlayed: (data) => this.onCardPlayed(data),
-            peggingComplete: (data) => this.onPeggingComplete(data),
-            pointsEarned: (data) => this.delegate('onPointsEarned', data),
-            dealerChanged: (data) => this.delegate('onDealerChanged', data)
-        };
+        const ee = this.gameFlow.eventEmitter;
+        ee.on('phaseChanged', (data) => this.onPhaseChanged(data));
+        ee.on('startingCardCut', (data) => this.onStartingCardCut(data));
+        ee.on('startingCutTie', (data) => this.onStartingCutTie(data));
+        ee.on('firstDealerDetermined', (data) => this.onFirstDealerDetermined(data));
+        ee.on('cardsDealt', (data) => this.onCardsDealt(data));
+        ee.on('cardDiscarded', (data) => this.onCardDiscarded(data));
+        ee.on('allDiscarded', (data) => this.delegate('onAllDiscarded', data));
+        ee.on('starterCardCut', (data) => this.delegate('onStarterCardCut', data));
+        ee.on('cardPlayed', (data) => this.onCardPlayed(data));
+        ee.on('peggingComplete', (data) => this.onPeggingComplete(data));
+        ee.on('pointsEarned', (data) => this.delegate('onPointsEarned', data));
+        ee.on('dealerChanged', (data) => this.delegate('onDealerChanged', data));
     }
 
     delegate(methodName, data) {
@@ -95,14 +95,14 @@ export class HumanVsBotController {
     onFirstDealerDetermined(data) {
         this.delegate('onFirstDealerDetermined', data);
         this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.FIRST_DEALER_DETERMINED, () => {
-            this.gameState.nextPhase();
+            this.gameFlow.nextPhase();
         });
     }
 
     onCardsDealt(data) {
         this.delegate('onCardsDealt', data);
         this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.CARDS_DEALT, () => {
-            this.gameState.nextPhase();
+            this.gameFlow.nextPhase();
         });
     }
 
@@ -116,13 +116,13 @@ export class HumanVsBotController {
         if (currentPhase && currentPhase.onAllDiscarded) {
             currentPhase.onAllDiscarded(data);
         } else {
-            this.gameState.nextPhase();
+            this.gameFlow.nextPhase();
         }
     }
 
     onPeggingComplete(data) {
         this.view.scene.time.delayedCall(TIMINGS.PHASE_TRANSITIONS.PEGGING_COMPLETE, () => {
-            this.gameState.nextPhase();
+            this.gameFlow.nextPhase();
         });
     }
 
@@ -160,7 +160,7 @@ export class HumanVsBotController {
                     this.view.scene.time.delayedCall(TIMINGS.BOT.STARTING_CUT, () => {
                         if (this.gameState.phase !== PHASES.STARTING_CUT) return;
                         if (this.gameState.startingCuts[index]) return; // Extra guard
-                        this.gameState.checkBotTurns();
+                        this.gameFlow.checkBotTurns();
                     });
                 }
             });
@@ -169,7 +169,7 @@ export class HumanVsBotController {
                 if (player.isBot && !this.gameState.discardedToCrib[index]) {
                     this.view.scene.time.delayedCall(TIMINGS.BOT.DISCARDING, () => {
                         if (this.gameState.phase !== PHASES.DISCARDING) return;
-                        this.gameState.checkBotTurns();
+                        this.gameFlow.checkBotTurns();
                     });
                 }
             });
@@ -184,7 +184,7 @@ export class HumanVsBotController {
                 this.view.scene.time.delayedCall(delay, () => {
                     if (this.gameState.phase !== PHASES.PEGGING || !this.gameState.pegging) return;
                     if (this.gameState.pegging.getCurrentPlayer() !== currentPlayer) return;
-                    this.gameState.checkBotTurns();
+                    this.gameFlow.checkBotTurns();
                 });
             }
         }

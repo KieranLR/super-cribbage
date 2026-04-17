@@ -1,10 +1,12 @@
 import { Player } from '../game/Player.js';
 import { GameState } from '../game/GameState.js';
+import { GameFlow } from '../game/GameFlow.js';
 import { PHASES } from '../game/Constants.js';
 
 describe('GameState.getPublicState()', () => {
     let players;
     let gameState;
+    let gameFlow;
 
     beforeEach(() => {
         players = [
@@ -12,6 +14,7 @@ describe('GameState.getPublicState()', () => {
             new Player('2', 'Bob')
         ];
         gameState = new GameState(players, { isHeadless: true });
+        gameFlow = new GameFlow(gameState);
     });
 
     test('Returns correct structure in DEALING phase', () => {
@@ -45,7 +48,7 @@ describe('GameState.getPublicState()', () => {
         gameState.updateDealer();
         gameState.phase = PHASES.DEALING;
         
-        gameState.dealCards();
+        gameFlow.dealCards();
         const publicState = gameState.getPublicState();
         expect(publicState.phase).toBe(PHASES.DEALING);
         expect(publicState.players[0].handSize).toBe(6);
@@ -59,14 +62,14 @@ describe('GameState.getPublicState()', () => {
         gameState.updateDealer();
         gameState.phase = PHASES.DEALING;
         
-        gameState.dealCards();
+        gameFlow.dealCards();
         const aliceCards = [players[0].hand.cards[0], players[0].hand.cards[1]];
         const bobCards = [players[1].hand.cards[0], players[1].hand.cards[1]];
-        gameState.nextPhase();
-        gameState.discardToCrib(players[0], aliceCards);
-        gameState.discardToCrib(players[1], bobCards);
-        gameState.nextPhase(); // Move to CUTTING
-        gameState.nextPhase(); // Move to PEGGING
+        gameFlow.nextPhase();
+        gameFlow.discardToCrib(players[0], aliceCards);
+        gameFlow.discardToCrib(players[1], bobCards);
+        gameFlow.nextPhase(); // Move to CUTTING
+        gameFlow.nextPhase(); // Move to PEGGING
         
         const publicState = gameState.getPublicState();
         expect(publicState.phase).toBe(PHASES.PEGGING);

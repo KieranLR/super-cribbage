@@ -24,30 +24,30 @@ export class PeggingLogic extends GameLogicPhase {
         if (card === null) {
             result = this.gameState.pegging.sayGo(player);
             if (result.points > 0) {
-                this.gameState.emit('pointsEarned', { player, points: result.points, reason: 'Pegging' });
+                this.emit('pointsEarned', { player, points: result.points, reason: 'Pegging' });
             }
         } else {
             result = this.gameState.pegging.playCard(player, card);
             result.card = card;
             if (result.points > 0) {
-                this.gameState.emit('pointsEarned', { player, points: result.points, reason: 'Pegging' });
+                this.emit('pointsEarned', { player, points: result.points, reason: 'Pegging' });
             }
         }
 
-        this.gameState.emit('cardPlayed', result);
+        this.emit('cardPlayed', result);
 
         if (result.cyclePoints && result.cyclePoints.points > 0) {
-            this.gameState.emit('pointsEarned', { 
+            this.emit('pointsEarned', { 
                 player: result.cyclePoints.player, 
                 points: result.cyclePoints.points, 
                 reason: 'Pegging' 
             });
         }
 
-        this.gameState.checkWin();
+        this.checkWin();
 
         if (this.gameState.pegging.isPhaseComplete()) {
-            this.gameState.emit('peggingComplete', {});
+            this.emit('peggingComplete', {});
         }
     }
 }
