@@ -6,7 +6,7 @@ import { GameOver } from './scenes/GameOver';
 import { Settings } from './scenes/Settings';
 import { DebugOverlay } from './scenes/DebugOverlay';
 import { MainMenu } from './scenes/MainMenu';
-import { MainMenuScene } from './editor/scenes/MainMenuScene';
+import MainMenuScene from './editor/scenes/MainMenuScene';
 import { HowToPlay } from './scenes/HowToPlay';
 import { TestListScene } from './scenes/TestScenes/TestListScene';
 import { TestCardScene } from './scenes/TestScenes/TestCardScene';

@@ -2,10 +2,9 @@
 import * as Phaser from 'phaser';
 
 // You can write more code here
-
 /* START OF COMPILED CODE */
 
-class MainMenuScene extends Phaser.Scene {
+export default class MainMenuScene extends Phaser.Scene {
 
 	constructor() {
 		super("MainMenuScene");
@@ -26,9 +25,11 @@ class MainMenuScene extends Phaser.Scene {
 
 		// playButton
 		const playButton = this.add.container(640, 300);
+		playButton.name = "playButton";
 
 		// playBg
 		const playBg = this.add.rectangle(0, 0, 300, 80);
+		playBg.name = "playBg";
 		playBg.isFilled = true;
 		playBg.fillColor = 3046706;
 		playButton.add(playBg);
@@ -40,24 +41,13 @@ class MainMenuScene extends Phaser.Scene {
 		playText.setStyle({ "fontSize": "32px" });
 		playButton.add(playText);
 
-		// playBg_1
-		const playBg_1 = this.add.rectangle(-430, 214, 300, 80);
-		playBg_1.isFilled = true;
-		playBg_1.fillColor = 3046706;
-		playButton.add(playBg_1);
-
-		// playText_1
-		const playText_1 = this.add.text(-433, 231, "", {});
-		playText_1.setOrigin(0.5, 0.5);
-		playText_1.text = "Test Button\n";
-		playText_1.setStyle({ "fontSize": "32px" });
-		playButton.add(playText_1);
-
 		// settingsButton
 		const settingsButton = this.add.container(640, 420);
+		settingsButton.name = "settingsButton";
 
 		// settingsBg
 		const settingsBg = this.add.rectangle(0, 0, 300, 80);
+		settingsBg.name = "settingsBg";
 		settingsBg.isFilled = true;
 		settingsBg.fillColor = 1402304;
 		settingsButton.add(settingsBg);
@@ -69,24 +59,13 @@ class MainMenuScene extends Phaser.Scene {
 		settingsText.setStyle({ "fontSize": "32px" });
 		settingsButton.add(settingsText);
 
-		// settingsBg_1
-		const settingsBg_1 = this.add.rectangle(-423, -29, 300, 80);
-		settingsBg_1.isFilled = true;
-		settingsBg_1.fillColor = 1402304;
-		settingsButton.add(settingsBg_1);
-
-		// settingsText_1
-		const settingsText_1 = this.add.text(-440, -31, "", {});
-		settingsText_1.setOrigin(0.5, 0.5);
-		settingsText_1.text = "Settings";
-		settingsText_1.setStyle({ "fontSize": "32px" });
-		settingsButton.add(settingsText_1);
-
 		// creditsButton
 		const creditsButton = this.add.container(640, 540);
+		creditsButton.name = "creditsButton";
 
 		// creditsBg
 		const creditsBg = this.add.rectangle(0, 0, 300, 80);
+		creditsBg.name = "creditsBg";
 		creditsBg.isFilled = true;
 		creditsBg.fillColor = 15690752;
 		creditsButton.add(creditsBg);
@@ -97,19 +76,6 @@ class MainMenuScene extends Phaser.Scene {
 		creditsText.text = "Credits";
 		creditsText.setStyle({ "fontSize": "32px" });
 		creditsButton.add(creditsText);
-
-		// creditsBg_1
-		const creditsBg_1 = this.add.rectangle(-446, -271, 300, 80);
-		creditsBg_1.isFilled = true;
-		creditsBg_1.fillColor = 15690752;
-		creditsButton.add(creditsBg_1);
-
-		// creditsText_1
-		const creditsText_1 = this.add.text(-444, -263, "", {});
-		creditsText_1.setOrigin(0.5, 0.5);
-		creditsText_1.text = "Credits";
-		creditsText_1.setStyle({ "fontSize": "32px" });
-		creditsButton.add(creditsText_1);
 
 		this.events.emit("scene-awake");
 	}
@@ -122,12 +88,15 @@ class MainMenuScene extends Phaser.Scene {
 
 		this.editorCreate();
 
-		// Add some basic interactivity for the buttons
+		// Add basic interactivity for the buttons
 		const playButton = this.children.getByName("playButton");
 		if (playButton) {
 			const bg = playButton.getByName("playBg");
 			bg.setInteractive({ useHandCursor: true })
-				.on('pointerdown', () => this.scene.start('Game'))
+				.on('pointerdown', () => {
+					console.log("Play button clicked");
+					this.scene.start('Game');
+				})
 				.on('pointerover', () => bg.setAlpha(0.8))
 				.on('pointerout', () => bg.setAlpha(1));
 		}
@@ -136,7 +105,22 @@ class MainMenuScene extends Phaser.Scene {
 		if (settingsButton) {
 			const bg = settingsButton.getByName("settingsBg");
 			bg.setInteractive({ useHandCursor: true })
-				.on('pointerdown', () => this.scene.start('Settings'))
+				.on('pointerdown', () => {
+					console.log("Settings button clicked");
+					this.scene.start('Settings');
+				})
+				.on('pointerover', () => bg.setAlpha(0.8))
+				.on('pointerout', () => bg.setAlpha(1));
+		}
+
+		const creditsButton = this.children.getByName("creditsButton");
+		if (creditsButton) {
+			const bg = creditsButton.getByName("creditsBg");
+			bg.setInteractive({ useHandCursor: true })
+				.on('pointerdown', () => {
+					console.log("Credits button clicked");
+					// this.scene.start('Credits');
+				})
 				.on('pointerover', () => bg.setAlpha(0.8))
 				.on('pointerout', () => bg.setAlpha(1));
 		}

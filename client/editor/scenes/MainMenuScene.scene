@@ -2,9 +2,11 @@
     "id": "bb6e7b7e-977b-4043-9799-236b288c148e",
     "sceneType": "SCENE",
     "settings": {
+        "exportClass": true,
         "preloadPackFiles": [],
         "createMethodName": "editorCreate",
-        "sceneKey": "MainMenuScene"
+        "sceneKey": "MainMenuScene",
+        "borderWidth": 1200
     },
     "displayList": [
         {
@@ -43,28 +45,6 @@
                     "originY": 0.5,
                     "text": "Play Game",
                     "fontSize": "32px"
-                },
-                {
-                    "type": "Rectangle",
-                    "id": "d6ee895a-3868-4830-bfc2-402e5cc06a01",
-                    "label": "playBg_1",
-                    "x": -430,
-                    "y": 214,
-                    "isFilled": true,
-                    "fillColor": "#2e7d32",
-                    "width": 300,
-                    "height": 80
-                },
-                {
-                    "type": "Text",
-                    "id": "27282df8-aad9-4869-affa-b9d0e7926ac0",
-                    "label": "playText_1",
-                    "x": -433,
-                    "y": 231,
-                    "originX": 0.5,
-                    "originY": 0.5,
-                    "text": "Test Button\n",
-                    "fontSize": "32px"
                 }
             ]
         },
@@ -92,28 +72,6 @@
                     "originY": 0.5,
                     "text": "Settings",
                     "fontSize": "32px"
-                },
-                {
-                    "type": "Rectangle",
-                    "id": "842e5e8b-233d-4f54-a0f1-046b8c9f5f78",
-                    "label": "settingsBg_1",
-                    "x": -423,
-                    "y": -29,
-                    "isFilled": true,
-                    "fillColor": "#1565c0",
-                    "width": 300,
-                    "height": 80
-                },
-                {
-                    "type": "Text",
-                    "id": "b575cd25-b780-44f4-9692-c988581a3fce",
-                    "label": "settingsText_1",
-                    "x": -440,
-                    "y": -31,
-                    "originX": 0.5,
-                    "originY": 0.5,
-                    "text": "Settings",
-                    "fontSize": "32px"
                 }
             ]
         },
@@ -137,28 +95,6 @@
                     "type": "Text",
                     "id": "8f65490a-1133-4078-a567-074092429777",
                     "label": "creditsText",
-                    "originX": 0.5,
-                    "originY": 0.5,
-                    "text": "Credits",
-                    "fontSize": "32px"
-                },
-                {
-                    "type": "Rectangle",
-                    "id": "3ebbe730-d6f5-4016-92c8-fd3817493fd5",
-                    "label": "creditsBg_1",
-                    "x": -446,
-                    "y": -271,
-                    "isFilled": true,
-                    "fillColor": "#ef6c00",
-                    "width": 300,
-                    "height": 80
-                },
-                {
-                    "type": "Text",
-                    "id": "e11e9b41-e69b-4b26-be24-812dcdc18161",
-                    "label": "creditsText_1",
-                    "x": -444,
-                    "y": -263,
                     "originX": 0.5,
                     "originY": 0.5,
                     "text": "Credits",
