@@ -141,6 +141,28 @@
                     "originY": 0.5,
                     "text": "Credits",
                     "fontSize": "32px"
+                },
+                {
+                    "type": "Rectangle",
+                    "id": "3ebbe730-d6f5-4016-92c8-fd3817493fd5",
+                    "label": "creditsBg_1",
+                    "x": -446,
+                    "y": -271,
+                    "isFilled": true,
+                    "fillColor": "#ef6c00",
+                    "width": 300,
+                    "height": 80
+                },
+                {
+                    "type": "Text",
+                    "id": "e11e9b41-e69b-4b26-be24-812dcdc18161",
+                    "label": "creditsText_1",
+                    "x": -444,
+                    "y": -263,
+                    "originX": 0.5,
+                    "originY": 0.5,
+                    "text": "Credits",
+                    "fontSize": "32px"
                 }
             ]
         }

@@ -98,6 +98,19 @@ class MainMenuScene extends Phaser.Scene {
 		creditsText.setStyle({ "fontSize": "32px" });
 		creditsButton.add(creditsText);
 
+		// creditsBg_1
+		const creditsBg_1 = this.add.rectangle(-446, -271, 300, 80);
+		creditsBg_1.isFilled = true;
+		creditsBg_1.fillColor = 15690752;
+		creditsButton.add(creditsBg_1);
+
+		// creditsText_1
+		const creditsText_1 = this.add.text(-444, -263, "", {});
+		creditsText_1.setOrigin(0.5, 0.5);
+		creditsText_1.text = "Credits";
+		creditsText_1.setStyle({ "fontSize": "32px" });
+		creditsButton.add(creditsText_1);
+
 		this.events.emit("scene-awake");
 	}
 
