@@ -1,0 +1,134 @@
+{
+    "id": "bb6e7b7e-977b-4043-9799-236b288c148e",
+    "sceneType": "SCENE",
+    "settings": {
+        "preloadPackFiles": [],
+        "createMethodName": "editorCreate",
+        "sceneKey": "MainMenuScene",
+        "compilerOutputLanguage": "JS"
+    },
+    "displayList": [
+        {
+            "type": "Text",
+            "id": "1893335e-526f-4091-a67b-232932375525",
+            "label": "titleText",
+            "x": 640,
+            "y": 150,
+            "originX": 0.5,
+            "originY": 0.5,
+            "text": "Super Cribbage",
+            "fontSize": "64px",
+            "fontStyle": "bold"
+        },
+        {
+            "type": "Container",
+            "id": "607490f8-3162-4309-873b-e0f06830573e",
+            "label": "playButton",
+            "x": 640,
+            "y": 300,
+            "list": [
+                {
+                    "type": "Rectangle",
+                    "id": "e6749035-7164-4638-9585-690224219777",
+                    "label": "playBg",
+                    "isFilled": true,
+                    "fillColor": "#2e7d32",
+                    "width": 300,
+                    "height": 80
+                },
+                {
+                    "type": "Text",
+                    "id": "6f65490a-1133-4078-a567-074092429777",
+                    "label": "playText",
+                    "originX": 0.5,
+                    "originY": 0.5,
+                    "text": "Play Game",
+                    "fontSize": "32px"
+                },
+                {
+                    "type": "Rectangle",
+                    "id": "d6ee895a-3868-4830-bfc2-402e5cc06a01",
+                    "label": "playBg_1",
+                    "x": -318,
+                    "y": -13,
+                    "isFilled": true,
+                    "fillColor": "#2e7d32",
+                    "width": 300,
+                    "height": 80
+                },
+                {
+                    "type": "Text",
+                    "id": "27282df8-aad9-4869-affa-b9d0e7926ac0",
+                    "label": "playText_1",
+                    "x": -330,
+                    "y": 2,
+                    "originX": 0.5,
+                    "originY": 0.5,
+                    "text": "Test Button\n",
+                    "fontSize": "32px"
+                }
+            ]
+        },
+        {
+            "type": "Container",
+            "id": "707490f8-3162-4309-873b-e0f06830573e",
+            "label": "settingsButton",
+            "x": 640,
+            "y": 420,
+            "list": [
+                {
+                    "type": "Rectangle",
+                    "id": "f6749035-7164-4638-9585-690224219777",
+                    "label": "settingsBg",
+                    "isFilled": true,
+                    "fillColor": "#1565c0",
+                    "width": 300,
+                    "height": 80
+                },
+                {
+                    "type": "Text",
+                    "id": "7f65490a-1133-4078-a567-074092429777",
+                    "label": "settingsText",
+                    "originX": 0.5,
+                    "originY": 0.5,
+                    "text": "Settings",
+                    "fontSize": "32px"
+                }
+            ]
+        },
+        {
+            "type": "Container",
+            "id": "807490f8-3162-4309-873b-e0f06830573e",
+            "label": "creditsButton",
+            "x": 640,
+            "y": 540,
+            "list": [
+                {
+                    "type": "Rectangle",
+                    "id": "g6749035-7164-4638-9585-690224219777",
+                    "label": "creditsBg",
+                    "isFilled": true,
+                    "fillColor": "#ef6c00",
+                    "width": 300,
+                    "height": 80
+                },
+                {
+                    "type": "Text",
+                    "id": "8f65490a-1133-4078-a567-074092429777",
+                    "label": "creditsText",
+                    "originX": 0.5,
+                    "originY": 0.5,
+                    "text": "Credits",
+                    "fontSize": "32px"
+                }
+            ]
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor - Scene Editor",
+        "url": "https://phaser.io/editor",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 5
+    }
+}

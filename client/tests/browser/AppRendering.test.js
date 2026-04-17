@@ -3,6 +3,7 @@ import * as Phaser from 'phaser';
 import { Boot } from '../../scenes/Boot.js';
 import { Preloader } from '../../scenes/Preloader.js';
 import { MainMenu } from '../../scenes/MainMenu.js';
+import { MainMenuScene } from '../../editor/scenes/MainMenuScene.js';
 import { Settings } from '../../scenes/Settings.js';
 import { HowToPlay } from '../../scenes/HowToPlay.js';
 import { Game } from '../../scenes/Game.js';
@@ -51,16 +52,16 @@ describe('App Rendering Test', () => {
             width: 800,
             height: 600,
             backgroundColor: '#028af8',
-            scene: [Boot, Preloader, ErrorHandler, MainMenu, HowToPlay, Game, GameOver, Settings, DebugOverlay],
+            scene: [Boot, Preloader, ErrorHandler, MainMenu, MainMenuScene, HowToPlay, Game, GameOver, Settings, DebugOverlay],
         };
 
         const game = new Phaser.Game(config);
 
         try {
-            // Wait for MainMenu
-            const mainMenu = await waitForScene(game, 'MainMenu');
+            // Wait for MainMenuScene
+            const mainMenu = await waitForScene(game, 'MainMenuScene');
             expect(mainMenu).toBeDefined();
-            expect(game.scene.isActive('MainMenu')).toBe(true);
+            expect(game.scene.isActive('MainMenuScene')).toBe(true);
 
             // Verify some elements are present in the scene
             const title = mainMenu.children.list.find(child => 
@@ -92,22 +93,20 @@ describe('App Rendering Test', () => {
             parent: 'game-container-settings-render',
             width: 800,
             height: 600,
-            scene: [Boot, Preloader, ErrorHandler, MainMenu, Settings, DebugOverlay],
+            scene: [Boot, Preloader, ErrorHandler, MainMenu, MainMenuScene, Settings, DebugOverlay],
         };
 
         const game = new Phaser.Game(config);
 
         try {
-            await waitForScene(game, 'MainMenu');
-            const mainMenu = game.scene.getScene('MainMenu');
+            await waitForScene(game, 'MainMenuScene');
+            const mainMenu = game.scene.getScene('MainMenuScene');
             
-            const settingsButton = mainMenu.menuContainer.list.find(child => {
-                const textChild = child.list?.find(c => c instanceof Phaser.GameObjects.Text);
-                return textChild && textChild.text === 'Settings';
-            });
+            const settingsButton = mainMenu.children.getByName("settingsButton");
+            const settingsBg = settingsButton.getByName("settingsBg");
 
-            expect(settingsButton).toBeDefined();
-            settingsButton.emit('pointerup');
+            expect(settingsBg).toBeDefined();
+            settingsBg.emit('pointerdown');
 
             const settingsScene = await waitForScene(game, 'Settings');
             expect(settingsScene).toBeDefined();

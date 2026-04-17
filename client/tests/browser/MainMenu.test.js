@@ -3,6 +3,7 @@ import * as Phaser from 'phaser';
 import { Boot } from '../../scenes/Boot.js';
 import { Preloader } from '../../scenes/Preloader.js';
 import { MainMenu } from '../../scenes/MainMenu.js';
+import { MainMenuScene } from '../../editor/scenes/MainMenuScene.js';
 import { Settings } from '../../scenes/Settings.js';
 import { HowToPlay } from '../../scenes/HowToPlay.js';
 import { DebugOverlay } from '../../scenes/DebugOverlay.js';
@@ -13,7 +14,7 @@ function createGame() {
             type: Phaser.HEADLESS,
             width: 1280,
             height: 720,
-            scene: [Boot, Preloader, MainMenu, Settings, HowToPlay, DebugOverlay],
+            scene: [Boot, Preloader, MainMenu, MainMenuScene, Settings, HowToPlay, DebugOverlay],
             callbacks: {
                 postBoot: (game) => {
                     resolve(game);
@@ -47,9 +48,9 @@ describe('Main Menu Navigation', () => {
     test('should navigate to Main Menu from Boot', async () => {
         const game = await createGame();
         try {
-            const mainMenu = await waitForScene(game, 'MainMenu');
+            const mainMenu = await waitForScene(game, 'MainMenuScene');
             expect(mainMenu).toBeDefined();
-            expect(game.scene.isActive('MainMenu')).toBe(true);
+            expect(game.scene.isActive('MainMenuScene')).toBe(true);
 
             // Check if title exists
             const title = mainMenu.children.list.find(child => 
@@ -65,19 +66,16 @@ describe('Main Menu Navigation', () => {
     test('should navigate from Main Menu to Settings', async () => {
         const game = await createGame();
         try {
-            const mainMenu = await waitForScene(game, 'MainMenu');
+            const mainMenu = await waitForScene(game, 'MainMenuScene');
             
-            // Find Settings button
-            // In MainMenu.js, menu buttons are added to menuContainer
-            const settingsButton = mainMenu.menuContainer.list.find(child => {
-                const textChild = child.list?.find(c => c instanceof Phaser.GameObjects.Text);
-                return textChild && textChild.text === 'Settings';
-            });
+            // Find Settings button in MainMenuScene (editor compatible)
+            const settingsButton = mainMenu.children.getByName("settingsButton");
+            const settingsBg = settingsButton.getByName("settingsBg");
 
-            expect(settingsButton).toBeDefined();
+            expect(settingsBg).toBeDefined();
 
-            // Simulate click on Settings button
-            settingsButton.emit('pointerup');
+            // Simulate click
+            settingsBg.emit('pointerdown');
 
             // Wait for Settings scene
             const settingsScene = await waitForScene(game, 'Settings');
@@ -98,6 +96,10 @@ describe('Main Menu Navigation', () => {
     test('should navigate from Main Menu to How To Play', async () => {
         const game = await createGame();
         try {
+            // Preloader starts MainMenuScene, but we want to test MainMenu (the manual one)
+            await waitForScene(game, 'MainMenuScene');
+            game.scene.stop('MainMenuScene');
+            game.scene.start('MainMenu');
             const mainMenu = await waitForScene(game, 'MainMenu');
             
             // Find How to Play button
