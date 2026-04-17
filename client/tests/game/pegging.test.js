@@ -1,6 +1,6 @@
-import { Pegging } from '../game/Pegging.js';
-import { Player } from '../game/Player.js';
-import { Card, Suits, Values } from '../game/Card.js';
+import { Pegging } from '../../../game/Pegging.js';
+import { Player } from '../../../game/Player.js';
+import { Card, Suits, Values } from '../../../game/Card.js';
 
 describe('Pegging.js', () => {
     let p1, p2, players;

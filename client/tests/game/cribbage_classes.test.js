@@ -1,7 +1,7 @@
-import { Player } from '../game/Player.js';
-import { Deck } from '../game/Deck.js';
-import { Crib } from '../game/Crib.js';
-import { WINNING_SCORE, MAX_PEGGING_TOTAL, PHASES } from '../game/Constants.js';
+import { Player } from '../../../game/Player.js';
+import { Deck } from '../../../game/Deck.js';
+import { Crib } from '../../../game/Crib.js';
+import { WINNING_SCORE, MAX_PEGGING_TOTAL, PHASES } from '../../../game/Constants.js';
 
 describe('Cribbage Classes', () => {
     test('Constants', () => {

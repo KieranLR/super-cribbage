@@ -1,9 +1,8 @@
-import { Player } from '../game/Player.js';
-import { GameState } from '../game/GameState.js';
-import { GameFlow } from '../game/GameFlow.js';
-import { PHASES } from '../game/Constants.js';
-import { Card, Suits, Values } from '../game/Card.js';
-import { jest } from '@jest/globals';
+import { Player } from '../../../game/Player.js';
+import { GameState } from '../../../game/GameState.js';
+import { GameFlow } from '../../../game/GameFlow.js';
+import { PHASES } from '../../../game/Constants.js';
+import { Card, Suits, Values } from '../../../game/Card.js';
 
 describe('Full Game Scoring Flow', () => {
     let players;

@@ -1,4 +1,4 @@
-import { Deck } from '../game/Deck.js';
+import { Deck } from '../../../game/Deck.js';
 
 describe('Deck.js', () => {
     test('Deck initialization', () => {

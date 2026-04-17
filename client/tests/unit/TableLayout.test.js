@@ -1,4 +1,4 @@
-import { TableLayout, LayoutSize } from '../client/utils/TableLayout';
+import { TableLayout, LayoutSize } from '../../utils/TableLayout';
 
 describe('TableLayout', () => {
     describe('getScreenSize', () => {

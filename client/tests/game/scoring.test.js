@@ -1,5 +1,5 @@
-import { Scoring } from '../game/Scoring.js';
-import { Card, Suits, Values } from '../game/Card.js';
+import { Scoring } from '../../../game/Scoring.js';
+import { Card, Suits, Values } from '../../../game/Card.js';
 
 describe('Scoring.js', () => {
     test('fifteens', () => {

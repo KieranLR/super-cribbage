@@ -1,4 +1,4 @@
-import { TableLayout, LayoutSize } from '../client/utils/TableLayout';
+import { TableLayout, LayoutSize } from '../../utils/TableLayout';
 
 describe('TableLayout Card Scale Propagation', () => {
     test('should propagate cardScale from presets to all component styles', () => {

@@ -1,16 +1,22 @@
-import { settingsManager } from '../client/utils/SettingsManager.js';
+import { settingsManager } from '../../utils/SettingsManager.js';
 
 describe('DebugMenu Persistence', () => {
     beforeEach(() => {
-        // Mock localStorage manually
+        // Mock localStorage for Node environment
         global.localStorage = {
-            'super-cribbage-settings': null,
-            getItem: function(key) { return this[key]; },
-            setItem: function(key, value) { this[key] = value; },
-            clear: function() { this['super-cribbage-settings'] = null; }
+            store: {},
+            getItem(key) {
+                return this.store[key] ?? null;
+            },
+            setItem(key, value) {
+                this.store[key] = String(value);
+            },
+            clear() {
+                this.store = {};
+            }
         };
-        // Reset settingsManager state
-        settingsManager.settings = { 
+
+        settingsManager.settings = {
             showBotHand: false,
             fastMode: false,
             cardDeck: 'default',
@@ -31,15 +37,21 @@ describe('DebugMenu Persistence', () => {
 
     test('should persist debugMenuCollapsed state', () => {
         settingsManager.set('debugMenuCollapsed', false);
+
         expect(settingsManager.get('debugMenuCollapsed')).toBe(false);
-        
-        const saved = JSON.parse(global.localStorage.getItem('super-cribbage-settings'));
+
+        const saved = JSON.parse(localStorage.getItem('super-cribbage-settings'));
         expect(saved.debugMenuCollapsed).toBe(false);
     });
 
     test('should load debugMenuCollapsed state from localStorage', () => {
-        global.localStorage.setItem('super-cribbage-settings', JSON.stringify({ debugMenuCollapsed: false }));
+        localStorage.setItem(
+            'super-cribbage-settings',
+            JSON.stringify({ debugMenuCollapsed: false })
+        );
+
         settingsManager.load();
+
         expect(settingsManager.get('debugMenuCollapsed')).toBe(false);
     });
 });

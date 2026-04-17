@@ -1,10 +1,9 @@
-import { BotPlayer } from '../game/BotPlayer.js';
-import { Player } from '../game/Player.js';
-import { GameState } from '../game/GameState.js';
-import { GameFlow } from '../game/GameFlow.js';
-import { PHASES } from '../game/Constants.js';
-import { Card, Suits, Values } from '../game/Card.js';
-import { jest } from '@jest/globals';
+import { BotPlayer } from '../../../game/BotPlayer.js';
+import { Player } from '../../../game/Player.js';
+import { GameState } from '../../../game/GameState.js';
+import { GameFlow } from '../../../game/GameFlow.js';
+import { PHASES } from '../../../game/Constants.js';
+import { Card, Suits, Values } from '../../../game/Card.js';
 
 describe('BotPlayer', () => {
     test('BotPlayer is identified as a bot', () => {
@@ -38,13 +37,6 @@ describe('BotPlayer', () => {
 });
 
 describe('GameState with Bot', () => {
-    beforeEach(() => {
-        jest.useFakeTimers();
-    });
-
-    afterEach(() => {
-        jest.useRealTimers();
-    });
 
     test('Bot automatically discards when phase changes to DISCARDING', () => {
         const human = new Player('human', 'Human');
@@ -92,8 +84,6 @@ describe('GameState with Bot', () => {
         // Manually trigger bot turn
         gameFlow.checkBotTurns();
 
-        // Fast-forward timers for bot to play
-        jest.runAllTimers();
         
         expect(bot.hand.cards.length).toBe(0);
         expect(gameState.pegging.playedCards.length).toBe(1);
@@ -123,9 +113,6 @@ describe('GameState with Bot', () => {
 
         // Manually trigger bot turn
         gameFlow.checkBotTurns();
-
-        // Fast-forward timers for bot discard events
-        jest.runAllTimers();
         
         expect(events.some(e => e.name === 'cardsDealt')).toBe(true);
         expect(events.some(e => e.name === 'phaseChanged' && e.data.phase === PHASES.DISCARDING)).toBe(true);

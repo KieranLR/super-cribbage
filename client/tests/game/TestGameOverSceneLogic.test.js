@@ -1,7 +1,7 @@
-import { Player } from '../game/Player.js';
-import { BotPlayer } from '../game/BotPlayer.js';
-import { GameState } from '../game/GameState.js';
-import { WINNING_SCORE } from '../game/Constants.js';
+import { Player } from '../../../game/Player.js';
+import { BotPlayer } from '../../../game/BotPlayer.js';
+import { GameState } from '../../../game/GameState.js';
+import { WINNING_SCORE } from '../../../game/Constants.js';
 
 describe('TestGameOverScene Initialization Logic', () => {
     test('Player score can be initialized to 100', () => {

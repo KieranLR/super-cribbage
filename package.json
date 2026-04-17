@@ -5,8 +5,10 @@
   "type": "module",
   "description": "A quickstart Phaser template for creating Discord Activities",
   "scripts": {
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "dev": "npm run client-dev & npm run server-dev",
+    "test": "cd \"./client\" && npm run test",
+    "test-unit": "cd \"./client\" && npm run test:unit",
+    "test-browser": "cd \"./client\" && npm run test:browser",
     "client-dev": "cd \"./client\" && npm run dev",
     "server-dev": "cd \"./server\" && npm run dev",
     "postinstall": "npm run install-client && npm run install-server",
@@ -16,8 +18,7 @@
     "tunnel": "cloudflared tunnel --url http://localhost:3001"
   },
   "devDependencies": {
-    "cloudflared": "^0.5.3",
-    "jest": "^30.3.0"
+    "cloudflared": "^0.5.3"
   },
   "author": "Phaser Studio Inc <support@phaser.io> (https://www.phaser.io)",
   "license": "MIT",

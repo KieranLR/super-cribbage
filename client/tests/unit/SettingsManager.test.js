@@ -1,19 +1,22 @@
-import { settingsManager } from '../client/utils/SettingsManager.js';
+import { settingsManager } from '../../utils/SettingsManager.js';
 
 describe('SettingsManager', () => {
     beforeEach(() => {
-        // Mock localStorage manually
+        // Mock localStorage for Node environment
         global.localStorage = {
-            getItem: (key) => global.localStorage[key] || null,
-            setItem: (key, value) => { global.localStorage[key] = value },
-            clear: () => { 
-                Object.keys(global.localStorage).forEach(key => {
-                    if (typeof global.localStorage[key] === 'string') delete global.localStorage[key];
-                });
+            store: {},
+            getItem(key) {
+                return this.store[key] ?? null;
+            },
+            setItem(key, value) {
+                this.store[key] = String(value);
+            },
+            clear() {
+                this.store = {};
             }
         };
-        // Reset settingsManager state
-        settingsManager.settings = { 
+
+        settingsManager.settings = {
             showBotHand: false,
             fastMode: false,
             cardDeck: 'default'
@@ -36,13 +39,19 @@ describe('SettingsManager', () => {
 
     test('should persist settings to localStorage', () => {
         settingsManager.set('showBotHand', true);
-        const saved = global.localStorage.getItem('super-cribbage-settings');
+
+        const saved = localStorage.getItem('super-cribbage-settings');
         expect(JSON.parse(saved).showBotHand).toBe(true);
     });
 
     test('should load settings from localStorage', () => {
-        global.localStorage.setItem('super-cribbage-settings', JSON.stringify({ showBotHand: true }));
+        localStorage.setItem(
+            'super-cribbage-settings',
+            JSON.stringify({ showBotHand: true })
+        );
+
         settingsManager.load();
+
         expect(settingsManager.get('showBotHand')).toBe(true);
     });
 });
