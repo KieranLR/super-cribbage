@@ -27,6 +27,24 @@ export class MainMenu extends Scene {
             .setOrigin(0.5)
             .setShadow(2, 2, '#333333', 2, true, true);
 
+        // Register for Layout Editor (Step 6)
+        if (this.registry && this.registry.get('isEditor')) {
+            // we could use this flag if we set it in createPreviewGame
+        }
+        
+        // Let's just try to import and use it if it's available
+        import('../editor/preview/InspectableRegistry').then(({ inspectableRegistry }) => {
+            inspectableRegistry.register({
+                id: 'mainMenuTitle',
+                label: 'Main Menu Title',
+                type: 'text',
+                gameObject: title,
+                editableLayoutKey: 'mainMenuTitle'
+            });
+        }).catch(() => {
+            // Not in editor mode or file doesn't exist (production)
+        });
+
         // Menu items
         const menuItems = [
             createMenuButton(this, 'Start Easy Bot Game', () => {
@@ -88,6 +106,10 @@ export class MainMenu extends Scene {
         
         this.events.on('shutdown', () => {
             this.scroller.destroy();
+            // Clear from editor registry
+            import('../editor/preview/InspectableRegistry').then(({ inspectableRegistry }) => {
+                inspectableRegistry.unregister('mainMenuTitle');
+            }).catch(() => {});
         });
 
         // Handle Resizing
