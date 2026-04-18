@@ -1,0 +1,8 @@
+{
+    "settings": {},
+    "playUrl": "http://localhost:5173",
+    "scripts": [
+        "@phaserjs/editor-scripts-base",
+        "@phaserjs/editor-scripts-quick"
+    ]
+}

@@ -3,7 +3,7 @@ import * as Phaser from 'phaser';
 import { Boot } from '../../scenes/Boot.js';
 import { Preloader } from '../../scenes/Preloader.js';
 import { MainMenu } from '../../scenes/MainMenu.js';
-import { MainMenuScene } from '../../editor/scenes/MainMenuScene.js';
+import MainMenuScene from '../../editor/scenes/MainMenuScene.js';
 import { Settings } from '../../scenes/Settings.js';
 import { HowToPlay } from '../../scenes/HowToPlay.js';
 import { DebugOverlay } from '../../scenes/DebugOverlay.js';

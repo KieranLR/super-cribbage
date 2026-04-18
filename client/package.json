@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "@discord/embedded-app-sdk": "^1.0.1",
+    "@phaserjs/editor-scripts-base": "^2.0.1",
+    "@phaserjs/editor-scripts-quick": "^2.0.0",
     "@testing-library/dom": "^10.4.1",
     "phaser": "^4.0.0",
     "playwright": "^1.59.1",
