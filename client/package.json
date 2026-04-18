@@ -12,7 +12,12 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "@vitejs/plugin-react": "^4.7.0",
     "@vitest/browser-playwright": "^4.1.4",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.10",
+    "tailwindcss": "^4.2.2",
     "vite": "^6.4.2"
   },
   "dependencies": {
@@ -22,6 +27,8 @@
     "@testing-library/dom": "^10.4.1",
     "phaser": "^4.0.0",
     "playwright": "^1.59.1",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
     "vitest": "^4.1.4"
   }
 }
