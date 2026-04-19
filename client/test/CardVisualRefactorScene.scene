@@ -1,0 +1,57 @@
+{
+    "id": "8c292773-5154-419b-ba5d-0496e974e2ab",
+    "sceneType": "SCENE",
+    "settings": {
+        "exportClass": true,
+        "autoImport": true,
+        "preloadPackFiles": [],
+        "createMethodName": "editorCreate",
+        "sceneKey": "CardVisualRefactorScene"
+    },
+    "displayList": [
+        {
+            "type": "Rectangle",
+            "id": "468c8e88-8b15-4917-a3f7-8d4f65e7637b",
+            "label": "backgroundRect",
+            "x": 640,
+            "y": 360,
+            "isFilled": true,
+            "fillColor": "#028af8",
+            "width": 1280,
+            "height": 720
+        },
+        {
+            "type": "Text",
+            "id": "187ae06e-1de4-4d6c-9396-1edd5eae18e2",
+            "label": "titleText",
+            "x": 640,
+            "y": 60,
+            "originX": 0.5,
+            "originY": 0.5,
+            "text": "Card Visual Refactor Scene",
+            "fontFamily": "Arial Black",
+            "fontSize": "32px",
+            "color": "#ffffff"
+        },
+        {
+            "type": "Text",
+            "id": "02c09272-a0da-47b3-b128-fcb16b4f6c48",
+            "label": "hintText",
+            "x": 640,
+            "y": 660,
+            "originX": 0.5,
+            "originY": 0.5,
+            "text": "Click cards to toggle selection | Right-click to flip",
+            "fontFamily": "Arial",
+            "fontSize": "20px",
+            "color": "#ffffff"
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor - Scene Editor",
+        "url": "https://phaser.io/editor",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 5
+    }
+}

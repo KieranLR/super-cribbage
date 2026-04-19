@@ -37,7 +37,8 @@ export class TestListScene extends Scene {
             { name: 'Starting Cut Tie', scene: 'TestStartingCutTieScene' },
             // { name: 'Deck Visual', scene: 'TestDeckScene' },
             { name: 'Scoring End Animation', scene: 'TestScoringScene' },
-            { name: 'Error Handler', scene: 'TestErrorScene' }
+            { name: 'Error Handler', scene: 'TestErrorScene' },
+            { name: 'Card Visual Refactor', scene: 'CardVisualRefactorScene' }
         ];
 
         this.menuItems = [];

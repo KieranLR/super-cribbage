@@ -21,6 +21,8 @@ import { TestDeckScene } from './scenes/TestScenes/TestDeckScene';
 import { TestScoringScene } from './scenes/TestScenes/TestScoringScene';
 import { Preloader } from './scenes/Preloader';
 import { TestErrorScene } from './scenes/TestScenes/TestErrorScene';
+import TestScene from "./test/TestScene.js";
+import CardVisualRefactorScene from "./test/CardVisualRefactorScene.js";
 
 function getCappedDPR() {
     const raw = window.devicePixelRatio || 1;
@@ -85,6 +87,8 @@ function getScale() {
             TestDeckScene,
             TestScoringScene,
             TestErrorScene,
+            TestScene,
+            CardVisualRefactorScene
         ]
     };
 
