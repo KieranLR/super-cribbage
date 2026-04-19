@@ -1,0 +1,31 @@
+{
+    "id": "a453cc6c-24ab-42bb-8681-263c16e82dd7",
+    "sceneType": "PREFAB",
+    "settings": {
+        "exportClass": true,
+        "autoImport": true,
+        "preloadMethodName": "",
+        "preloadPackFiles": [],
+        "createMethodName": ""
+    },
+    "displayList": [
+        {
+            "prefabId": "44db7213-0546-47d9-84a6-f7f8c7c449eb",
+            "id": "1b5be763-234c-4ea6-9b7e-dacb462dd976",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "cardHoverVisualPrefab",
+            "x": 0,
+            "y": 0
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor - Scene Editor",
+        "url": "https://phaser.io/editor",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 5
+    }
+}

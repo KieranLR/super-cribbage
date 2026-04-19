@@ -1,0 +1,80 @@
+{
+    "id": "db66a95f-9edc-4bc9-8c08-20506ec94d6f",
+    "sceneType": "SCENE",
+    "settings": {
+        "exportClass": true,
+        "autoImport": true,
+        "preloadPackFiles": [],
+        "createMethodName": "editorCreate",
+        "sceneKey": "CardHoverPrefabScene"
+    },
+    "displayList": [
+        {
+            "type": "Rectangle",
+            "id": "bdfa8fa1-766f-4306-aedc-ef9d3f6865ef",
+            "label": "backgroundRect",
+            "x": 640,
+            "y": 360,
+            "isFilled": true,
+            "fillColor": "#0f3d57",
+            "width": 1280,
+            "height": 720
+        },
+        {
+            "type": "Text",
+            "id": "3c494e13-d4f8-4f65-82c9-386ffdfd835f",
+            "label": "titleText",
+            "x": 640,
+            "y": 70,
+            "originX": 0.5,
+            "originY": 0.5,
+            "text": "Card Hover Prefab Demo",
+            "fontFamily": "Verdana",
+            "fontSize": "34px",
+            "fontStyle": "bold",
+            "color": "#ffffff"
+        },
+        {
+            "type": "Text",
+            "id": "f7a9daa8-ce96-4bee-881b-86a43a1e9094",
+            "label": "hintText",
+            "x": 640,
+            "y": 120,
+            "originX": 0.5,
+            "originY": 0.5,
+            "text": "Hover cards to see outline change",
+            "fontFamily": "Verdana",
+            "fontSize": "20px",
+            "color": "#d8f3ff"
+        },
+        {
+            "prefabId": "a453cc6c-24ab-42bb-8681-263c16e82dd7",
+            "id": "ef946546-e291-4001-883d-550986e9faa6",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "hoverCardA",
+            "x": 560,
+            "y": 360
+        },
+        {
+            "prefabId": "a453cc6c-24ab-42bb-8681-263c16e82dd7",
+            "id": "cd1bdc39-d9b4-4fc3-9ede-1da4bc8d85bb",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "hoverCardB",
+            "x": 720,
+            "y": 360
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor - Scene Editor",
+        "url": "https://phaser.io/editor",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 5
+    }
+}

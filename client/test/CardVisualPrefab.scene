@@ -1,0 +1,145 @@
+{
+    "id": "44db7213-0546-47d9-84a6-f7f8c7c449eb",
+    "sceneType": "PREFAB",
+    "settings": {
+        "exportClass": true,
+        "autoImport": true,
+        "preloadMethodName": "",
+        "preloadPackFiles": [],
+        "createMethodName": ""
+    },
+    "displayList": [
+        {
+            "type": "Container",
+            "id": "508d0c9f-41c1-4de6-b998-110faf72793e",
+            "label": "cardVisualPrefab",
+            "list": [
+                {
+                    "type": "Container",
+                    "id": "bd662b6c-52c6-4232-9401-69e09bba6cb7",
+                    "label": "frontFace",
+                    "list": [
+                        {
+                            "type": "Rectangle",
+                            "id": "3a9a229d-4412-401f-ac55-c583c56f8120",
+                            "label": "frontBody",
+                            "isFilled": true,
+                            "fillColor": "#ffffff",
+                            "strokeColor": "#888888",
+                            "lineWidth": 2,
+                            "isStroked": true,
+                            "width": 100,
+                            "height": 140
+                        },
+                        {
+                            "type": "Text",
+                            "id": "2e200d72-7d8f-4eec-8155-f591572c412f",
+                            "label": "topValueText",
+                            "x": -40,
+                            "y": -62,
+                            "text": "A",
+                            "fontFamily": "Verdana",
+                            "fontSize": "20px",
+                            "fontStyle": "bold",
+                            "color": "#ff0000"
+                        },
+                        {
+                            "type": "Text",
+                            "id": "bed72c1b-71b4-401c-9849-44b4594edf4e",
+                            "label": "topSuitText",
+                            "x": -40,
+                            "y": -42,
+                            "text": "♥",
+                            "fontFamily": "Verdana",
+                            "color": "#ff0000"
+                        },
+                        {
+                            "type": "Text",
+                            "id": "fb489c06-ee8d-4d6b-9d49-2d59b8995380",
+                            "label": "centerSuitText",
+                            "originX": 0.5,
+                            "originY": 0.5,
+                            "text": "♥",
+                            "fontFamily": "Verdana",
+                            "fontSize": "48px",
+                            "color": "#ff0000"
+                        },
+                        {
+                            "type": "Text",
+                            "id": "9a308cd4-667a-4cc1-8b73-904f7c5fc72b",
+                            "label": "bottomValueText",
+                            "x": 40,
+                            "y": 62,
+                            "angle": 180,
+                            "text": "A",
+                            "fontFamily": "Verdana",
+                            "fontSize": "20px",
+                            "fontStyle": "bold",
+                            "color": "#ff0000"
+                        },
+                        {
+                            "type": "Text",
+                            "id": "e99c841d-9c30-469a-9611-72e72bda3000",
+                            "label": "bottomSuitText",
+                            "x": 40,
+                            "y": 42,
+                            "angle": 180,
+                            "text": "♥",
+                            "fontFamily": "Verdana",
+                            "color": "#ff0000"
+                        }
+                    ]
+                },
+                {
+                    "type": "Container",
+                    "id": "a6b780ee-3509-485a-a9a1-680c1abf47c5",
+                    "label": "backFace",
+                    "visible": false,
+                    "list": [
+                        {
+                            "type": "Rectangle",
+                            "id": "cf5d8d2b-0a31-44ad-ab94-8c0041c132e7",
+                            "label": "backBody",
+                            "isFilled": true,
+                            "fillColor": "#9c6615",
+                            "strokeColor": "#222e50",
+                            "lineWidth": 2,
+                            "isStroked": true,
+                            "width": 100,
+                            "height": 140
+                        },
+                        {
+                            "type": "Rectangle",
+                            "id": "cc1d7a72-37f5-40dc-8603-5afca92c6700",
+                            "label": "backPatternCenter",
+                            "isFilled": true,
+                            "fillColor": "#b5ca8d",
+                            "strokeColor": "#dfe8c3",
+                            "isStroked": true,
+                            "width": 68,
+                            "height": 108
+                        },
+                        {
+                            "type": "Text",
+                            "id": "805d7e11-9db8-4519-9d57-a4d55f7d400d",
+                            "label": "backLabel",
+                            "originX": 0.5,
+                            "originY": 0.5,
+                            "text": "CARD",
+                            "fontFamily": "Verdana",
+                            "fontStyle": "bold",
+                            "color": "#222e50"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor - Scene Editor",
+        "url": "https://phaser.io/editor",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 5
+    }
+}
