@@ -1,0 +1,33 @@
+{
+    "components": [
+        {
+            "name": "ExtendsMove",
+            "displayName": "",
+            "objectDisplayFormat": "",
+            "baseClass": "UserComponent",
+            "gameObjectType": "any",
+            "generateGameObjectField": true,
+            "properties": [],
+            "constraints": [],
+            "constraintsCondition": "all"
+        },
+        {
+            "name": "Extends2",
+            "displayName": "",
+            "objectDisplayFormat": "",
+            "baseClass": "MoveX",
+            "gameObjectType": "any",
+            "generateGameObjectField": true,
+            "properties": [],
+            "constraints": [],
+            "constraintsCondition": "all"
+        }
+    ],
+    "meta": {
+        "app": "Phaser Editor 2D - User Components Editor",
+        "url": "https://phasereditor2d.com",
+        "contentType": "phasereditor2d.core.scene.UserComponents"
+    },
+    "exportClass": true,
+    "autoImport": true
+}

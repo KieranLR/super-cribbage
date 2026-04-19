@@ -1,0 +1,70 @@
+{
+    "id": "357eb038-70f7-4e92-9a1b-52a78909e4cb",
+    "sceneType": "SCENE",
+    "settings": {
+        "exportClass": true,
+        "autoImport": true,
+        "preloadPackFiles": [],
+        "createMethodName": "editorCreate",
+        "sceneKey": "TestScene"
+    },
+    "displayList": [
+        {
+            "type": "Rectangle",
+            "id": "a3a37ca3-2d0a-4f01-b482-3db0a3529ae2",
+            "label": "rectangle_1",
+            "x": 654,
+            "y": 154,
+            "isFilled": true,
+            "width": 128,
+            "height": 128
+        },
+        {
+            "type": "Ellipse",
+            "id": "d0ea7712-3033-4f93-80fd-ac789558bf11",
+            "label": "ellipse_1",
+            "x": 161,
+            "y": 445,
+            "isFilled": true,
+            "width": 128,
+            "height": 128,
+            "list": [
+                {
+                    "prefabId": "a06ed60b-79f1-4444-bf35-89046f71f954",
+                    "id": "d63e4278-8e13-4230-bd23-022622ab14e3",
+                    "label": "onPointerDownScript",
+                    "list": [
+                        {
+                            "prefabId": "4154ab69-5f6f-4def-91df-d67d04132ac8",
+                            "id": "0b1e0caf-7e4e-4b3e-bc86-b773fdbabd7c",
+                            "unlock": [
+                                "message"
+                            ],
+                            "label": "consoleLogActionScript",
+                            "displayName": "Log ",
+                            "message": "Big Log"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "Text",
+            "id": "cf7b9ea3-7f96-4095-a951-9a04935cd144",
+            "label": "helloText",
+            "x": 360,
+            "y": 260,
+            "text": "Hello from Codex",
+            "fontFamily": "Verdana",
+            "fontSize": "32px",
+            "color": "#ffffff"
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor - Scene Editor",
+        "url": "https://phaser.io/editor",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 5
+    }
+}
