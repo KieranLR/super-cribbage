@@ -3,7 +3,7 @@
 
 /* START OF COMPILED CODE */
 
-import CardHoverVisualPrefab from "./CardHoverVisualPrefab";
+import CardHoverCardPrefab from "../prefabs/CardHoverCardPrefab";
 /* START-USER-IMPORTS */
 /* END-USER-IMPORTS */
 
@@ -38,11 +38,11 @@ export default class CardHoverPrefabScene extends Phaser.Scene {
 		hintText.setStyle({ "color": "#d8f3ff", "fontFamily": "Verdana", "fontSize": "20px" });
 
 		// hoverCardA
-		const hoverCardA = new CardHoverVisualPrefab(this, 560, 360);
+		const hoverCardA = new CardHoverCardPrefab(this, 560, 360);
 		this.add.existing(hoverCardA);
 
 		// hoverCardB
-		const hoverCardB = new CardHoverVisualPrefab(this, 720, 360);
+		const hoverCardB = new CardHoverCardPrefab(this, 720, 360);
 		this.add.existing(hoverCardB);
 
 		this.events.emit("scene-awake");

@@ -1,0 +1,51 @@
+{
+    "id": "aea31f49-3e3b-48df-abe6-db10e86bd49e",
+    "sceneType": "PREFAB",
+    "settings": {
+        "exportClass": true,
+        "autoImport": true,
+        "preloadMethodName": "",
+        "preloadPackFiles": [],
+        "createMethodName": ""
+    },
+    "displayList": [
+        {
+            "prefabId": "44db7213-0546-47d9-84a6-f7f8c7c449eb",
+            "id": "b54c097b-a469-4249-84af-0da171044315",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "cardHoverVisual",
+            "x": 0,
+            "y": 0,
+            "list": [
+                {
+                    "prefabId": "af8a17de-43e1-4c84-8166-578e07a6081e",
+                    "id": "b026c40c-5389-4240-ae8b-bb22cba3a5ca",
+                    "unlock": [
+                        "eventName"
+                    ],
+                    "label": "cardHoverInScript",
+                    "eventName": "pointerover"
+                },
+                {
+                    "prefabId": "73c362aa-8fab-4e85-a578-29729475e70d",
+                    "id": "a6c6b430-9566-45f6-abb7-7118c6e23f1e",
+                    "unlock": [
+                        "eventName"
+                    ],
+                    "label": "cardHoverOutScript",
+                    "eventName": "pointerout"
+                }
+            ]
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor - Scene Editor",
+        "url": "https://phaser.io/editor",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 5
+    }
+}

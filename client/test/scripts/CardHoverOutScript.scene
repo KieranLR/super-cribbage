@@ -1,5 +1,5 @@
 {
-    "id": "a453cc6c-24ab-42bb-8681-263c16e82dd7",
+    "id": "73c362aa-8fab-4e85-a578-29729475e70d",
     "sceneType": "PREFAB",
     "settings": {
         "exportClass": true,
@@ -10,15 +10,9 @@
     },
     "displayList": [
         {
-            "prefabId": "44db7213-0546-47d9-84a6-f7f8c7c449eb",
-            "id": "1b5be763-234c-4ea6-9b7e-dacb462dd976",
-            "unlock": [
-                "x",
-                "y"
-            ],
-            "label": "cardHoverVisualPrefab",
-            "x": 0,
-            "y": 0
+            "prefabId": "437c7d1d-12e5-4251-8d72-3ee5abae49d2",
+            "id": "383c9268-d51a-457b-a8d0-f7178b65e93e",
+            "label": "cardHoverOutScript"
         }
     ],
     "plainObjects": [],

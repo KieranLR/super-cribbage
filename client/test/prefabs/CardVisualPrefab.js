@@ -25,7 +25,7 @@ export default class CardVisualPrefab extends Phaser.GameObjects.Container {
 
 		// topValueText
 		const topValueText = scene.add.text(-40, -62, "", {});
-		topValueText.text = "A";
+		topValueText.text = "2";
 		topValueText.setStyle({ "color": "#ff0000", "fontFamily": "Verdana", "fontSize": "20px", "fontStyle": "bold" });
 		frontFace.add(topValueText);
 
@@ -45,7 +45,7 @@ export default class CardVisualPrefab extends Phaser.GameObjects.Container {
 		// bottomValueText
 		const bottomValueText = scene.add.text(40, 62, "", {});
 		bottomValueText.angle = 180;
-		bottomValueText.text = "A";
+		bottomValueText.text = "2";
 		bottomValueText.setStyle({ "color": "#ff0000", "fontFamily": "Verdana", "fontSize": "20px", "fontStyle": "bold" });
 		frontFace.add(bottomValueText);
 
