@@ -30,23 +30,21 @@ export default class CardHoverOutScript extends OnEventScript {
 	}
 
 	execute() {
-		if (!this.gameObject || !this.gameObject.list || this.gameObject.list.length < 2) {
+		const cardVisual = this.gameObject;
+		if (!cardVisual) {
 			return;
 		}
 
-		const frontFace = this.gameObject.list[0];
-		const backFace = this.gameObject.list[1];
-		const frontBody = frontFace?.list?.[0];
-		const backBody = backFace?.list?.[0];
-
-		if (frontBody) {
-			frontBody.strokeColor = 0x888888;
-			frontBody.lineWidth = 2;
+		if (!cardVisual.input || !cardVisual.input.enabled) {
+			return;
 		}
 
-		if (backBody) {
-			backBody.strokeColor = 0x222e50;
-			backBody.lineWidth = 2;
+		if (cardVisual.isLocked) {
+			return;
+		}
+
+		if (cardVisual.resetVisualState) {
+			cardVisual.resetVisualState(false);
 		}
 	}
 

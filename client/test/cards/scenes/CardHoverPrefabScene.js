@@ -50,11 +50,25 @@ export default class CardHoverPrefabScene extends Phaser.Scene {
 
 	/* START-USER-CODE */
 
-	// Write your code here
-
 	create() {
-
 		this.editorCreate();
+
+		if (typeof this.input?.mouse?.disableContextMenu === "function") {
+			this.input.mouse.disableContextMenu();
+		}
+
+		const cards = this.children.list.filter(obj => obj && obj.constructor && obj.constructor.name === "CardHoverCardPrefab");
+		if (cards[0] && cards[0].setCardData) {
+			cards[0].setCardData({ suit: "Hearts", value: "Ace" });
+			cards[0].setFaceDown(false);
+			cards[0].setSelected(false);
+		}
+
+		if (cards[1] && cards[1].setCardData) {
+			cards[1].setCardData({ suit: "Spades", value: "King" });
+			cards[1].setFaceDown(true);
+			cards[1].setSelected(false);
+		}
 	}
 
 	/* END-USER-CODE */

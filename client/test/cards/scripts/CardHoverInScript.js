@@ -36,23 +36,37 @@ export default class CardHoverInScript extends OnEventScript {
 	}
 
 	execute() {
-		if (!this.gameObject || !this.gameObject.list || this.gameObject.list.length < 2) {
+		const cardVisual = this.gameObject;
+		if (!cardVisual) {
 			return;
 		}
 
-		const frontFace = this.gameObject.list[0];
-		const backFace = this.gameObject.list[1];
-		const frontBody = frontFace?.list?.[0];
-		const backBody = backFace?.list?.[0];
-
-		if (frontBody) {
-			frontBody.strokeColor = 0x00a2ff;
-			frontBody.lineWidth = 4;
+		if (cardVisual.isLocked) {
+			return;
 		}
 
-		if (backBody) {
-			backBody.strokeColor = 0x00a2ff;
-			backBody.lineWidth = 4;
+		if (!cardVisual.input || !cardVisual.input.enabled) {
+			return;
+		}
+
+		if (cardVisual.isInHoverTween && cardVisual.isInHoverTween()) {
+			return;
+		}
+
+		if (cardVisual.parentContainer?.isAnyDragging && cardVisual.parentContainer.isAnyDragging()) {
+			return;
+		}
+
+		if (cardVisual.parentContainer?.isAnyHovered && cardVisual.parentContainer.isAnyHovered()) {
+			return;
+		}
+
+		if (cardVisual.setHover) {
+			cardVisual.setHover(true);
+		}
+
+		if (cardVisual.hoverTo) {
+			cardVisual.hoverTo((cardVisual.baseY ?? cardVisual.y) - (cardVisual.style?.HOVER_OFFSET ?? 10));
 		}
 	}
 

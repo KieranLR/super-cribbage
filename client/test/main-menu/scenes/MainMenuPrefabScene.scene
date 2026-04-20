@@ -1,0 +1,86 @@
+{
+    "id": "f53e02f5-40e5-4df2-8a95-a4dc4f3aa4a6",
+    "sceneType": "SCENE",
+    "settings": {
+        "exportClass": true,
+        "autoImport": true,
+        "preloadPackFiles": [],
+        "createMethodName": "editorCreate",
+        "sceneKey": "MainMenuPrefabScene"
+    },
+    "displayList": [
+        {
+            "type": "Rectangle",
+            "id": "e0931db8-fc8c-4699-8e6c-ff8f64454cfe",
+            "label": "backgroundRect",
+            "x": 640,
+            "y": 360,
+            "isFilled": true,
+            "fillColor": "#14198c",
+            "width": 1280,
+            "height": 720
+        },
+        {
+            "prefabId": "b8dc4dfe-d7a8-4378-8075-d8d15e412de5",
+            "id": "e8355254-6905-4867-95b8-bbe5d0f00695",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "mainMenuPrefab",
+            "x": 0,
+            "y": 0
+        },
+        {
+            "prefabId": "7d85b4df-a7c6-4ebf-b245-0cbf8d5c40ab",
+            "id": "97358f4a-8f39-46af-907f-bdc28b6c9283",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "startGameButton",
+            "x": 640,
+            "y": 240
+        },
+        {
+            "prefabId": "7d85b4df-a7c6-4ebf-b245-0cbf8d5c40ab",
+            "id": "22812f11-f7f6-4383-a1be-c10fd7e629fd",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "howToPlayButton",
+            "x": 640,
+            "y": 320
+        },
+        {
+            "prefabId": "7d85b4df-a7c6-4ebf-b245-0cbf8d5c40ab",
+            "id": "f6ee13ce-8c88-473a-a113-aa464cd220ec",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "settingsButton",
+            "x": 640,
+            "y": 400
+        },
+        {
+            "prefabId": "7d85b4df-a7c6-4ebf-b245-0cbf8d5c40ab",
+            "id": "0aa48214-153e-4dc9-b8be-568a7bc14a57",
+            "unlock": [
+                "x",
+                "y"
+            ],
+            "label": "testVisualsButton",
+            "x": 640,
+            "y": 480
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor - Scene Editor",
+        "url": "https://phaser.io/editor",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 5
+    }
+}

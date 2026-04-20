@@ -1,0 +1,53 @@
+{
+    "id": "7d85b4df-a7c6-4ebf-b245-0cbf8d5c40ab",
+    "sceneType": "PREFAB",
+    "settings": {
+        "exportClass": true,
+        "autoImport": true,
+        "preloadMethodName": "",
+        "preloadPackFiles": [],
+        "createMethodName": ""
+    },
+    "displayList": [
+        {
+            "type": "Container",
+            "id": "4ca3e310-95f7-4537-a3f0-8bf74005ef5c",
+            "label": "menuButtonPrefab",
+            "x": 0,
+            "y": 0,
+            "list": [
+                {
+                    "type": "Rectangle",
+                    "id": "5acfdc61-3ca6-478c-85ba-c668ab2f7932",
+                    "label": "background",
+                    "isFilled": true,
+                    "fillColor": "#000000",
+                    "fillAlpha": 0.65,
+                    "isStroked": true,
+                    "strokeColor": "#ffffff",
+                    "lineWidth": 2,
+                    "width": 420,
+                    "height": 60
+                },
+                {
+                    "type": "Text",
+                    "id": "cc46d3b5-ca80-4d87-bff0-5aac95d8e47f",
+                    "label": "labelText",
+                    "originX": 0.5,
+                    "originY": 0.5,
+                    "text": "Menu Button",
+                    "fontFamily": "Arial",
+                    "fontSize": "28px",
+                    "color": "#ffffff"
+                }
+            ]
+        }
+    ],
+    "plainObjects": [],
+    "meta": {
+        "app": "Phaser Editor - Scene Editor",
+        "url": "https://phaser.io/editor",
+        "contentType": "phasereditor2d.core.scene.SceneContentType",
+        "version": 5
+    }
+}
