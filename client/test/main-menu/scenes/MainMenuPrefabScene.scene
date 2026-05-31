@@ -21,15 +21,20 @@
             "height": 720
         },
         {
-            "prefabId": "b8dc4dfe-d7a8-4378-8075-d8d15e412de5",
+            "type": "Text",
             "id": "e8355254-6905-4867-95b8-bbe5d0f00695",
-            "unlock": [
-                "x",
-                "y"
-            ],
-            "label": "mainMenuPrefab",
-            "x": 0,
-            "y": 0
+            "label": "titleText",
+            "x": 640,
+            "y": 200,
+            "originX": 0.5,
+            "originY": 0.5,
+            "text": "Super Cribbage",
+            "fontFamily": "Arial Black",
+            "fontSize": "64px",
+            "color": "#ffffff",
+            "stroke": "#000000",
+            "strokeThickness": 10,
+            "align": "center"
         },
         {
             "prefabId": "7d85b4df-a7c6-4ebf-b245-0cbf8d5c40ab",

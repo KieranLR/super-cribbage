@@ -21,7 +21,7 @@ import { TestDeckScene } from './scenes/TestScenes/TestDeckScene';
 import { TestScoringScene } from './scenes/TestScenes/TestScoringScene';
 import { Preloader } from './scenes/Preloader';
 import { TestErrorScene } from './scenes/TestScenes/TestErrorScene';
-import TestScene from "./test/TestScene.js";
+// import TestScene from "./test/TestScene.js";
 import CardHoverPrefabScene from "./test/cards/scenes/CardHoverPrefabScene.js";
 import MainMenuPrefabScene from "./test/main-menu/scenes/MainMenuPrefabScene.js";
 
@@ -88,7 +88,7 @@ function getScale() {
             TestDeckScene,
             TestScoringScene,
             TestErrorScene,
-            TestScene,
+            // TestScene,
             CardHoverPrefabScene,
             MainMenuPrefabScene
         ]

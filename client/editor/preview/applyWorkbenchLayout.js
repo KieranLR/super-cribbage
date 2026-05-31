@@ -1,4 +1,4 @@
-import { ANCHORS, VALUE_MODES } from '../../shared/layout/layoutSchema';
+import { VALUE_MODES } from '../../shared/layout/layoutSchema';
 import { inspectableRegistry } from './InspectableRegistry';
 
 /**
@@ -13,16 +13,26 @@ export function applyWorkbenchLayout(state) {
     // A better way is to iterate over the registry
     inspectableRegistry.objects.forEach((entry, id) => {
         const gameObject = entry.gameObject;
-        if (!gameObject) return;
-
-        const baseLayout = layoutConfig.objects[id];
+        const baseConfig = layoutConfig.objects[id];
         
-        if (baseLayout) {
-            const mergedLayout = getEffectiveObjectLayout(baseLayout, activeBreakpoint);
-            applyObjectLayout(gameObject, mergedLayout, viewportWidth, viewportHeight);
+        if (entry.supportsLayout !== false && gameObject && baseConfig) {
+            const mergedLayout = getEffectiveObjectLayout(baseConfig, activeBreakpoint);
+            if (typeof entry.applyLayout === 'function') {
+                entry.applyLayout(mergedLayout, viewportWidth, viewportHeight);
+            } else {
+                applyObjectLayout(gameObject, mergedLayout, viewportWidth, viewportHeight);
+            }
+        }
+
+        if (typeof entry.applyCustomValues === 'function' && baseConfig) {
+            entry.applyCustomValues(baseConfig.customValues || {});
         }
 
         // Apply highlight (Step 11)
+        if (!gameObject) {
+            return;
+        }
+
         if (id === selectedObjectId) {
             if (gameObject.setTint) {
                 gameObject.setTint(0x00ffff);
@@ -45,7 +55,11 @@ function getEffectiveObjectLayout(base, breakpoint) {
 }
 
 function applyObjectLayout(gameObject, layout, viewWidth, viewHeight) {
-    const { anchor, x, y, offsetX, offsetY, scale, visible } = layout;
+    if (!layout || !layout.x || !layout.y) {
+        return;
+    }
+
+    const { anchor, x, y, offsetX, offsetY, percentOffsetX, percentOffsetY, scale, visible } = layout;
 
     // 1. Calculate base anchor position
     let anchorX = 0;
@@ -74,8 +88,8 @@ function applyObjectLayout(gameObject, layout, viewWidth, viewHeight) {
     // Based on the prompt's schema example, x: {mode: 'percent', value: 1} and anchor: 'topRight'
     // seems to mean they are used together.
     
-    gameObject.x = anchorX + posX + (offsetX || 0);
-    gameObject.y = anchorY + posY + (offsetY || 0);
+    gameObject.x = anchorX + posX + (offsetX || 0) + ((percentOffsetX || 0) * viewWidth);
+    gameObject.y = anchorY + posY + (offsetY || 0) + ((percentOffsetY || 0) * viewHeight);
     
     if (scale !== undefined) {
         gameObject.setScale(scale);

@@ -1,13 +1,13 @@
-import { MainMenu } from '../../scenes/MainMenu';
 import { Game } from '../../scenes/Game';
 import { TestCardScene } from '../../scenes/TestScenes/TestCardScene';
+import MainMenuPrefabScene from '../../test/main-menu/scenes/MainMenuPrefabScene';
 
 export const PREVIEW_SCENES = [
     {
         id: 'mainMenu',
-        label: 'Main Menu',
-        sceneClass: MainMenu,
-        phaserKey: 'MainMenu'
+        label: 'Main Menu Prefab',
+        sceneClass: MainMenuPrefabScene,
+        phaserKey: 'MainMenuPrefabScene'
     },
     {
         id: 'game',

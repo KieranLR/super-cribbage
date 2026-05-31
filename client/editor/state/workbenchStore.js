@@ -47,16 +47,105 @@ class WorkbenchStore {
         this.setState({ selectedSceneId: sceneId, selectedObjectId: null });
     }
 
+    getObjectMeta(objectId) {
+        return this.state.objectRegistry.find((objectMeta) => objectMeta.id === objectId) || null;
+    }
+
+    getDefaultCustomValueByType(type) {
+        switch (type) {
+            case 'color':
+                return '#ffffff';
+            case 'boolean':
+                return false;
+            case 'string':
+                return '';
+            case 'number':
+            default:
+                return 0;
+        }
+    }
+
+    mergeLayoutDefaults(baseLayout, overrideLayout) {
+        if (!overrideLayout) {
+            return { ...baseLayout };
+        }
+
+        return {
+            ...baseLayout,
+            ...overrideLayout,
+            x: {
+                ...(baseLayout.x || {}),
+                ...((overrideLayout && overrideLayout.x) || {})
+            },
+            y: {
+                ...(baseLayout.y || {}),
+                ...((overrideLayout && overrideLayout.y) || {})
+            }
+        };
+    }
+
+    createDefaultObjectConfig(objectMeta) {
+        const config = {};
+
+        if (!objectMeta || objectMeta.supportsLayout !== false) {
+            const baseLayout = createDefaultObjectLayout();
+            const mergedLayout = this.mergeLayoutDefaults(baseLayout, objectMeta?.defaultLayout);
+            Object.assign(config, mergedLayout);
+        }
+
+        const customProperties = Array.isArray(objectMeta?.customProperties)
+            ? objectMeta.customProperties
+            : [];
+
+        if (customProperties.length > 0) {
+            config.customValues = {};
+            customProperties.forEach((property) => {
+                if (!property || !property.key) return;
+                config.customValues[property.key] = property.defaultValue !== undefined
+                    ? property.defaultValue
+                    : this.getDefaultCustomValueByType(property.type);
+            });
+        }
+
+        return config;
+    }
+
+    ensureObjectConfigDefaults(existingConfig, objectMeta) {
+        const defaults = this.createDefaultObjectConfig(objectMeta);
+        const merged = { ...(existingConfig || {}) };
+
+        if (objectMeta?.supportsLayout !== false) {
+            Object.keys(defaults).forEach((key) => {
+                if (key === 'customValues') {
+                    return;
+                }
+                if (merged[key] === undefined) {
+                    merged[key] = JSON.parse(JSON.stringify(defaults[key]));
+                }
+            });
+        }
+
+        if (defaults.customValues) {
+            merged.customValues = {
+                ...defaults.customValues,
+                ...(merged.customValues || {})
+            };
+        }
+
+        return merged;
+    }
+
     setSelectedObject(objectId) {
         if (objectId && !this.state.layoutConfig.objects[objectId]) {
             const newConfig = { ...this.state.layoutConfig };
-            const defaultLayout = createDefaultObjectLayout();
-            newConfig.objects[objectId] = defaultLayout;
+            const objectMeta = this.getObjectMeta(objectId);
+            const defaultConfig = this.createDefaultObjectConfig(objectMeta);
+            newConfig.objects[objectId] = defaultConfig;
             
             // Also store as initial if not present
             const newInitialConfig = { ...this.state.initialLayoutConfig };
             if (!newInitialConfig[objectId]) {
-                newInitialConfig[objectId] = JSON.parse(JSON.stringify(defaultLayout));
+                newInitialConfig[objectId] = JSON.parse(JSON.stringify(defaultConfig));
             }
 
             this.setState({ 
@@ -89,20 +178,29 @@ class WorkbenchStore {
 
         const newConfig = { ...this.state.layoutConfig };
         const initial = this.state.initialLayoutConfig[objectId];
+        const objectMeta = this.getObjectMeta(objectId);
         
-        if (this.state.activeBreakpoint === 'desktop') {
-            if (initial) {
-                newConfig.objects[objectId] = JSON.parse(JSON.stringify(initial));
+        if (objectMeta?.supportsLayout !== false) {
+            if (this.state.activeBreakpoint === 'desktop') {
+                if (initial) {
+                    newConfig.objects[objectId] = JSON.parse(JSON.stringify(initial));
+                } else {
+                    newConfig.objects[objectId] = this.createDefaultObjectConfig(objectMeta);
+                }
             } else {
-                newConfig.objects[objectId] = createDefaultObjectLayout();
+                // For breakpoints, "reset" usually means removing the override
+                const baseObject = { ...newConfig.objects[objectId] };
+                if (baseObject.breakpoints) {
+                    delete baseObject.breakpoints[this.state.activeBreakpoint];
+                    newConfig.objects[objectId] = baseObject;
+                }
             }
         } else {
-            // For breakpoints, "reset" usually means removing the override
-            const baseObject = { ...newConfig.objects[objectId] };
-            if (baseObject.breakpoints) {
-                delete baseObject.breakpoints[this.state.activeBreakpoint];
-                newConfig.objects[objectId] = baseObject;
-            }
+            const defaultConfig = this.createDefaultObjectConfig(objectMeta);
+            newConfig.objects[objectId] = {
+                ...newConfig.objects[objectId],
+                customValues: { ...(defaultConfig.customValues || {}) }
+            };
         }
 
         this.setState({ layoutConfig: newConfig });
@@ -112,7 +210,8 @@ class WorkbenchStore {
         const newConfig = { ...this.state.layoutConfig };
         if (!newConfig.objects) newConfig.objects = {};
         
-        const baseObject = newConfig.objects[objectId] || {};
+        const objectMeta = this.getObjectMeta(objectId);
+        const baseObject = this.ensureObjectConfigDefaults(newConfig.objects[objectId], objectMeta);
         
         if (this.state.activeBreakpoint === 'desktop') {
             newConfig.objects[objectId] = { ...baseObject, ...patch };
@@ -128,6 +227,25 @@ class WorkbenchStore {
         this.setState({ layoutConfig: newConfig });
     }
 
+    patchObjectCustomValues(objectId, patch) {
+        if (!objectId || !patch) return;
+
+        const newConfig = { ...this.state.layoutConfig };
+        if (!newConfig.objects) newConfig.objects = {};
+
+        const objectMeta = this.getObjectMeta(objectId);
+        const baseObject = this.ensureObjectConfigDefaults(newConfig.objects[objectId], objectMeta);
+        newConfig.objects[objectId] = {
+            ...baseObject,
+            customValues: {
+                ...(baseObject.customValues || {}),
+                ...patch
+            }
+        };
+
+        this.setState({ layoutConfig: newConfig });
+    }
+
     registerPreviewObjects(objects) {
         const newInitialConfig = { ...this.state.initialLayoutConfig };
         const newLayoutConfig = { ...this.state.layoutConfig };
@@ -135,9 +253,16 @@ class WorkbenchStore {
         let changed = false;
 
         objects.forEach(obj => {
+            const mergedConfig = this.ensureObjectConfigDefaults(newLayoutConfig.objects[obj.id], obj);
+
+            if (JSON.stringify(newLayoutConfig.objects[obj.id] || {}) !== JSON.stringify(mergedConfig)) {
+                newLayoutConfig.objects[obj.id] = mergedConfig;
+                changed = true;
+            }
+
             if (!newInitialConfig[obj.id]) {
-                // Snapshot current layout or default as initial
-                const current = newLayoutConfig.objects[obj.id] || createDefaultObjectLayout();
+                // Snapshot current layout/custom defaults as initial
+                const current = newLayoutConfig.objects[obj.id] || this.createDefaultObjectConfig(obj);
                 newInitialConfig[obj.id] = JSON.parse(JSON.stringify(current));
                 
                 // Also ensure it's in layoutConfig if missing

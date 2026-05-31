@@ -18,10 +18,18 @@ const LayoutLabApp = () => {
   } = state;
 
   const selectedObject = objectRegistry.find(o => o.id === selectedObjectId);
-  const selectedObjectLayout = selectedObjectId ? (layoutConfig.objects[selectedObjectId] || {}) : null;
+  const selectedObjectConfig = selectedObjectId ? (layoutConfig.objects[selectedObjectId] || {}) : null;
+  const selectedObjectLayout = selectedObjectConfig || {};
+  const selectedObjectCustomValues = selectedObjectConfig?.customValues || {};
+  const selectedObjectCustomProperties = selectedObject?.customProperties || [];
+  const selectedObjectSupportsLayout = selectedObject?.supportsLayout !== false;
 
   const handlePatch = (patch) => {
     workbenchStore.patchObjectLayout(selectedObjectId, patch);
+  };
+
+  const handleCustomPatch = (patch) => {
+    workbenchStore.patchObjectCustomValues(selectedObjectId, patch);
   };
 
   return (
@@ -103,91 +111,174 @@ const LayoutLabApp = () => {
               </div>
               {selectedObjectId ? (
                 <div className="space-y-4 text-sm bg-gray-800/50 p-3 rounded border border-gray-700">
-                  <div className="grid grid-cols-2 gap-3">
-                     <div className="space-y-1">
-                        <label className="text-[10px] uppercase text-gray-500 font-bold">Anchor</label>
-                        <select 
-                          value={selectedObjectLayout?.anchor || 'center'}
-                          onChange={(e) => handlePatch({ anchor: e.target.value })}
-                          className="w-full bg-gray-900 border border-gray-700 rounded p-1 text-xs"
-                        >
-                          {Object.values(ANCHORS).map(a => <option key={a} value={a}>{a}</option>)}
-                        </select>
-                     </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                     <div className="space-y-1">
-                        <label className="text-[10px] uppercase text-gray-500 font-bold">X Mode</label>
-                        <select 
-                          value={selectedObjectLayout?.x?.mode || 'percent'}
-                          onChange={(e) => handlePatch({ x: { ...selectedObjectLayout.x, mode: e.target.value } })}
-                          className="w-full bg-gray-900 border border-gray-700 rounded p-1 text-xs"
-                        >
-                          <option value="percent">Percent</option>
-                          <option value="px">Pixels</option>
-                        </select>
-                     </div>
-                     <DraggableNumericInput 
-                        label="X Value"
-                        step={selectedObjectLayout?.x?.mode === 'percent' ? 0.01 : 1}
-                        value={selectedObjectLayout?.x?.value ?? 0}
-                        onChange={(val) => handlePatch({ x: { ...selectedObjectLayout.x, value: val } })}
-                     />
-                  </div>
+                  {selectedObjectSupportsLayout && (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                         <div className="space-y-1">
+                            <label className="text-[10px] uppercase text-gray-500 font-bold">Anchor</label>
+                            <select 
+                              value={selectedObjectLayout?.anchor || 'center'}
+                              onChange={(e) => handlePatch({ anchor: e.target.value })}
+                              className="w-full bg-gray-900 border border-gray-700 rounded p-1 text-xs"
+                            >
+                              {Object.values(ANCHORS).map(a => <option key={a} value={a}>{a}</option>)}
+                            </select>
+                         </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                         <div className="space-y-1">
+                            <label className="text-[10px] uppercase text-gray-500 font-bold">X Mode</label>
+                            <select 
+                              value={selectedObjectLayout?.x?.mode || 'percent'}
+                              onChange={(e) => handlePatch({ x: { ...selectedObjectLayout.x, mode: e.target.value } })}
+                              className="w-full bg-gray-900 border border-gray-700 rounded p-1 text-xs"
+                            >
+                              <option value="percent">Percent</option>
+                              <option value="px">Pixels</option>
+                            </select>
+                         </div>
+                         <DraggableNumericInput 
+                            label="X Value"
+                            step={selectedObjectLayout?.x?.mode === 'percent' ? 0.01 : 1}
+                            value={selectedObjectLayout?.x?.value ?? 0}
+                            onChange={(val) => handlePatch({ x: { ...selectedObjectLayout.x, value: val } })}
+                         />
+                      </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                     <div className="space-y-1">
-                        <label className="text-[10px] uppercase text-gray-500 font-bold">Y Mode</label>
-                        <select 
-                          value={selectedObjectLayout?.y?.mode || 'percent'}
-                          onChange={(e) => handlePatch({ y: { ...selectedObjectLayout.y, mode: e.target.value } })}
-                          className="w-full bg-gray-900 border border-gray-700 rounded p-1 text-xs"
-                        >
-                          <option value="percent">Percent</option>
-                          <option value="px">Pixels</option>
-                        </select>
-                     </div>
-                     <DraggableNumericInput 
-                        label="Y Value"
-                        step={selectedObjectLayout?.y?.mode === 'percent' ? 0.01 : 1}
-                        value={selectedObjectLayout?.y?.value ?? 0}
-                        onChange={(val) => handlePatch({ y: { ...selectedObjectLayout.y, value: val } })}
-                     />
-                  </div>
+                      <div className="grid grid-cols-2 gap-3">
+                         <div className="space-y-1">
+                            <label className="text-[10px] uppercase text-gray-500 font-bold">Y Mode</label>
+                            <select 
+                              value={selectedObjectLayout?.y?.mode || 'percent'}
+                              onChange={(e) => handlePatch({ y: { ...selectedObjectLayout.y, mode: e.target.value } })}
+                              className="w-full bg-gray-900 border border-gray-700 rounded p-1 text-xs"
+                            >
+                              <option value="percent">Percent</option>
+                              <option value="px">Pixels</option>
+                            </select>
+                         </div>
+                         <DraggableNumericInput 
+                            label="Y Value"
+                            step={selectedObjectLayout?.y?.mode === 'percent' ? 0.01 : 1}
+                            value={selectedObjectLayout?.y?.value ?? 0}
+                            onChange={(val) => handlePatch({ y: { ...selectedObjectLayout.y, value: val } })}
+                         />
+                      </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <DraggableNumericInput 
-                      label="Offset X"
-                      value={selectedObjectLayout?.offsetX ?? 0}
-                      onChange={(val) => handlePatch({ offsetX: val })}
-                    />
-                    <DraggableNumericInput 
-                      label="Offset Y"
-                      value={selectedObjectLayout?.offsetY ?? 0}
-                      onChange={(val) => handlePatch({ offsetY: val })}
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                     <div className="flex items-center gap-2">
-                        <input 
-                          type="checkbox" 
-                          id="visible-toggle"
-                          checked={selectedObjectLayout?.visible !== false}
-                          onChange={(e) => handlePatch({ visible: e.target.checked })}
-                          className="cursor-pointer"
+                      <div className="grid grid-cols-2 gap-3">
+                        <DraggableNumericInput 
+                          label="Offset X"
+                          value={selectedObjectLayout?.offsetX ?? 0}
+                          onChange={(val) => handlePatch({ offsetX: val })}
                         />
-                        <label htmlFor="visible-toggle" className="text-[10px] uppercase text-gray-500 font-bold cursor-pointer">Visible</label>
-                     </div>
-                     <DraggableNumericInput 
-                        className="flex-1"
-                        label="Scale"
-                        step={0.1}
-                        value={selectedObjectLayout?.scale ?? 1}
-                        onChange={(val) => handlePatch({ scale: val })}
-                     />
-                  </div>
+                        <DraggableNumericInput 
+                          label="Offset Y"
+                          value={selectedObjectLayout?.offsetY ?? 0}
+                          onChange={(val) => handlePatch({ offsetY: val })}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <DraggableNumericInput
+                          label="Percent Offset X"
+                          step={0.01}
+                          value={selectedObjectLayout?.percentOffsetX ?? 0}
+                          onChange={(val) => handlePatch({ percentOffsetX: val })}
+                        />
+                        <DraggableNumericInput
+                          label="Percent Offset Y"
+                          step={0.01}
+                          value={selectedObjectLayout?.percentOffsetY ?? 0}
+                          onChange={(val) => handlePatch({ percentOffsetY: val })}
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                         <div className="flex items-center gap-2">
+                            <input 
+                              type="checkbox" 
+                              id="visible-toggle"
+                              checked={selectedObjectLayout?.visible !== false}
+                              onChange={(e) => handlePatch({ visible: e.target.checked })}
+                              className="cursor-pointer"
+                            />
+                            <label htmlFor="visible-toggle" className="text-[10px] uppercase text-gray-500 font-bold cursor-pointer">Visible</label>
+                         </div>
+                         <DraggableNumericInput 
+                            className="flex-1"
+                            label="Scale"
+                            step={0.1}
+                            value={selectedObjectLayout?.scale ?? 1}
+                            onChange={(val) => handlePatch({ scale: val })}
+                         />
+                      </div>
+                    </>
+                  )}
+
+                  {selectedObjectCustomProperties.length > 0 && (
+                    <div className="space-y-3 border-t border-gray-700 pt-3">
+                      <h3 className="text-[10px] uppercase text-gray-500 font-bold">Custom Values</h3>
+                      {selectedObjectCustomProperties.map((property) => {
+                        const value = selectedObjectCustomValues[property.key];
+
+                        if (property.type === 'number') {
+                          return (
+                            <DraggableNumericInput
+                              key={property.key}
+                              label={property.label || property.key}
+                              step={property.step ?? 1}
+                              value={value ?? 0}
+                              onChange={(nextValue) => handleCustomPatch({ [property.key]: nextValue })}
+                            />
+                          );
+                        }
+
+                        if (property.type === 'color') {
+                          return (
+                            <div key={property.key} className="space-y-1">
+                              <label className="text-[10px] uppercase text-gray-500 font-bold">{property.label || property.key}</label>
+                              <input
+                                type="color"
+                                value={typeof value === 'string' ? value : '#ffffff'}
+                                onChange={(e) => handleCustomPatch({ [property.key]: e.target.value })}
+                                className="w-full h-8 bg-gray-900 border border-gray-700 rounded cursor-pointer"
+                              />
+                            </div>
+                          );
+                        }
+
+                        if (property.type === 'boolean') {
+                          return (
+                            <div key={property.key} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                id={`custom-${property.key}`}
+                                checked={Boolean(value)}
+                                onChange={(e) => handleCustomPatch({ [property.key]: e.target.checked })}
+                                className="cursor-pointer"
+                              />
+                              <label htmlFor={`custom-${property.key}`} className="text-[10px] uppercase text-gray-500 font-bold cursor-pointer">
+                                {property.label || property.key}
+                              </label>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div key={property.key} className="space-y-1">
+                            <label className="text-[10px] uppercase text-gray-500 font-bold">{property.label || property.key}</label>
+                            <input
+                              type="text"
+                              value={value ?? ''}
+                              onChange={(e) => handleCustomPatch({ [property.key]: e.target.value })}
+                              className="w-full bg-gray-900 border border-gray-700 rounded p-1 text-xs outline-none focus:ring-1 focus:ring-blue-500"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-gray-500 italic text-xs bg-gray-800/50 p-3 rounded border border-gray-700">Select an object to edit...</p>

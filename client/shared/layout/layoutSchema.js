@@ -31,6 +31,8 @@ export const createDefaultObjectLayout = () => ({
     y: { mode: VALUE_MODES.PERCENT, value: 0.5 },
     offsetX: 0,
     offsetY: 0,
+    percentOffsetX: 0,
+    percentOffsetY: 0,
     scale: 1,
     visible: true,
     breakpoints: {}
